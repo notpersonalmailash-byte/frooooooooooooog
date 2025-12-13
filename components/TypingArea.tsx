@@ -1,0 +1,745 @@
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
+import { Quote, GameStatus, Settings, GameMode } from '../types';
+import { calculateXP } from '../utils/gameLogic';
+import { soundEngine } from '../utils/soundEngine';
+import { Play, RotateCcw, Award, Flame, Ghost, EyeOff, Sparkles, ArrowUp, Lock, XCircle, AlertTriangle, ArrowRight } from 'lucide-react';
+
+interface TypingAreaProps {
+  quote: Quote;
+  onComplete: (xpEarned: number, wpm: number, mistakes: string[], retryCount: number) => void;
+  onFail: () => void;
+  onMistake: (word?: string, expectedChar?: string, typedChar?: string) => void;
+  onRequestNewQuote: () => void;
+  streak: number;
+  ghostWpm: number;
+  settings: Settings;
+  gameMode: GameMode;
+  onInteract?: () => void;
+}
+
+const TypingArea: React.FC<TypingAreaProps> = ({ 
+  quote, 
+  onComplete, 
+  onFail, 
+  onMistake,
+  onRequestNewQuote,
+  streak,
+  ghostWpm,
+  settings,
+  gameMode,
+  onInteract
+}) => {
+  const [input, setInput] = useState('');
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [endTime, setEndTime] = useState<number | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [status, setStatus] = useState<GameStatus>(GameStatus.IDLE);
+  const [wpm, setWpm] = useState(0);
+  const [ghostIndex, setGhostIndex] = useState(0);
+  const [capsLock, setCapsLock] = useState(false);
+  const [isShiftPressed, setIsShiftPressed] = useState(false);
+  
+  // Tracking Stats
+  const [sessionMistakes, setSessionMistakes] = useState(0);
+  const [sessionMistakeWords, setSessionMistakeWords] = useState<string[]>([]);
+  const [retryCount, setRetryCount] = useState(0);
+  
+  // Enhanced Error Tracking
+  const [lastError, setLastError] = useState<{ 
+      expectedChar: string, 
+      typedChar: string, 
+      index: number,
+      expectedWord: string,
+      typedWordPart: string 
+  } | null>(null);
+
+  // Smooth Caret State
+  const [caretPos, setCaretPos] = useState({ left: 0, top: 0, height: 24, opacity: 0 });
+
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textContainerRef = useRef<HTMLDivElement>(null);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
+  const retryButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Sync Settings with Engine
+  useEffect(() => {
+    soundEngine.setEnabled(settings.sfxEnabled);
+  }, [settings.sfxEnabled]);
+
+  // Reset state when quote changes
+  useEffect(() => {
+    setInput('');
+    setStartTime(null);
+    setEndTime(null);
+    setStatus(GameStatus.IDLE);
+    setWpm(0);
+    setGhostIndex(0);
+    setSessionMistakes(0);
+    setSessionMistakeWords([]);
+    setRetryCount(0);
+    setLastError(null);
+    if (isFocused) {
+        inputRef.current?.focus();
+    }
+  }, [quote, isFocused]);
+
+  // Focus management for buttons when game ends
+  useEffect(() => {
+    if (status === GameStatus.COMPLETED) {
+        setTimeout(() => nextButtonRef.current?.focus(), 50);
+    } else if (status === GameStatus.FAILED) {
+        setTimeout(() => retryButtonRef.current?.focus(), 50);
+    }
+  }, [status]);
+
+  // Handlers wrapped in useCallback for stable dependencies
+  const handleRetry = useCallback(() => {
+    setInput('');
+    setStartTime(null);
+    setEndTime(null);
+    setStatus(GameStatus.IDLE);
+    setWpm(0);
+    setGhostIndex(0);
+    setSessionMistakes(0); 
+    setLastError(null);
+    setRetryCount(prev => prev + 1);
+    setIsFocused(true);
+    setTimeout(() => inputRef.current?.focus(), 10);
+  }, []);
+
+  const handleNext = useCallback(() => {
+    const isPerfectMaster = retryCount === 0 && sessionMistakes === 0;
+    const xp = calculateXP(wpm, quote.text.length, streak, isPerfectMaster, settings.readAheadLevel);
+    onComplete(xp, wpm, sessionMistakeWords, retryCount);
+  }, [onComplete, wpm, quote.text.length, streak, retryCount, sessionMistakes, sessionMistakeWords, settings.readAheadLevel]);
+
+  // Caps Lock & Shift Detection
+  useEffect(() => {
+    const checkCapsLock = (e: KeyboardEvent | MouseEvent) => {
+      if (e.getModifierState) {
+        setCapsLock(e.getModifierState('CapsLock'));
+      }
+    };
+    
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Shift') setIsShiftPressed(true);
+    };
+    const handleKeyUp = (e: KeyboardEvent) => {
+        if (e.key === 'Shift') setIsShiftPressed(false);
+    };
+
+    window.addEventListener('keydown', checkCapsLock as any);
+    window.addEventListener('keyup', checkCapsLock as any);
+    window.addEventListener('click', checkCapsLock as any);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', checkCapsLock as any);
+      window.removeEventListener('keyup', checkCapsLock as any);
+      window.removeEventListener('click', checkCapsLock as any);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  // Global keydown listener
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (status === GameStatus.COMPLETED) {
+        if (e.key === 'Enter' || e.key === 'Tab') {
+          e.preventDefault();
+          handleNext();
+        }
+        return;
+      }
+
+      if (status === GameStatus.FAILED) {
+        if (e.key === 'Enter' || e.key === 'Tab') {
+          e.preventDefault();
+          handleRetry();
+        }
+        return;
+      }
+
+      if (!isFocused) {
+        if (e.key === 'Tab') return;
+
+        if (!e.metaKey && !e.altKey && !e.ctrlKey) {
+            e.preventDefault(); 
+            setIsFocused(true);
+            inputRef.current?.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [isFocused, status, handleNext, handleRetry]);
+
+  // Smooth Caret Calculation
+  useLayoutEffect(() => {
+    const updateCaret = () => {
+        if (!textContainerRef.current) return;
+        
+        let targetEl: HTMLElement | null = null;
+        let left = 0;
+        let top = 0;
+        let height = 0;
+
+        if (input.length < quote.text.length) {
+            // Find current char
+            targetEl = textContainerRef.current.querySelector(`[data-index="${input.length}"]`);
+            if (targetEl) {
+                left = targetEl.offsetLeft;
+                top = targetEl.offsetTop;
+                height = targetEl.offsetHeight;
+            }
+        } else {
+            // End of text, position after last char
+            targetEl = textContainerRef.current.querySelector(`[data-index="${input.length - 1}"]`);
+            if (targetEl) {
+                left = targetEl.offsetLeft + targetEl.offsetWidth;
+                top = targetEl.offsetTop;
+                height = targetEl.offsetHeight;
+            } else if (quote.text.length === 0) {
+                 // Empty quote fallback
+                 left = 0;
+                 top = 0;
+                 height = 24; 
+            }
+        }
+        
+        // Handle visual adjustment for empty state or start
+        if (input.length === 0 && quote.text.length > 0) {
+             const firstEl = textContainerRef.current.querySelector(`[data-index="0"]`) as HTMLElement;
+             if (firstEl) {
+                 left = firstEl.offsetLeft;
+                 top = firstEl.offsetTop;
+                 height = firstEl.offsetHeight;
+             }
+        }
+
+        setCaretPos({ 
+            left, 
+            top, 
+            height: height || 32, // Default height fallback
+            opacity: isFocused && status !== GameStatus.COMPLETED && status !== GameStatus.FAILED ? 1 : 0
+        });
+    };
+
+    updateCaret();
+    window.addEventListener('resize', updateCaret);
+    return () => window.removeEventListener('resize', updateCaret);
+  }, [input, quote, isFocused, status, settings.readAheadLevel]); // Recalculate on any change affecting layout
+
+  const handleFocus = () => {
+    if (status === GameStatus.COMPLETED || status === GameStatus.FAILED) return;
+    setIsFocused(true);
+    inputRef.current?.focus();
+  };
+
+  const handleBlur = () => {
+    setTimeout(() => {
+        if (document.activeElement !== inputRef.current) {
+            setIsFocused(false);
+        }
+    }, 100);
+  };
+
+  const calculateStats = useCallback(() => {
+    if (!startTime) return { currentWpm: 0 };
+    const now = endTime || Date.now();
+    const durationInMinutes = (now - startTime) / 60000;
+    if (durationInMinutes <= 0) return { currentWpm: 0 };
+    const currentWpm = Math.round((input.length / 5) / durationInMinutes);
+    return { currentWpm };
+  }, [endTime, input.length, startTime]);
+
+  // Game Loop (WPM + Ghost)
+  useEffect(() => {
+    if (status === GameStatus.PLAYING) {
+      const interval = setInterval(() => {
+        const { currentWpm } = calculateStats();
+        setWpm(currentWpm);
+
+        if (settings.ghostEnabled && ghostWpm > 0 && startTime) {
+            const now = Date.now();
+            const elapsedMins = (now - startTime) / 60000;
+            const projectedChars = (ghostWpm * 5) * elapsedMins;
+            setGhostIndex(projectedChars);
+        }
+      }, 50);
+      return () => clearInterval(interval);
+    }
+  }, [status, calculateStats, settings.ghostEnabled, ghostWpm, startTime]);
+
+  const getWordAt = (index: number, text: string) => {
+    const start = text.lastIndexOf(' ', index) + 1;
+    let end = text.indexOf(' ', index);
+    if (end === -1) end = text.length;
+    return text.slice(start, end); 
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (status === GameStatus.COMPLETED || status === GameStatus.FAILED) return;
+
+    const val = e.target.value;
+    const prevLen = input.length;
+    
+    if (status === GameStatus.IDLE && val.length > 0) {
+      setStartTime(Date.now());
+      setStatus(GameStatus.PLAYING);
+    }
+
+    if (val.length > prevLen) {
+        soundEngine.playKeypress();
+    }
+
+    // --- Instant Fail Check (All Modes) ---
+    if (val.length > 0) {
+      if (!quote.text.startsWith(val)) {
+        soundEngine.playError(); 
+        setStatus(GameStatus.FAILED);
+        onFail();
+        
+        const mistakeIndex = val.length - 1;
+        const expectedChar = quote.text[mistakeIndex];
+        const typedChar = val[mistakeIndex];
+        
+        // --- Calculate Word Context ---
+        const wordStart = quote.text.lastIndexOf(' ', mistakeIndex) + 1;
+        let wordEnd = quote.text.indexOf(' ', mistakeIndex);
+        if (wordEnd === -1) wordEnd = quote.text.length;
+        
+        const expectedWord = quote.text.substring(wordStart, wordEnd);
+        const typedWordPart = val.substring(wordStart);
+        const cleanWord = expectedWord.replace(/[.,;!?]/g, '');
+
+        setLastError({ 
+            expectedChar, 
+            typedChar, 
+            index: mistakeIndex,
+            expectedWord,
+            typedWordPart
+        });
+        
+        onMistake(cleanWord, expectedChar, typedChar);
+        
+        // Track locally for history
+        setSessionMistakes(prev => prev + 1);
+        if (cleanWord && !sessionMistakeWords.includes(cleanWord)) {
+            setSessionMistakeWords(prev => [...prev, cleanWord]);
+        }
+        return;
+      }
+    }
+
+    setInput(val);
+
+    if (val.length === quote.text.length) {
+      const isPerfect = val === quote.text;
+      setEndTime(Date.now());
+      
+      if (isPerfect) {
+        soundEngine.playSuccess(); 
+        setStatus(GameStatus.COMPLETED);
+        const finalTime = Date.now();
+        const durationMins = (finalTime - (startTime || finalTime)) / 60000;
+        const finalWpm = Math.round((quote.text.length / 5) / (durationMins || 1));
+        setWpm(finalWpm);
+      } else {
+        soundEngine.playError(); 
+        setStatus(GameStatus.FAILED);
+        onFail();
+      }
+    }
+  };
+
+  const getReadAheadState = (index: number) => {
+    if (settings.readAheadLevel === 'NONE' || status === GameStatus.IDLE) return { isHidden: false, isHighlighted: false };
+    
+    const text = quote.text;
+    const caret = input.length;
+    
+    let currentWordStart = text.lastIndexOf(' ', caret - 1);
+    currentWordStart = currentWordStart === -1 ? 0 : currentWordStart + 1;
+    
+    let currentWordEnd = text.indexOf(' ', caret);
+    if (currentWordEnd === -1) currentWordEnd = text.length;
+
+    // --- LEVEL 1: FOCUS ---
+    if (index >= currentWordStart && index < currentWordEnd) {
+        return { isHidden: true, isHighlighted: false };
+    }
+
+    // --- LEVEL 2: ULTRA ---
+    if (settings.readAheadLevel === 'ULTRA' || settings.readAheadLevel === 'BLIND') {
+        let nextWordStart = currentWordEnd + 1;
+        let nextWordEnd = text.indexOf(' ', nextWordStart);
+        if (nextWordEnd === -1) nextWordEnd = text.length;
+
+        if (index >= nextWordStart && index < nextWordEnd) {
+            return { isHidden: true, isHighlighted: false }; 
+        }
+    }
+
+    // --- LEVEL 3: BLIND ---
+    if (settings.readAheadLevel === 'BLIND') {
+        let nextWordStart = currentWordEnd + 1;
+        let nextWordEnd = text.indexOf(' ', nextWordStart);
+        if (nextWordEnd === -1) nextWordEnd = text.length;
+        
+        let secondNextStart = nextWordEnd + 1;
+        let secondNextEnd = text.indexOf(' ', secondNextStart);
+        if (secondNextEnd === -1) secondNextEnd = text.length;
+
+        if (index >= secondNextStart && index < secondNextEnd) {
+             return { isHidden: true, isHighlighted: false };
+        }
+    }
+
+    // Highlight next visible word
+    if (index > currentWordEnd) { 
+        let highlightStart = currentWordEnd + 1;
+        if (settings.readAheadLevel === 'ULTRA') {
+             let skip1 = text.indexOf(' ', highlightStart);
+             if (skip1 !== -1) highlightStart = skip1 + 1;
+             else highlightStart = text.length; 
+        } else if (settings.readAheadLevel === 'BLIND') {
+             let skip1 = text.indexOf(' ', highlightStart);
+             let skip2 = skip1 !== -1 ? text.indexOf(' ', skip1 + 1) : -1;
+             if (skip2 !== -1) highlightStart = skip2 + 1;
+             else highlightStart = text.length;
+        }
+
+        let highlightEnd = text.indexOf(' ', highlightStart);
+        if (highlightEnd === -1) highlightEnd = text.length;
+
+        if (index >= highlightStart && index < highlightEnd) {
+             return { isHidden: false, isHighlighted: true };
+        }
+    }
+
+    return { isHidden: false, isHighlighted: false };
+  };
+
+  const getTextColor = () => {
+     if (status === GameStatus.FAILED) {
+        if (gameMode === 'HARDCORE') return 'text-red-400/50';
+        return 'text-red-300';
+     }
+     if (gameMode === 'HARDCORE') return 'text-stone-400';
+     return 'text-stone-300';
+  };
+
+  const renderText = () => {
+    return quote.text.split('').map((char, index) => {
+      let colorClass = getTextColor(); 
+      let bgClass = '';
+      
+      const { isHidden, isHighlighted } = getReadAheadState(index);
+
+      if (index < input.length) {
+        if (input[index] === char) {
+          // Use frog-green for completed text
+          colorClass = 'text-frog-green'; 
+        } else {
+          colorClass = 'text-red-500 bg-red-100'; 
+        }
+      } else {
+          if (isHighlighted) {
+              colorClass = 'text-frog-green font-bold';
+              bgClass = 'bg-green-100/50';
+          }
+      }
+
+      if (gameMode === 'FIX_MISTAKE') {
+          if (index >= input.length) {
+              colorClass = 'text-red-300';
+          }
+      }
+
+      const isGhostHere = settings.ghostEnabled && Math.floor(ghostIndex) === index;
+
+      return (
+        <span key={index} data-index={index} className="relative">
+            {isGhostHere && (
+                <span className="absolute -left-[2px] top-0 bottom-0 w-[2px] bg-purple-400/50 z-20 animate-pulse">
+                     <span className="absolute -top-4 -left-2 text-[10px] text-purple-400 opacity-70">👻</span>
+                </span>
+            )}
+
+            <span 
+                className={`
+                    ${colorClass} ${bgClass} transition-colors duration-100
+                    ${isHidden ? 'text-transparent selection:text-transparent' : ''}
+                    ${isHidden && index < input.length && input[index] !== char ? '!text-red-500 !bg-red-100' : ''} 
+                `}
+            >
+                {char}
+            </span>
+        </span>
+      );
+    });
+  };
+
+  const getContainerStyle = () => {
+    if (status === GameStatus.FAILED) {
+        if (gameMode === 'HARDCORE') {
+            return 'bg-red-900/20 border-red-900/50 shadow-[0_0_40px_rgba(220,38,38,0.1)]';
+        }
+        return 'bg-red-50 border-red-200 shadow-inner';
+    }
+
+    if (gameMode === 'HARDCORE') {
+        return 'bg-neutral-900 border-neutral-800 text-neutral-400 shadow-[0_0_40px_rgba(0,0,0,0.2)]';
+    }
+    if (gameMode === 'FIX_MISTAKE') {
+        return 'bg-red-50 border-red-100';
+    }
+    
+    // Light gray background for container
+    return 'bg-stone-50 border-stone-200 overflow-hidden';
+  };
+
+  // Dynamic Text Sizing - Standard/Cozy sizing logic
+  const getFontSizeClass = () => {
+    const len = quote.text.length;
+    // Standard sizes, scaled down if necessary, never massive
+    if (len < 100) return 'text-xl md:text-2xl leading-relaxed';
+    if (len < 200) return 'text-lg md:text-xl leading-relaxed';
+    return 'text-base md:text-lg leading-relaxed';
+  };
+
+  const isPerfectMasterPotential = retryCount === 0 && sessionMistakes === 0 && status !== GameStatus.FAILED;
+
+  return (
+    <div 
+      className="relative w-full max-w-6xl mx-auto min-h-[400px] flex flex-col"
+      ref={containerRef}
+    >
+      {/* Perfect Master Indicator */}
+      {isPerfectMasterPotential && status === GameStatus.PLAYING && (
+        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex items-center gap-1 text-xs font-bold text-frog-green animate-pulse">
+          <Sparkles className="w-3 h-3" /> Perfect Master Potential (1.5x Bonus)
+        </div>
+      )}
+
+      <div className={`
+        relative flex-grow flex flex-col justify-center p-8 md:p-16 rounded-[3rem] transition-all duration-300 border
+        ${getContainerStyle()}
+        ${isFocused && status !== GameStatus.FAILED && status !== GameStatus.COMPLETED ? 'ring-2 ring-frog-green/50 ring-offset-2 ring-offset-bg-body' : ''}
+        ${status === GameStatus.FAILED ? 'ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : ''}
+        ${status === GameStatus.COMPLETED ? 'ring-2 ring-frog-green/20 bg-green-50/20' : ''}
+        ${streak > 2 && status === GameStatus.PLAYING ? 'shadow-[0_0_30px_rgba(251,146,60,0.15)] ring-1 ring-orange-100' : ''}
+      `}>
+        
+        {!isFocused && status !== GameStatus.COMPLETED && status !== GameStatus.FAILED && (
+          <div 
+            onClick={handleFocus}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-stone-900/5 backdrop-blur-sm cursor-pointer rounded-[3rem] border-2 border-dashed border-frog-green/50 hover:border-frog-green transition-all"
+          >
+            <div className="text-center animate-bounce text-frog-green">
+              <Play className="w-10 h-10 mx-auto mb-2 opacity-80" fill="currentColor" />
+              <span className="font-bold text-base tracking-wide uppercase font-sans">Click or Type to Start</span>
+            </div>
+          </div>
+        )}
+        
+        {/* SUCCESS MODAL */}
+        {status === GameStatus.COMPLETED && (
+          <div 
+            className="absolute inset-0 z-40 flex items-center justify-center bg-stone-900/10 backdrop-blur-sm rounded-[3rem] cursor-pointer"
+            onClick={handleNext}
+          >
+             <div 
+                className="bg-stone-50/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-stone-200 animate-in zoom-in-95 fade-in duration-300 flex flex-col items-center gap-6 min-w-[280px] cursor-default"
+                onClick={(e) => e.stopPropagation()} 
+             >
+                <div className="text-frog-green font-black text-xl tracking-tight flex items-center gap-2">
+                   <Award className="w-6 h-6" /> Quote Complete!
+                </div>
+                
+                <div className="grid grid-cols-2 gap-x-12 gap-y-6 w-full">
+                   <div className="flex flex-col items-center">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-1">Time</span>
+                      <span className="font-mono font-bold text-2xl text-stone-700">
+                        {endTime && startTime ? ((endTime - startTime) / 1000).toFixed(1) : '0.0'}s
+                      </span>
+                   </div>
+                   <div className="flex flex-col items-center">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-1">Speed</span>
+                      <span className="font-mono font-bold text-2xl text-stone-700">{wpm} <span className="text-xs text-stone-400 font-sans font-medium">WPM</span></span>
+                   </div>
+                   <div className="flex flex-col items-center">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-1">Retries</span>
+                      <span className="font-mono font-bold text-2xl text-stone-700">
+                          {retryCount}
+                      </span>
+                   </div>
+                   <div className="flex flex-col items-center">
+                      <span className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-1">XP Earned</span>
+                      <span className="font-mono font-bold text-2xl text-frog-green">
+                        +{calculateXP(wpm, quote.text.length, streak, retryCount === 0 && sessionMistakes === 0, settings.readAheadLevel) * (gameMode === 'HARDCORE' ? 5 : 1)}
+                      </span>
+                   </div>
+                </div>
+                
+                <button 
+                  ref={nextButtonRef}
+                  onClick={handleNext}
+                  className={`flex items-center gap-2 px-8 py-3 rounded-full transition shadow-lg font-bold text-sm tracking-wide uppercase transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 w-full justify-center
+                    bg-frog-green text-white hover:bg-green-500 shadow-green-200/50 focus:ring-frog-green
+                  `}
+                >
+                   Next Quote <Award className="w-4 h-4" />
+                </button>
+             </div>
+          </div>
+        )}
+
+        {/* FAILED MODAL (Retry Screen) */}
+        {status === GameStatus.FAILED && (
+          <div 
+            className="absolute inset-0 z-40 flex items-center justify-center bg-stone-900/10 backdrop-blur-sm rounded-[3rem] cursor-pointer"
+            onClick={handleRetry}
+          >
+             <div 
+                className="bg-white p-6 rounded-3xl shadow-2xl border border-stone-100 animate-in zoom-in-95 fade-in duration-300 flex flex-col items-center gap-4 min-w-[260px] cursor-default"
+                onClick={(e) => e.stopPropagation()} 
+             >
+                <div className="text-red-500 font-black text-xl tracking-tight flex items-center gap-2">
+                   <XCircle className="w-6 h-6" /> Run Failed
+                </div>
+                
+                {/* Compact Error Box */}
+                <div className="w-full bg-red-50 p-3 rounded-xl border border-red-100 flex flex-col items-center gap-1">
+                    {lastError ? (
+                        <>
+                            <div className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Mistake</div>
+                            <div className="flex items-center gap-3 font-mono text-base">
+                                 <span className="text-red-500 font-medium" title="You Typed">{lastError.typedWordPart}</span>
+                                 <ArrowRight className="w-3.5 h-3.5 text-stone-300" />
+                                 <span className="text-frog-green font-bold" title="Expected">{lastError.expectedWord}</span>
+                            </div>
+                        </>
+                    ) : (
+                        <span className="text-stone-400 italic text-xs">Unknown Error</span>
+                    )}
+                </div>
+
+                {/* Compact Stats */}
+                <div className="flex w-full justify-between gap-4 px-2">
+                     <div className="flex flex-col items-center">
+                        <span className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">Progress</span>
+                        <span className="font-mono font-bold text-lg text-stone-700">
+                            {Math.floor((input.length / quote.text.length) * 100)}%
+                        </span>
+                     </div>
+                     <div className="w-px bg-stone-100"></div>
+                     <div className="flex flex-col items-center">
+                        <span className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">Speed</span>
+                        <span className="font-mono font-bold text-lg text-stone-700">{wpm}</span>
+                     </div>
+                </div>
+                
+                <button 
+                  ref={retryButtonRef}
+                  onClick={handleRetry}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-red-500 text-white hover:bg-red-600 rounded-xl transition shadow-lg shadow-red-200/50 font-bold text-xs tracking-wide uppercase focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform hover:-translate-y-0.5"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" /> Try Again
+                </button>
+             </div>
+          </div>
+        )}
+
+        <div className="absolute top-4 left-0 right-0 flex justify-center gap-2 z-30 select-none pointer-events-none">
+            {capsLock && (
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-100 text-orange-600 rounded-full text-[10px] font-bold tracking-widest border border-orange-200 shadow-sm animate-pulse">
+                <Lock className="w-3 h-3" /> CAPS LOCK
+              </div>
+            )}
+            {isShiftPressed && (
+               <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold tracking-widest border border-blue-100 shadow-sm">
+                <ArrowUp className="w-3 h-3" /> SHIFT
+              </div>
+            )}
+        </div>
+
+        <div className="absolute top-10 left-0 right-0 px-10 md:px-20 flex justify-between text-xs font-bold opacity-80 uppercase tracking-[0.2em] select-none font-sans z-10 text-stone-500">
+          <div className="flex gap-4">
+             <span>{quote.source}</span>
+             {settings.ghostEnabled && <span className="text-purple-300 flex items-center gap-1"><Ghost className="w-3.5 h-3.5"/> {ghostWpm > 0 ? `${ghostWpm} WPM` : 'Ready'}</span>}
+             {settings.readAheadLevel !== 'NONE' && <span className="text-frog-green flex items-center gap-1"><EyeOff className="w-3.5 h-3.5"/> {settings.readAheadLevel}</span>}
+          </div>
+          <span className="text-right max-w-[200px] truncate">{quote.author}</span>
+        </div>
+
+        {/* Text Container with Caret and Dynamic Font */}
+        <div 
+          ref={textContainerRef}
+          className={`font-mono tracking-wide break-words whitespace-pre-wrap mb-12 mt-10 relative z-10 outline-none select-none ${getTextColor()} ${getFontSizeClass()}`}
+          onClick={handleFocus}
+        >
+          {/* Smooth Caret with Frog Green - Animation Disabled */}
+          <div 
+             className="absolute bg-frog-green w-[3px] rounded-full transition-all duration-100 ease-out z-20 pointer-events-none caret-blink shadow-[0_0_10px_rgba(64,214,114,0.5)]"
+             style={{ 
+                 left: caretPos.left - 1, 
+                 top: caretPos.top + 2, 
+                 height: caretPos.height - 4,
+                 opacity: caretPos.opacity
+             }}
+          />
+          {renderText()}
+        </div>
+
+        <textarea
+          ref={inputRef}
+          value={input}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          onFocus={() => {
+              setIsFocused(true);
+              onInteract?.();
+          }}
+          className="absolute opacity-0 top-0 left-0 h-full w-full cursor-default resize-none"
+          autoFocus={isFocused}
+          disabled={status === GameStatus.COMPLETED || status === GameStatus.FAILED}
+        />
+
+        <div className="absolute bottom-10 left-0 right-0 px-10 md:px-20 flex justify-between items-end select-none z-10">
+           <div className="flex items-center gap-10 text-stone-400 font-mono text-sm">
+             <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold text-stone-300 mb-0.5 tracking-wider">Speed</span>
+                <span className="font-bold text-xl opacity-80 font-sans">{wpm} <span className="text-[10px] font-normal opacity-50">WPM</span></span>
+             </div>
+             {streak > 0 && (
+                <div className={`flex flex-col ${streak > 4 ? 'text-orange-500' : 'text-stone-400'}`}>
+                    <span className="text-[10px] uppercase font-bold text-stone-300 mb-0.5 tracking-wider">Streak</span>
+                    <span className="font-bold text-xl flex items-center gap-1.5 font-sans">
+                        <Flame className={`w-4 h-4 ${streak > 4 ? 'fill-orange-500' : ''}`} /> {streak}
+                    </span>
+                </div>
+             )}
+           </div>
+        </div>
+      </div>
+      
+      <div className="text-center mt-8 h-4 text-stone-400 text-xs font-medium tracking-wide transition-opacity duration-500 font-sans">
+        {status === GameStatus.FAILED ? 
+            <span className="text-red-400">
+                {gameMode === 'HARDCORE' 
+                  ? 'HARDCORE FAIL. 50% XP Penalty.' 
+                  : 'Mistake made. Review your error above.'}
+            </span> : 
+         status === GameStatus.COMPLETED ? <span className="text-frog-green">Perfect! Streak +1 {retryCount === 0 && sessionMistakes === 0 && "(Mastery Bonus!)"}</span> :
+         isFocused ? "Accuracy is paramount. One mistake restarts the quote." : ""}
+      </div>
+    </div>
+  );
+};
+
+export default TypingArea;
