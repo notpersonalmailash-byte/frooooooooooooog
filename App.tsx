@@ -622,7 +622,20 @@ const App: React.FC = () => {
   };
 
   const handleMistake = (word?: string, expectedChar?: string, typedChar?: string) => {
-    const penaltyMultiplier = gameMode === 'HARDCORE' ? 0.5 : 0.85;
+    // Penalty Logic:
+    // Hardcore: 50% loss
+    // Fix Mistake: 5% loss 
+    // Normal/Practice: 15% loss
+    
+    // Default to Normal/Practice (15% penalty)
+    let penaltyMultiplier = 0.85; 
+
+    if (gameMode === 'HARDCORE') {
+        penaltyMultiplier = 0.5;
+    } else if (gameMode === 'FIX_MISTAKE') {
+        penaltyMultiplier = 0.95;
+    }
+
     setUserXP(prev => Math.floor(prev * penaltyMultiplier));
 
     setStreak(0);

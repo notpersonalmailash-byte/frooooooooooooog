@@ -99,7 +99,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                  <div className="p-3 bg-red-50 rounded-xl border border-red-100">
                     <div className="font-bold text-red-700 text-sm mb-1">XP Penalties</div>
                     <p className="text-xs text-red-600/80">
-                        Failing loses XP. Normal: <span className="font-bold">-15%</span>. Hardcore: <span className="font-bold">-50%</span>.
+                        Failing loses XP. Normal: <span className="font-bold">-15%</span>. Fix Mistake: <span className="font-bold">-5%</span>. Hardcore: <span className="font-bold">-50%</span>.
                     </p>
                  </div>
              </div>
@@ -122,7 +122,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                     <div className="p-2 bg-red-100 rounded-lg text-red-500"><Eraser className="w-4 h-4" /></div>
                     <div>
                         <div className="font-bold text-sm text-red-800">Fix Mistakes</div>
-                        <div className="text-[10px] text-red-600/70">Practice words you previously failed on. No penalties.</div>
+                        <div className="text-[10px] text-red-600/70">Practice words you previously failed on. Lower penalty.</div>
                     </div>
                  </div>
                  <div className="flex items-center gap-3 p-3 rounded-xl border border-blue-100 bg-blue-50 text-blue-900 shadow-sm">

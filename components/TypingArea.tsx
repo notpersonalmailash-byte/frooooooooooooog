@@ -705,6 +705,9 @@ const TypingArea: React.FC<TypingAreaProps> = ({
               setIsFocused(true);
               onInteract?.();
           }}
+          onPaste={(e) => e.preventDefault()}
+          onCopy={(e) => e.preventDefault()}
+          onDrop={(e) => e.preventDefault()}
           className="absolute opacity-0 top-0 left-0 h-full w-full cursor-default resize-none"
           autoFocus={isFocused}
           disabled={status === GameStatus.COMPLETED || status === GameStatus.FAILED}
