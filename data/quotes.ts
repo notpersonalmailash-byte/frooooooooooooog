@@ -89,200 +89,6 @@ export const QUOTES: RawQuote[] = [
   { "quoteText": "Hakuna matata.", "quoteAuthor": "Swahili proverb" },
   { "quoteText": "Let it go.", "quoteAuthor": "Elsa | Frozen" },
   { "quoteText": "Just keep swimming.", "quoteAuthor": "Dory | Finding Nemo" },
-  { "quoteText": "To infinity and beyond!", "quoteAuthor": "Buzz Lightyear" },
-  { "quoteText": "I like to move it.", "quoteAuthor": "King Julien | Madagascar" },
-  { "quoteText": "Today is a good day to try.", "quoteAuthor": "Quasimodo | Hunchback" },
-  { "quoteText": "Adventure is out there!", "quoteAuthor": "Ellie | Up" },
-  { "quoteText": "Ohana means family.", "quoteAuthor": "Lilo | Lilo & Stitch" },
-  { "quoteText": "I’m a real boy!", "quoteAuthor": "Pinocchio" },
-  { "quoteText": "You’ve got a friend in me.", "quoteAuthor": "Randy Newman" },
-  { "quoteText": "Carpe diem.", "quoteAuthor": "Horace" },
-  { "quoteText": "Seize the day.", "quoteAuthor": "Dead Poets Society" },
-  { "quoteText": "YOLO.", "quoteAuthor": "Drake lyric" },
-  { "quoteText": "Live, laugh, love.", "quoteAuthor": "Wall decal" },
-  { "quoteText": "Good things come to those who hustle.", "quoteAuthor": "Anaïs Nin" },
-  { "quoteText": "Work hard, nap hard.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Coffee first, schemes later.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Eat, sleep, create, repeat.", "quoteAuthor": "Unknown" },
-  { "quoteText": "No mud, no lotus.", "quoteAuthor": "Thich Nhat Hanh" },
-  { "quoteText": "Bloom where you are planted.", "quoteAuthor": "Mary Engelbreit" },
-  { "quoteText": "Be like water.", "quoteAuthor": "Bruce Lee" },
-  { "quoteText": "Float on.", "quoteAuthor": "Modest Mouse" },
-  { "quoteText": "Keep your face to the sunshine.", "quoteAuthor": "Helen Keller" },
-  { "quoteText": "Every little thing is gonna be alright.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "One love, one heart.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Don’t worry, be happy.", "quoteAuthor": "Bobby McFerrin" },
-  { "quoteText": "Here comes the sun.", "quoteAuthor": "George Harrison" },
-  { "quoteText": "Let it be.", "quoteAuthor": "The Beatles" },
-  { "quoteText": "All you need is love.", "quoteAuthor": "The Beatles" },
-  { "quoteText": "Imagine all the people.", "quoteAuthor": "John Lennon" },
-  { "quoteText": "Give peace a chance.", "quoteAuthor": "John Lennon" },
-  { "quoteText": "We are the world.", "quoteAuthor": "Michael Jackson & Lionel Richie" },
-  { "quoteText": "I’m every woman.", "quoteAuthor": "Chaka Khan" },
-  { "quoteText": "Girl power!", "quoteAuthor": "Spice Girls" },
-  { "quoteText": "Fight for your right to party.", "quoteAuthor": "Beastie Boys" },
-  { "quoteText": "Rock and roll all night.", "quoteAuthor": "KISS" },
-  { "quoteText": "Don’t stop believin’.", "quoteAuthor": "Journey" },
-  { "quoteText": "Livin’ on a prayer.", "quoteAuthor": "Bon Jovi" },
-  { "quoteText": "Eye of the tiger.", "quoteAuthor": "Survivor" },
-  { "quoteText": "We will rock you.", "quoteAuthor": "Queen" },
-  { "quoteText": "Another one bites the dust.", "quoteAuthor": "Queen" },
-  { "quoteText": "I want to break free.", "quoteAuthor": "Queen" },
-  { "quoteText": "It’s only rock ’n’ roll.", "quoteAuthor": "Rolling Stones" },
-  { "quoteText": "Start me up.", "quoteAuthor": "Rolling Stones" },
-  { "quoteText": "Paint it black.", "quoteAuthor": "Rolling Stones" },
-  { "quoteText": "Break on through.", "quoteAuthor": "The Doors" },
-  { "quoteText": "Light my fire.", "quoteAuthor": "The Doors" },
-  { "quoteText": "People are strange.", "quoteAuthor": "The Doors" },
-  { "quoteText": "Hello, I love you.", "quoteAuthor": "The Doors" },
-  { "quoteText": "Riders on the storm.", "quoteAuthor": "The Doors" },
-  { "quoteText": "Hotel California.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Take it easy.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Life in the fast lane.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Desperado.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Witchy woman.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Peaceful easy feeling.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Already gone.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Best of my love.", "quoteAuthor": "Eagles" },
-  { "quoteText": "One of these nights.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Lyin’ eyes.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Take it to the limit.", "quoteAuthor": "Eagles" },
-  { "quoteText": "New kid in town.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Victim of love.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Heartache tonight.", "quoteAuthor": "Eagles" },
-  { "quoteText": "The long run.", "quoteAuthor": "Eagles" },
-  { "quoteText": "I can’t tell you why.", "quoteAuthor": "Eagles" },
-  { "quoteText": "In the city.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Those shoes.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Tequila sunrise.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Love will keep us alive.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Get over it.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Learn to be still.", "quoteAuthor": "Eagles" },
-  { "quoteText": "Love is a battlefield.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Hit me with your best shot.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "We belong.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Invincible.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Shadows of the night.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Promises in the dark.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Fire and ice.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Treat me right.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "You better run.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Hell is for children.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Little paradise.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "We live for love.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Never wanna leave you.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "My clone sleeps alone.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Every time I fall back.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "Le bel age.", "quoteAuthor": "Pat Benatar" },
-  { "quoteText": "One love.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Three little birds.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Redemption song.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "No woman, no cry.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Could you be loved.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Stir it up.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Jamming.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Waiting in vain.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Is this love.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Sun is shining.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "I shot the sheriff.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Get up, stand up.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Buffalo soldier.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Satisfy my soul.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Exodus.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Natural mystic.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Turn your lights down low.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "So much trouble in the world.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Zimbabwe.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Africa unite.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Survival.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Ride natty ride.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Kaya.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Misty morning.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Running away.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Time will tell.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Crisis.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rat race.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Concrete jungle.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Them belly full.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rebel music.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Want more.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Crazy baldhead.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Smile Jamaica.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "War.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "No more trouble.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Get up, stand up for your rights.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Lively up yourself.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Punky reggae party.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Roots, rock, reggae.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Night shift.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rastaman live up.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Blackman redemption.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Trench town rock.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Burnin’ and lootin’.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Small axe.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Duppy conqueror.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Soul rebel.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rainbow country.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Guava jelly.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Mellow mood.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Do it twice, make it nice.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Lick samba.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Soul shake down party.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Stop that train.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Go tell it on the mountain.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "There she goes.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Bend down low.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Hammer.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Thank you lord.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Screwface.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Which one.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rule this land.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Johnny was a good man.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Slogan on the wall.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Suffer time.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Send me that love.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rock to the rock.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Love and affection.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Give me a ticket.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rock my boat.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Put it on.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Dance do the reggae.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rock steady.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Stay with me.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Am a do.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Sipple out deh.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Jah is mighty.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Selassie is the chapel.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "So jah seh.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Sun is shining, the weather is sweet.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Smile with the rising sun.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Don’t rock my boat.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "You can’t blame the youth.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Pimper’s paradise.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "The world is one.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "One drop.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rasta man chant.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Jah live.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rainbow in the sky.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Who the cap fit.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Time alone.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Crying in the chapel.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Stand alone.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "So much things to say.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Top ranking.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Jah love.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "No more cry.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Reggae is king.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rock dem reggae.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Jah guide.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Love will find a way.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "One heart, one love.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Unity is strength.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Rise up this morning.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Positive vibration.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Roots of creation.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Jah bless.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Love and harmony.", "quoteAuthor": "Bob Marley" },
   { "quoteText": "Reggae music is the heartbeat.", "quoteAuthor": "Bob Marley" },
   { "quoteText": "Music is the universal language.", "quoteAuthor": "Bob Marley" },
   { "quoteText": "Peace and love.", "quoteAuthor": "Bob Marley" },
@@ -1116,523 +922,672 @@ export const QUOTES: RawQuote[] = [
     "quoteAuthor": "Byron Pulsifer"
   }, {
     "quoteText": "Everyone smiles in the same language.",
-    "quoteAuthor": ""
-  }, {
-    "quoteText": "A short saying often contains much wisdom.",
-    "quoteAuthor": "Sophocles"
-  }, {
-    "quoteText": "Yesterday I dared to struggle. Today I dare to win.",
-    "quoteAuthor": "Bernadette Devlin"
-  }, {
-    "quoteText": "Victory belongs to the most persevering.",
-    "quoteAuthor": "Napoleon Bonaparte"
-  }, {
-    "quoteText": "No alibi will save you from accepting the responsibility.",
-    "quoteAuthor": "Napoleon Hill"
-  }, {
-    "quoteText": "If you can dream it, you can do it.",
-    "quoteAuthor": "Walt Disney"
-  }, {
-    "quoteText": "From error to error one discovers the entire truth.",
-    "quoteAuthor": "Sigmund Freud"
-  }, {
-    "quoteText": "It is better to travel well than to arrive.",
-    "quoteAuthor": "Buddha"
-  }, {
-    "quoteText": "Life shrinks or expands in proportion to one's courage.",
-    "quoteAuthor": "Anais Nin"
-  }, {
-    "quoteText": "You have to believe in yourself.",
-    "quoteAuthor": "Sun Tzu"
-  }, {
-    "quoteText": "Our intention creates our reality.",
-    "quoteAuthor": "Wayne Dyer"
-  }, {
-    "quoteText": "Silence is a true friend who never betrays.",
+    "quoteAuthor": "o"
+  },
+    {
+    "quoteText": "Be kind.",
+    "quoteAuthor": "Proverbs"
+  },
+  {
+    "quoteText": "Truth wins.",
+    "quoteAuthor": "Bhagavad Gita"
+  },
+  {
+    "quoteText": "God is one.",
+    "quoteAuthor": "Quran"
+  },
+  {
+    "quoteText": "Love all.",
+    "quoteAuthor": "Rumi"
+  },
+  {
+    "quoteText": "The fear of the Lord is the beginning of wisdom.",
+    "quoteAuthor": "Psalm 111:10"
+  },
+  {
+    "quoteText": "Perform your duty without attachment to results.",
+    "quoteAuthor": "Bhagavad Gita 2:47"
+  },
+  {
+    "quoteText": "Indeed, God is with those who are patient.",
+    "quoteAuthor": "Quran 2:153"
+  },
+  {
+    "quoteText": "Know thyself.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "In the beginning God created the heavens and the earth.",
+    "quoteAuthor": "Genesis 1:1"
+  },
+  {
+    "quoteText": "You have the right to work, but never to its fruits.",
+    "quoteAuthor": "Bhagavad Gita 2:47"
+  },
+  {
+    "quoteText": "And We have certainly made the Quran easy to remember.",
+    "quoteAuthor": "Quran 54:17"
+  },
+  {
+    "quoteText": "The unexamined life is not worth living.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "The Lord is my shepherd; I shall not want.",
+    "quoteAuthor": "Psalm 23:1"
+  },
+  {
+    "quoteText": "When meditation is mastered, the mind is unwavering.",
+    "quoteAuthor": "Bhagavad Gita 6:35"
+  },
+  {
+    "quoteText": "And whoever fears God, He will make for him a way out.",
+    "quoteAuthor": "Quran 65:2"
+  },
+  {
+    "quoteText": "Wisdom begins in wonder.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "Trust in the Lord with all your heart and lean not on your own understanding.",
+    "quoteAuthor": "Proverbs 3:5"
+  },
+  {
+    "quoteText": "The mind acts like an enemy for those who do not control it.",
+    "quoteAuthor": "Bhagavad Gita 6:6"
+  },
+  {
+    "quoteText": "God does not burden a soul beyond that it can bear.",
+    "quoteAuthor": "Quran 2:286"
+  },
+  {
+    "quoteText": "The only true wisdom is in knowing you know nothing.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "I am the Lord your God who brought you out of the land of Egypt.",
+    "quoteAuthor": "Exodus 20:2"
+  },
+  {
+    "quoteText": "One who sees inaction in action, and action in inaction, is intelligent.",
+    "quoteAuthor": "Bhagavad Gita 4:18"
+  },
+  {
+    "quoteText": "And We have certainly created man in the best of stature.",
+    "quoteAuthor": "Quran 95:4"
+  },
+  {
+    "quoteText": "The secret of happiness, you see, is not found in seeking more.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "You shall have no other gods before Me.",
+    "quoteAuthor": "Exodus 20:3"
+  },
+  {
+    "quoteText": "A person can rise through the efforts of his own mind.",
+    "quoteAuthor": "Bhagavad Gita 6:5"
+  },
+  {
+    "quoteText": "Indeed, the promise of God is truth.",
+    "quoteAuthor": "Quran 10:55"
+  },
+  {
+    "quoteText": "The greatest way to live with honor in this world is to be what we pretend to be.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "Remember the Sabbath day, to keep it holy.",
+    "quoteAuthor": "Exodus 20:8"
+  },
+  {
+    "quoteText": "One who is equal to friends and enemies, who is equipoised in honor and dishonor.",
+    "quoteAuthor": "Bhagavad Gita 14:24"
+  },
+  {
+    "quoteText": "Indeed, God is Knowing and Wise.",
+    "quoteAuthor": "Quran 4:11"
+  },
+  {
+    "quoteText": "He who is not a good servant will not be a good master.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "Honor your father and your mother, that your days may be prolonged.",
+    "quoteAuthor": "Exodus 20:12"
+  },
+  {
+    "quoteText": "The soul is neither born, nor does it ever die.",
+    "quoteAuthor": "Bhagavad Gita 2:20"
+  },
+  {
+    "quoteText": "And whoever relies upon God, then He is sufficient for him.",
+    "quoteAuthor": "Quran 65:3"
+  },
+  {
+    "quoteText": "To find yourself, think for yourself.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "You shall not murder. You shall not commit adultery. You shall not steal.",
+    "quoteAuthor": "Exodus 20:13-15"
+  },
+  {
+    "quoteText": "One who has control over the mind is tranquil in heat and cold, in pleasure and pain.",
+    "quoteAuthor": "Bhagavad Gita 6:7"
+  },
+  {
+    "quoteText": "Indeed, God is with those who fear Him and those who are doers of good.",
+    "quoteAuthor": "Quran 16:128"
+  },
+  {
+    "quoteText": "Let him who would move the world first move himself.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "The fear of the Lord is the beginning of knowledge; fools despise wisdom and instruction.",
+    "quoteAuthor": "Proverbs 1:7"
+  },
+  {
+    "quoteText": "One whose mind is undisturbed in sorrow and who does not crave pleasure in happiness.",
+    "quoteAuthor": "Bhagavad Gita 2:56"
+  },
+  {
+    "quoteText": "And We have certainly honored the children of Adam.",
+    "quoteAuthor": "Quran 17:70"
+  },
+  {
+    "quoteText": "The only good is knowledge and the only evil is ignorance.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "Trust in the Lord and do good; dwell in the land and cultivate faithfulness.",
+    "quoteAuthor": "Psalm 37:3"
+  },
+  {
+    "quoteText": "One who performs his duty without attachment, surrendering the results unto the Supreme God.",
+    "quoteAuthor": "Bhagavad Gita 5:10"
+  },
+  {
+    "quoteText": "Indeed, God does not do injustice, even as much as the weight of an atom.",
+    "quoteAuthor": "Quran 4:40"
+  },
+  {
+    "quoteText": "Be as you wish to seem.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "The heavens declare the glory of God; the skies proclaim the work of His hands.",
+    "quoteAuthor": "Psalm 19:1"
+  },
+  {
+    "quoteText": "One who sees the Supersoul equally present everywhere, in every living being.",
+    "quoteAuthor": "Bhagavad Gita 13:28"
+  },
+  {
+    "quoteText": "And whoever is patient and forgives, indeed, that is of the matters requiring determination.",
+    "quoteAuthor": "Quran 42:43"
+  },
+  {
+    "quoteText": "The secret of happiness, you see, is not found in seeking more.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "I have set the Lord continually before me; because He is at my right hand, I will not be shaken.",
+    "quoteAuthor": "Psalm 16:8"
+  },
+  {
+    "quoteText": "One who is not disturbed by happiness and distress, and is steady in both situations.",
+    "quoteAuthor": "Bhagavad Gita 2:57"
+  },
+  {
+    "quoteText": "Indeed, God is over all things competent.",
+    "quoteAuthor": "Quran 2:20"
+  },
+  {
+    "quoteText": "True wisdom comes to each of us when we realize how little we understand about life.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "The law of the Lord is perfect, restoring the soul; the testimony of the Lord is sure, making wise the simple.",
+    "quoteAuthor": "Psalm 19:7"
+  },
+  {
+    "quoteText": "One who has no attachments for the results of his work, and who is always situated in the transcendental position.",
+    "quoteAuthor": "Bhagavad Gita 12:16"
+  },
+  {
+    "quoteText": "And whoever relies upon God, then He is sufficient for him; indeed, God will accomplish His purpose.",
+    "quoteAuthor": "Quran 65:3"
+  },
+  {
+    "quoteText": "The greatest way to live with honor in this world is to be what we pretend to be.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "Create in me a clean heart, O God, and renew a steadfast spirit within me.",
+    "quoteAuthor": "Psalm 51:10"
+  },
+  {
+    "quoteText": "One who is equal to friends and enemies, who is equipoised in honor and dishonor, heat and cold, happiness and distress.",
+    "quoteAuthor": "Bhagavad Gita 12:18-19"
+  },
+  {
+    "quoteText": "Indeed, God is with those who fear Him and those who are doers of good, and God is Knowing of what they do.",
+    "quoteAuthor": "Quran 16:128"
+  },
+  {
+    "quoteText": "He who is not a good servant will not be a good master; the secret of change is to focus all of your energy.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "The Lord is my light and my salvation; whom shall I fear? The Lord is the defense of my life; whom shall I dread?",
+    "quoteAuthor": "Psalm 27:1"
+  },
+  {
+    "quoteText": "One whose mind is undisturbed in misery and who is not attached to pleasure, who is free from attachment, fear and anger.",
+    "quoteAuthor": "Bhagavad Gita 2:56"
+  },
+  {
+    "quoteText": "And We have certainly created man in the best of stature; then We return him to the lowest of the low.",
+    "quoteAuthor": "Quran 95:4-5"
+  },
+  {
+    "quoteText": "The unexamined life is not worth living for a human being; wisdom begins in wonder and ends in understanding.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "Your word is a lamp to my feet and a light to my path. I have sworn and I will confirm it, that I will keep Your righteous ordinances.",
+    "quoteAuthor": "Psalm 119:105-106"
+  },
+  {
+    "quoteText": "One who performs his duty without attachment, surrendering the results unto the Supreme God, is not affected by sinful action.",
+    "quoteAuthor": "Bhagavad Gita 5:10"
+  },
+  {
+    "quoteText": "Indeed, God does not do injustice, even as much as the weight of an atom; and if there is a good deed, He multiplies it.",
+    "quoteAuthor": "Quran 4:40"
+  },
+  {
+    "quoteText": "The only true wisdom is in knowing you know nothing; to find yourself, think for yourself and question everything.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "The earth is the Lord's, and all it contains, the world, and those who dwell in it. For He has founded it upon the seas and established it upon the rivers.",
+    "quoteAuthor": "Psalm 24:1-2"
+  },
+  {
+    "quoteText": "One who sees the Supersoul equally present everywhere, in every living being, does not degrade himself by his mind; thus he approaches the transcendental destination.",
+    "quoteAuthor": "Bhagavad Gita 13:28"
+  },
+  {
+    "quoteText": "And whoever is patient and forgives, indeed, that is of the matters requiring determination; and whoever relies upon God, then He is sufficient for him.",
+    "quoteAuthor": "Quran 42:43, 65:3"
+  },
+  {
+    "quoteText": "True wisdom comes to each of us when we realize how little we understand about life, ourselves, and the world around us.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "The law of the Lord is perfect, restoring the soul; the testimony of the Lord is sure, making wise the simple; the precepts of the Lord are right, rejoicing the heart; the commandment of the Lord is pure, enlightening the eyes.",
+    "quoteAuthor": "Psalm 19:7-8"
+  },
+  {
+    "quoteText": "One who is equal to friends and enemies, who is equipoised in honor and dishonor, heat and cold, happiness and distress, and who is free from attachment, fear and anger, is dear to Me.",
+    "quoteAuthor": "Bhagavad Gita 12:18-19"
+  },
+  {
+    "quoteText": "Indeed, God is with those who fear Him and those who are doers of good, and God is Knowing of what they do; and whoever relies upon God, then He is sufficient for him, and God will accomplish His purpose.",
+    "quoteAuthor": "Quran 16:128, 65:3"
+  },
+  {
+    "quoteText": "The greatest way to live with honor in this world is to be what we pretend to be; the secret of change is to focus all of your energy not on fighting the old, but on building the new.",
+    "quoteAuthor": "Socrates"
+  },
+    {
+    "quoteText": "Be kind.",
+    "quoteAuthor": "Prophet Muhammad"
+  },
+  {
+    "quoteText": "Trust God.",
+    "quoteAuthor": "Quran 3:159"
+  },
+  {
+    "quoteText": "Be strong.",
+    "quoteAuthor": "Joshua 1:9"
+  },
+  {
+    "quoteText": "Love all.",
+    "quoteAuthor": "Mahatma Gandhi"
+  },
+  {
+    "quoteText": "Know yourself.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "Patience is key.",
+    "quoteAuthor": "Quran 2:153"
+  },
+  {
+    "quoteText": "Walk in wisdom.",
+    "quoteAuthor": "Proverbs 31"
+  },
+  {
+    "quoteText": "Truth triumphs.",
+    "quoteAuthor": "Vedas"
+  },
+  {
+    "quoteText": "Stay humble.",
+    "quoteAuthor": "Rumi"
+  },
+  {
+    "quoteText": "Seek knowledge.",
+    "quoteAuthor": "Prophet Muhammad"
+  },
+  {
+    "quoteText": "Everything has beauty, but not everyone sees it.",
     "quoteAuthor": "Confucius"
-  }, {
-    "quoteText": "Character develops itself in the stream of life.",
-    "quoteAuthor": "Johann Wolfgang von Goethe"
-  }, {
-    "quoteText": "From little acorns mighty oaks do grow.",
-    "quoteAuthor": "American proverb"
-  }, {
-    "quoteText": "You have to believe in yourself.",
-    "quoteAuthor": "Sun Tzu"
-  }, {
-    "quoteText": "You can't stop the waves, but you can learn to surf.",
-    "quoteAuthor": "Jon Kabat-Zinn"
-  }, {
-    "quoteText": "Reality does not conform to the ideal, but confirms it.",
-    "quoteAuthor": "Gustave Flaubert"
-  }, {
-    "quoteText": "Speak low, if you speak love.",
-    "quoteAuthor": "William Shakespeare"
-  }, {
-    "quoteText": "A really great talent finds its happiness in execution.",
-    "quoteAuthor": "Johann Wolfgang von Goethe"
-  }, {
-    "quoteText": "Reality leaves a lot to the imagination.",
-    "quoteAuthor": "John Lennon"
-  }, {
-    "quoteText": "Our intention creates our reality.",
-    "quoteAuthor": "Wayne Dyer"
-  }, {
-    "quoteText": "Society develops wit, but its contemplation alone forms genius.",
-    "quoteAuthor": "Madame de Stael"
   },
   {
-    "quoteText": "Rivers know this: there is no hurry. We shall get there some day.",
-    "quoteAuthor": "A.A. Milne"
+    "quoteText": "The wound is the place where the light enters you.",
+    "quoteAuthor": "Rumi"
   },
   {
-    "quoteText": "The only way to deal with this life is to find a sense of humor in it.",
-    "quoteAuthor": "Doris Day"
+    "quoteText": "Do not be wise in your own eyes.",
+    "quoteAuthor": "Proverbs 3:7"
   },
   {
-    "quoteText": "Creativity is intelligence having fun.",
-    "quoteAuthor": "Albert Einstein"
+    "quoteText": "With hardship comes ease.",
+    "quoteAuthor": "Quran 94:6"
   },
   {
-    "quoteText": "It always seems impossible until it is done.",
-    "quoteAuthor": "Nelson Mandela"
+    "quoteText": "A gentle answer turns away wrath.",
+    "quoteAuthor": "Proverbs 15:1"
   },
   {
-    "quoteText": "The future belongs to those who believe in the beauty of their dreams.",
+    "quoteText": "The best among you are those who have the best manners.",
+    "quoteAuthor": "Prophet Muhammad"
+  },
+  {
+    "quoteText": "As water reflects the face, so one's life reflects the heart.",
+    "quoteAuthor": "Proverbs 27:19"
+  },
+  {
+    "quoteText": "He who has overcome his fears will truly be free.",
+    "quoteAuthor": "Aristotle"
+  },
+  {
+    "quoteText": "The cave you fear to enter holds the treasure you seek.",
+    "quoteAuthor": "Joseph Campbell"
+  },
+  {
+    "quoteText": "Yesterday is history, tomorrow is mystery, today is a gift.",
     "quoteAuthor": "Eleanor Roosevelt"
   },
   {
-    "quoteText": "Do not let what you cannot do interfere with what you can do.",
-    "quoteAuthor": "John Wooden"
-  },
-  {
-    "quoteText": "Success consists of going from failure to failure without loss of enthusiasm.",
-    "quoteAuthor": "Winston Churchill"
-  },
-  {
-    "quoteText": "To handle yourself, use your head; to handle others, use your heart.",
-    "quoteAuthor": "Eleanor Roosevelt"
+    "quoteText": "Peace comes from within. Do not seek it without.",
+    "quoteAuthor": "Buddha"
   },
   {
     "quoteText": "The journey of a thousand miles begins with one step.",
     "quoteAuthor": "Lao Tzu"
   },
   {
-    "quoteText": "What lies behind us and what lies before us are tiny matters compared to what lies within us.",
-    "quoteAuthor": "Ralph Waldo Emerson"
+    "quoteText": "In the middle of difficulty lies opportunity.",
+    "quoteAuthor": "Albert Einstein"
   },
   {
-    "quoteText": "Happiness depends upon ourselves.",
-    "quoteAuthor": "Aristotle"
+    "quoteText": "The only true wisdom is in knowing you know nothing.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "Your task is not to seek for love, but merely to seek and find all the barriers within yourself that you have built against it.",
+    "quoteAuthor": "Rumi"
+  },
+  {
+    "quoteText": "Darkness cannot drive out darkness; only light can do that.",
+    "quoteAuthor": "Martin Luther King Jr."
   },
   {
     "quoteText": "The mind is everything. What you think you become.",
     "quoteAuthor": "Buddha"
   },
   {
-    "quoteText": "An investment in knowledge pays the best interest.",
-    "quoteAuthor": "Benjamin Franklin"
+    "quoteText": "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+    "quoteAuthor": "Winston Churchill"
   },
   {
-    "quoteText": "Honesty is the first chapter in the book of wisdom.",
-    "quoteAuthor": "Thomas Jefferson"
+    "quoteText": "The only way to do great work is to love what you do.",
+    "quoteAuthor": "Steve Jobs"
   },
   {
-    "quoteText": "Knowing yourself is the beginning of all wisdom.",
-    "quoteAuthor": "Aristotle"
+    "quoteText": "Life is what happens to you while you're busy making other plans.",
+    "quoteAuthor": "John Lennon"
   },
   {
-    "quoteText": "Not he who has much is rich, but he who gives much.",
-    "quoteAuthor": "Erich Fromm"
+    "quoteText": "The unexamined life is not worth living.",
+    "quoteAuthor": "Socrates"
   },
   {
-    "quoteText": "If you tell the truth, you don't have to remember anything.",
-    "quoteAuthor": "Mark Twain"
+    "quoteText": "To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment.",
+    "quoteAuthor": "Ralph Waldo Emerson"
   },
   {
-    "quoteText": "A room without books is like a body without a soul.",
-    "quoteAuthor": "Marcus Tullius Cicero"
+    "quoteText": "Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.",
+    "quoteAuthor": "Albert Einstein"
   },
   {
-    "quoteText": "Be the change that you wish to see in the world.",
-    "quoteAuthor": "Mahatma Gandhi"
+    "quoteText": "The person you are destined to become is the person you decide to be.",
+    "quoteAuthor": "Ralph Waldo Emerson"
   },
-  { "quoteText": "The cave you fear holds the treasure you seek.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "You are the sky, everything else is just the weather.", "quoteAuthor": "Pema Chödrön" },
-  { "quoteText": "What you focus on grows; focus on the good.", "quoteAuthor": "Esther Hicks" },
-  { "quoteText": "The obstacle is the way.", "quoteAuthor": "Ryan Holiday" },
-  { "quoteText": "First forget inspiration; habit is more dependable.", "quoteAuthor": "Octavia Butler" },
-  { "quoteText": "If you’re going through hell, keep going.", "quoteAuthor": "Winston Churchill" },
-  { "quoteText": "Comparison is an act of violence against the self.", "quoteAuthor": "Iyanla Vanzant" },
-  { "quoteText": "You can’t build a reputation on what you’re going to do.", "quoteAuthor": "Henry Ford" },
-  { "quoteText": "The best revenge is massive success.", "quoteAuthor": "Frank Sinatra" },
-  { "quoteText": "Hard choices, easy life. Easy choices, hard life.", "quoteAuthor": "Jerzy Gregorek" },
-  { "quoteText": "Your life is your message to the world—make it inspiring.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Don’t let yesterday take up too much of today.", "quoteAuthor": "Will Rogers" },
-  { "quoteText": "The magic you’re looking for is in the work you’re avoiding.", "quoteAuthor": "Unknown" },
-  { "quoteText": "You don’t find time, you make it.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Excuses are bridges to nowhere.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Be addicted to the feeling of living your dreams.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Self-discipline is the highest form of self-love.", "quoteAuthor": "Unknown" },
-  { "quoteText": "If it doesn’t challenge you, it won’t change you.", "quoteAuthor": "Fred DeVito" },
-  { "quoteText": "The cost of discipline is always less than the price of regret.", "quoteAuthor": "Nido Qubein" },
-  { "quoteText": "Win the morning, win the day.", "quoteAuthor": "Tim Ferriss" },
-  { "quoteText": "You will never always be motivated; you must learn to be disciplined.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Rome wasn’t built in a day—but they worked on it every single day.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The person you will be in five years depends on the books you read and the people you meet.", "quoteAuthor": "Jim Rohn" },
-  { "quoteText": "Stop managing your time and start managing your focus.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Dreams are cheap; goals have price tags.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Consistency beats intensity.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The fastest way to kill something special is to compare it to something else.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Clarity comes from action, not thought.", "quoteAuthor": "Marie Forleo" },
-  { "quoteText": "You are what you do every day, not once in a while.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Momentum is more important than motivation.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Don’t be busy, be productive.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Tomorrow becomes never, no matter how small the task.", "quoteAuthor": "Tim Ferriss" },
-  { "quoteText": "Raise your words, not your voice.", "quoteAuthor": "Rumi" },
-  { "quoteText": "The mind is everything; what you think you become.", "quoteAuthor": "Buddha" },
-  { "quoteText": "Energy flows where attention goes.", "quoteAuthor": "Tony Robbins" },
-  { "quoteText": "You can’t outperform your self-image.", "quoteAuthor": "Maxwell Maltz" },
-  { "quoteText": "Doubt kills more dreams than failure ever will.", "quoteAuthor": "Suzy Kassem" },
-  { "quoteText": "Act as if what you do makes a difference—it does.", "quoteAuthor": "William James" },
-  { "quoteText": "The miracle is not to walk on water but on the earth.", "quoteAuthor": "Thich Nhat Hanh" },
-  { "quoteText": "What you resist persists; what you accept transforms.", "quoteAuthor": "Carl Jung" },
-  { "quoteText": "You are the author of your own story—if you don’t like the chapter, write a new one.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Progress hides in the boring days.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Master your breath, master your mind.", "quoteAuthor": "Naval Ravikant" },
-  { "quoteText": "The space between your ears is the most valuable real estate on earth.", "quoteAuthor": "Unknown" },
-  { "quoteText": "You don’t rise to the level of your goals; you fall to the level of your systems.", "quoteAuthor": "James Clear" },
-  { "quoteText": "Discipline is just choosing between what you want now and what you want most.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The best project you’ll ever work on is you.", "quoteAuthor": "Unknown" },
-  { "quoteText": "If you’re still looking for that one person who will change your life, look in the mirror.", "quoteAuthor": "Roman Price" },
-  { "quoteText": "Your comfort zone is a beautiful place—but nothing ever grows there.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Habits are the compound interest of self-improvement.", "quoteAuthor": "James Clear" },
-  { "quoteText": "First they ignore you, then they laugh at you, then they fight you, then you win.", "quoteAuthor": "Mahatma Gandhi" },
-  { "quoteText": "The days are long, but the years are short.", "quoteAuthor": "Gretchen Rubin" },
-  { "quoteText": "Stop waiting for Friday, for summer, for someone to fall in love with you.", "quoteAuthor": "Unknown" },
-  { "quoteText": "You can’t edit a blank page.", "quoteAuthor": "Jodi Picoult" },
-  { "quoteText": "Action is the foundational key to all success.", "quoteAuthor": "Pablo Picasso" },
-  { "quoteText": "Small daily improvements lead to stunning results.", "quoteAuthor": "Robin Sharma" },
-  { "quoteText": "The best time to plant a tree was twenty years ago; the second best is now.", "quoteAuthor": "Chinese proverb" },
-  { "quoteText": "You don’t need a new day to start, you need a new mindset.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Excuses build bridges to nowhere.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Be so good they can’t ignore you.", "quoteAuthor": "Steve Martin" },
-  { "quoteText": "The graveyard is the richest place on earth.", "quoteAuthor": "Les Brown" },
-  { "quoteText": "You can’t cross the sea merely by standing and staring at the water.", "quoteAuthor": "Rabindranath Tagore" },
-  { "quoteText": "The biggest risk is not taking any risk.", "quoteAuthor": "Mark Zuckerberg" },
-  { "quoteText": "You are one decision away from a totally different life.", "quoteAuthor": "Unknown" },
-  { "quoteText": "If it’s still in your mind, it’s worth taking the risk.", "quoteAuthor": "Paulo Coelho" },
-  { "quoteText": "The two most important days in your life are the day you are born and the day you find out why.", "quoteAuthor": "Mark Twain" },
-  { "quoteText": "Don’t live the same year 75 times and call it a life.", "quoteAuthor": "Robin Sharma" },
-  { "quoteText": "You don’t have to be extreme, just consistent.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The pain you feel today will be the strength you feel tomorrow.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Fall in love with the process and the results will come.", "quoteAuthor": "Eric Thomas" },
-  { "quoteText": "Great things never come from comfort zones.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Your future is created by what you do today, not tomorrow.", "quoteAuthor": "Robert Kiyosaki" },
-  { "quoteText": "The only workout you regret is the one you didn’t do.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Sweat is just your fat crying.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Excuses don’t burn calories.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The body achieves what the mind believes.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Run like you stole something.", "quoteAuthor": "Unknown" },
-  { "quoteText": "When your legs scream stop, run with your heart.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Pain is temporary; quitting lasts forever.", "quoteAuthor": "Lance Armstrong" },
-  { "quoteText": "Discipline is choosing between what you want now and what you want most.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The only bad workout is the one you didn’t do.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Sore today, strong tomorrow.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Wake up with determination; go to bed with satisfaction.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Train insane or remain the same.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Hustle for that muscle.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Don’t wish for it; work for it.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The gym is my therapy.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Strong is the new skinny.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Sweat now, shine later.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Fall seven times, stand up eight.", "quoteAuthor": "Japanese proverb" },
-  { "quoteText": "Your only limit is you.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Push yourself because no one else is going to do it for you.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Good things come to those who sweat.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The pain you feel today will be the strength you feel tomorrow.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Make sweat your best accessory.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Workout now, selfie later.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Less talking, more squatting.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Earn your shower.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Crunches are like life; they hurt but they make you stronger.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Muscles are built by reps, not by excuses.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Your body can stand almost anything; it’s your mind you have to convince.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Fitness is not about being better than someone else; it’s about being better than you used to be.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The clock is ticking; are you becoming the person you want to be?", "quoteAuthor": "Unknown" },
-  { "quoteText": "Reading is to the mind what exercise is to the body.", "quoteAuthor": "Joseph Addison" },
-  { "quoteText": "A reader lives a thousand lives before he dies.", "quoteAuthor": "George R. R. Martin" },
-  { "quoteText": "Books are a uniquely portable magic.", "quoteAuthor": "Stephen King" },
-  { "quoteText": "Today a reader, tomorrow a leader.", "quoteAuthor": "Margaret Fuller" },
-  { "quoteText": "The more that you read, the more things you will know.", "quoteAuthor": "Dr. Seuss" },
-  { "quoteText": "A book is a dream that you hold in your hand.", "quoteAuthor": "Neil Gaiman" },
-  { "quoteText": "Reading is escape, and the opposite of escape.", "quoteAuthor": "Jonathan Franzen" },
-  { "quoteText": "Once you learn to read, you will be forever free.", "quoteAuthor": "Frederick Douglass" },
-  { "quoteText": "There is no friend as loyal as a book.", "quoteAuthor": "Ernest Hemingway" },
-  { "quoteText": "Books are mirrors: you only see in them what you already have inside you.", "quoteAuthor": "Carlos Ruiz Zafón" },
-  { "quoteText": "Sleep is the best meditation.", "quoteAuthor": "Dalai Lama" },
-  { "quoteText": "Early to bed and early to rise makes a man healthy, wealthy, and wise.", "quoteAuthor": "Benjamin Franklin" },
-  { "quoteText": "A good laugh and a long sleep are the best cures in the doctor’s book.", "quoteAuthor": "Irish proverb" },
-  { "quoteText": "Sleep is the golden chain that ties health and our bodies together.", "quoteAuthor": "Thomas Dekker" },
-  { "quoteText": "Each night, when I go to sleep, I die; the next morning, when I wake, I am reborn.", "quoteAuthor": "Mahatma Gandhi" },
-  { "quoteText": "The best bridge between despair and hope is a good night’s sleep.", "quoteAuthor": "E. Joseph Cossman" },
-  { "quoteText": "Sleep is that golden time when body and mind are renewed.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Turn off your mind, relax, and float downstream.", "quoteAuthor": "John Lennon" },
-  { "quoteText": "There is a time for many words, and there is also a time for sleep.", "quoteAuthor": "Homer" },
-  { "quoteText": "Laugh and the world laughs with you; snore and you sleep alone.", "quoteAuthor": "Anthony Burgess" },
-  { "quoteText": "Sleep is the real beauty secret.", "quoteAuthor": "Unknown" },
-  { "quoteText": "A day without a nap is like a cupcake without frosting.", "quoteAuthor": "Terri Guillemets" },
-  { "quoteText": "Sleep: a poor man’s luxury, a rich man’s necessity.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Let her sleep, for when she wakes she will move mountains.", "quoteAuthor": "Napoleon Bonaparte" },
-  { "quoteText": "No day is so bad it can’t be fixed with a nap.", "quoteAuthor": "Carrie Snow" },
-  { "quoteText": "Sleep is the best beauty treatment.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Life is too short to sleep on boring sheets.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I love sleep because it’s like a time machine to breakfast.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Sleep is the most beautiful experience in life—except love, of course.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I could be a morning person if morning started at noon.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My alarm clock is clearly jealous of my amazing relationship with my bed.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Sleep is like a cat: it only comes to you if you ignore it.", "quoteAuthor": "Unknown" },
-  { "quoteText": "There is no sunrise so beautiful that it is worth waking me up to see it.", "quoteAuthor": "Mindy Kaling" },
-  { "quoteText": "I’m not lazy; I’m just on energy-saving mode.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Sleep: the only time of day I can solve all my problems.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got a dream that’s worth more than my sleep.", "quoteAuthor": "Eric Thomas" },
-  { "quoteText": "Early bed, early rise, makes a man healthy, wealthy, and quoted.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My bed is a magical place where I suddenly remember everything I forgot to do.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Sleeping is my drug, my bed is the dealer, and my alarm clock is the police.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I don’t need a hair stylist; my pillow gives me a new hairstyle every morning.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The future is shaped by your dreams, so stop wasting time and go to sleep!", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m so good at sleeping I can do it with my eyes closed.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My relationship with my bed is special; we’re perfect for each other.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Sleep is the best meditation, and my pillow is the guru.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I have two moods: give me coffee and let me sleep.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Sleep is the real beauty treatment; everything else is marketing.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I love the sound of my alarm clock—it’s the soundtrack of my nightmares.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My bed and I are in a toxic relationship; I keep leaving and it keeps calling me back.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not snoring; I’m dreaming I’m a motorcycle.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Sleep is the only time my brain isn’t plotting against me.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got 99 problems and sleep solves at least 89 of them.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite exercise is a cross between a lunge and a crunch—I call it lunch.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I run on caffeine, chaos, and cuss words.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My gym is my kitchen; I lift forks.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m on a seafood diet: I see food and I eat it.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Chocolate doesn’t ask silly questions; chocolate understands.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m just a girl standing in front of a salad, asking it to be a donut.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Stressed spelled backward is desserts—coincidence? I think not.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite machine at the gym is the vending machine.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I work out because punching people is frowned upon.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got a sixth sense—it’s called snack intuition.", "quoteAuthor": "Unknown" },
-  { "quoteText": "Carbs are my love language.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I like hashtags because they look like waffles.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My soulmate might be carbs.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m in a toxic relationship with my fridge—it keeps calling me at 2 a.m.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not overweight; I’m under-tall.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite yoga pose is the one where I reach into the pantry.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m on a 30-day diet; so far I’ve lost 15 days.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not lazy; I’m in energy-saving mode.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite exercise is jumping to conclusions.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got a black belt in snack-fu.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m just here for the snacks.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My brain is 80% song lyrics and 20% snack cravings.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not addicted to chocolate; we’re just in a committed relationship.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m on a whiskey diet; I’ve lost three days already.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite salad is the one next to the pizza.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not hungry; I’m just bored, sad, happy, awake, alive, etc.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got 99 problems and pizza solves at least 89.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite fruit is cake.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not eating; I’m just tasting repeatedly.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m just a girl standing in front of a salad, asking it to be pizza.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m on a seafood diet: I see food and I eat it.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite exercise is chewing.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not overweight; I’m just easy to see.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got a sweet tooth the size of Texas.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not lazy; I’m just on energy-saving mode.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite machine at the gym is the vending machine.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not addicted to coffee; we’re just in a committed relationship.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got a black belt in snack-fu.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m just here for the snacks.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My brain is 80% song lyrics and 20% snack cravings.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not hungry; I’m just bored, sad, happy, awake, alive, etc.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got 99 problems and pizza solves at least 89.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite fruit is cake.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not eating; I’m just tasting repeatedly.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m just a girl standing in front of a salad, asking it to be pizza.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m on a seafood diet: I see food and I eat it.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite exercise is chewing.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not overweight; I’m just easy to see.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got a sweet tooth the size of Texas.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not lazy; I’m just on energy-saving mode.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite machine at the gym is the vending machine.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not addicted to coffee; we’re just in a committed relationship.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got a black belt in snack-fu.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m just here for the snacks.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My brain is 80% song lyrics and 20% snack cravings.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not hungry; I’m just bored, sad, happy, awake, alive, etc.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got 99 problems and pizza solves at least 89.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite fruit is cake.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not eating; I’m just tasting repeatedly.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m just a girl standing in front of a salad, asking it to be pizza.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m on a seafood diet: I see food and I eat it.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite exercise is chewing.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not overweight; I’m just easy to see.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got a sweet tooth the size of Texas.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not lazy; I’m just on energy-saving mode.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite machine at the gym is the vending machine.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not addicted to coffee; we’re just in a committed relationship.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got a black belt in snack-fu.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m just here for the snacks.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My brain is 80% song lyrics and 20% snack cravings.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not hungry; I’m just bored, sad, happy, awake, alive, etc.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got 99 problems and pizza solves at least 89.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite fruit is cake.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not eating; I’m just tasting repeatedly.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m just a girl standing in front of a salad, asking it to be pizza.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m on a seafood diet: I see food and I eat it.", "quoteAuthor": "Unknown" },
-  { "quoteText": "My favorite exercise is chewing.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’m not overweight; I’m just easy to see.", "quoteAuthor": "Unknown" },
-  { "quoteText": "I’ve got a sweet tooth the size of Texas.", "quoteAuthor": "Unknown" },
-  { "quoteText": "The only thing that saves us from bureaucracy is its inefficiency.", "quoteAuthor": "Eugene McCarthy" },
-  { "quoteText": "History does not repeat itself, but it often rhymes.", "quoteAuthor": "Mark Twain" },
-  { "quoteText": "The revolution will not be televised; it will be live.", "quoteAuthor": "Gil Scott-Heron" },
-  { "quoteText": "When fascism comes to America, it will be wrapped in the flag and carrying a cross.", "quoteAuthor": "Sinclair Lewis" },
-  { "quoteText": "The price of apathy towards public affairs is to be ruled by evil men.", "quoteAuthor": "Plato" },
-  { "quoteText": "In a democracy, the people get the government they deserve.", "quoteAuthor": "Alexis de Tocqueville" },
-  { "quoteText": "The ballot is stronger than the bullet.", "quoteAuthor": "Abraham Lincoln" },
-  { "quoteText": "A conservative is a man who believes nothing should be done for the first time.", "quoteAuthor": "Alfred E. Wiggam" },
-  { "quoteText": "A liberal is a man too broad-minded to take his own side in a quarrel.", "quoteAuthor": "Robert Frost" },
-  { "quoteText": "Politics is the art of looking for trouble, finding it everywhere, diagnosing it incorrectly, and applying the wrong remedies.", "quoteAuthor": "Groucho Marx" },
-  { "quoteText": "The whole problem with the world is that fools and fanatics are so certain of themselves, and wiser people so full of doubts.", "quoteAuthor": "Bertrand Russell" },
-  { "quoteText": "The darkest places in hell are reserved for those who maintain their neutrality in times of moral crisis.", "quoteAuthor": "Dante Alighieri" },
-  { "quoteText": "The hottest places in hell are reserved for those who, in a period of moral crisis, maintain their neutrality.", "quoteAuthor": "John F. Kennedy" },
-  { "quoteText": "The only thing necessary for the triumph of evil is for good men to do nothing.", "quoteAuthor": "Edmund Burke" },
-  { "quoteText": "Power tends to corrupt, and absolute power corrupts absolutely.", "quoteAuthor": "Lord Acton" },
-  { "quoteText": "The measure of a man is what he does with power.", "quoteAuthor": "Plato" },
-  { "quoteText": "Great men are almost always bad men, even when they exercise influence and not authority.", "quoteAuthor": "Lord Acton" },
-  { "quoteText": "Authority that does not exist for Liberty is not authority but force.", "quoteAuthor": "Lord Acton" },
-  { "quoteText": "Liberty is not the power of doing what we like, but the right of being able to do what we ought.", "quoteAuthor": "Lord Acton" },
-  { "quoteText": "The danger is not that a particular class is unfit to govern; every class is unfit to govern.", "quoteAuthor": "Lord Acton" },
-  { "quoteText": "History is not the past; it is the present.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "People are trapped in history, and history is trapped in them.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "Not everything that is faced can be changed, but nothing can be changed until it is faced.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "You think your pain and your heartbreak are unprecedented in the history of the world, but then you read.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "The paradox of education is precisely this—that as one begins to become conscious, one begins to examine the society in which he is being educated.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "The American idea of racial progress is measured by how fast I become white.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "To be a Negro in this country and to be relatively conscious is to be in a rage almost all the time.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "Anyone who has ever struggled with poverty knows how extremely expensive it is to be poor.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "Children have never been very good at listening to their elders, but they have never failed to imitate them.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "The most dangerous creation of any society is the man who has nothing to lose.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "I can’t believe what you say, because I see what you do.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "It is certain, in any case, that ignorance, allied with power, is the most ferocious enemy justice can have.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "Freedom is not something that anybody can be given; freedom is something people take.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "The price one pays for pursuing any profession or calling is an intimate knowledge of its ugly side.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "The question of color is but the ghost of a question, and the real question is the question of power.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "The responsibility of a writer is to excavate the experience of the people who produced him.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "The role of the artist is exactly the same as the role of the lover.", "quoteAuthor": "James Baldwin" },
-  { "quoteText": "The universe is not only stranger than we imagine, it is stranger than we can imagine.", "quoteAuthor": "J. B. S. Haldane" },
-  { "quoteText": "Now, my own suspicion is that the universe is not only queerer than we suppose, but queerer than we can suppose.", "quoteAuthor": "J. B. S. Haldane" },
-  { "quoteText": "I have no doubt that in reality the future will be vastly more surprising than anything I can imagine.", "quoteAuthor": "J. B. S. Haldane" },
-  { "quoteText": "The Creator, if He exists, has an inordinate fondness for beetles.", "quoteAuthor": "J. B. S. Haldane" },
-  { "quoteText": "My own suspicion is that the universe is not only queerer than we suppose, but queerer than we can suppose.", "quoteAuthor": "J. B. S. Haldane" },
-  { "quoteText": "The wise man contents himself with what he has, until he has what he contents himself with.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The privilege of a lifetime is being who you are.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We must be willing to let go of the life we have planned, so as to accept the one that is waiting for us.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The cave you fear to enter holds the treasure you seek.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Follow your bliss and the universe will open doors where there were only walls.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The big question is whether you are going to be able to say a hearty yes to your adventure.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Myths are public dreams; dreams are private myths.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Computers are like Old Testament gods: lots of rules and no mercy.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "I don’t believe people are looking for the meaning of life as much as they are looking for the experience of being alive.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The goal of life is to make your heartbeat match the beat of the universe.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We must be willing to get rid of the life we’ve planned, so as to have the life that is waiting for us.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The demon that you can swallow gives you its power, and the greater life’s pain, the greater life’s reply.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The black moment is the moment when the real message of transformation is going to come.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Find a place inside where there’s joy, and the joy will burn out the pain.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The agony of breaking through personal limitations is the agony of spiritual growth.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Life has no meaning; each of us has meaning and we bring it to life.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "A hero is someone who has given his or her life to something bigger than oneself.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We’re not on our journey to save the world but to save ourselves.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The adventure of the hero is the adventure of being alive.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Where you stumble, there lies your treasure; the very cave you are afraid to enter turns out to be the source of what you are looking for.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The myth is the public dream and the dream is the private myth.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "If you can see your path laid out in front of you step by step, you know it’s not your path.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Your sacred space is where you can find yourself over and over again.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The cave you fear to enter holds the treasure you seek.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The big question is whether you are going to be able to say a hearty yes to your adventure.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The privilege of a lifetime is being who you are.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We must be willing to let go of the life we have planned, so as to accept the one that is waiting for us.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Follow your bliss and the universe will open doors where there were only walls.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The goal of life is to make your heartbeat match the beat of the universe.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The demon that you can swallow gives you its power, and the greater life’s pain, the greater life’s reply.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The black moment is the moment when the real message of transformation is going to come.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Find a place inside where there’s joy, and the joy will burn out the pain.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The agony of breaking through personal limitations is the agony of spiritual growth.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Life has no meaning; each of us has meaning and we bring it to life.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "A hero is someone who has given his or her life to something bigger than oneself.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We’re not on our journey to save the world but to save ourselves.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The adventure of the hero is the adventure of being alive.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Where you stumble, there lies your treasure; the very cave you are afraid to enter turns out to be the source of what you are looking for.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The myth is the public dream and the dream is the private myth.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "If you can see your path laid out in front of you step by step, you know it’s not your path.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Your sacred space is where you can find yourself over and over again.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The cave you fear to enter holds the treasure you seek.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The big question is whether you are going to be able to say a hearty yes to your adventure.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The privilege of a lifetime is being who you are.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We must be willing to let go of the life we have planned, so as to accept the one that is waiting for us.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Follow your bliss and the universe will open doors where there were only walls.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The goal of life is to make your heartbeat match the beat of the universe.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The demon that you can swallow gives you its power, and the greater life’s pain, the greater life’s reply.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The black moment is the moment when the real message of transformation is going to come.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Find a place inside where there’s joy, and the joy will burn out the pain.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The agony of breaking through personal limitations is the agony of spiritual growth.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Life has no meaning; each of us has meaning and we bring it to life.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "A hero is someone who has given his or her life to something bigger than oneself.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We’re not on our journey to save the world but to save ourselves.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The adventure of the hero is the adventure of being alive.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Where you stumble, there lies your treasure; the very cave you are afraid to enter turns out to be the source of what you are looking for.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The myth is the public dream and the dream is the private myth.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "If you can see your path laid out in front of you step by step, you know it’s not your path.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Your sacred space is where you can find yourself over and over again.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The cave you fear to enter holds the treasure you seek.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The big question is whether you are going to be able to say a hearty yes to your adventure.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The privilege of a lifetime is being who you are.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We must be willing to let go of the life we have planned, so as to accept the one that is waiting for us.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Follow your bliss and the universe will open doors where there were only walls.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The goal of life is to make your heartbeat match the beat of the universe.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The demon that you can swallow gives you its power, and the greater life’s pain, the greater life’s reply.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The black moment is the moment when the real message of transformation is going to come.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Find a place inside where there’s joy, and the joy will burn out the pain.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The agony of breaking through personal limitations is the agony of spiritual growth.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Life has no meaning; each of us has meaning and we bring it to life.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "A hero is someone who has given his or her life to something bigger than oneself.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We’re not on our journey to save the world but to save ourselves.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The adventure of the hero is the adventure of being alive.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Where you stumble, there lies your treasure; the very cave you are afraid to enter turns out to be the source of what you are looking for.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The myth is the public dream and the dream is the private myth.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "If you can see your path laid out in front of you step by step, you know it’s not your path.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Your sacred space is where you can find yourself over and over again.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The cave you fear to enter holds the treasure you seek.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The big question is whether you are going to be able to say a hearty yes to your adventure.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The privilege of a lifetime is being who you are.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We must be willing to let go of the life we have planned, so as to accept the one that is waiting for us.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Follow your bliss and the universe will open doors where there were only walls.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The goal of life is to make your heartbeat match the beat of the universe.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The demon that you can swallow gives you its power, and the greater life’s pain, the greater life’s reply.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The black moment is the moment when the real message of transformation is going to come.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Find a place inside where there’s joy, and the joy will burn out the pain.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The agony of breaking through personal limitations is the agony of spiritual growth.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Life has no meaning; each of us has meaning and we bring it to life.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "A hero is someone who has given his or her life to something bigger than oneself.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We’re not on our journey to save the world but to save ourselves.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The adventure of the hero is the adventure of being alive.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Where you stumble, there lies your treasure; the very cave you are afraid to enter turns out to be the source of what you are looking for.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The myth is the public dream and the dream is the private myth.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "If you can see your path laid out in front of you step by step, you know it’s not your path.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Your sacred space is where you can find yourself over and over again.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The cave you fear to enter holds the treasure you seek.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The big question is whether you are going to be able to say a hearty yes to your adventure.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The privilege of a lifetime is being who you are.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "We must be willing to let go of the life we have planned, so as to accept the one that is waiting for us.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "Follow your bliss and the universe will open doors where there were only walls.", "quoteAuthor": "Joseph Campbell" },
-  { "quoteText": "The goal of life is to make your heartbeat match the beat of the universe.", "quoteAuthor": "Joseph Campbell" },
-];
+  {
+    "quoteText": "Whether you think you can or you think you can't, you're right.",
+    "quoteAuthor": "Henry Ford"
+  },
+  {
+    "quoteText": "The only impossible journey is the one you never begin.",
+    "quoteAuthor": "Tony Robbins"
+  },
+  {
+    "quoteText": "Life is really simple, but we insist on making it complicated.",
+    "quoteAuthor": "Confucius"
+  },
+  {
+    "quoteText": "The best time to plant a tree was twenty years ago. The second best time is now.",
+    "quoteAuthor": "Chinese Proverb"
+  },
+  {
+    "quoteText": "Your limitation—it's only your imagination.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "Push yourself, because no one else is going to do it for you.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "Great things never come from comfort zones.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "Dream it. Wish it. Do it.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "Success doesn't just find you. You have to go out and get it.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "The harder you work for something, the greater you'll feel when you achieve it.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "Dream bigger. Do bigger.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "Don't stop when you're tired. Stop when you're done.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "Wake up with determination. Go to bed with satisfaction.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "Do something today that your future self will thank you for.",
+    "quoteAuthor": "Sean Patrick Flanery"
+  },
+  {
+    "quoteText": "Little things make big days.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "It's going to be hard, but hard does not mean impossible.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "Don't wait for opportunity. Create it.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "Sometimes we're tested not to show our weaknesses, but to discover our strengths.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "The key to success is to start before you are ready.",
+    "quoteAuthor": "Marie Forleo"
+  },
+  {
+    "quoteText": "Discipline is choosing between what you want now and what you want most.",
+    "quoteAuthor": "Abraham Lincoln"
+  },
+  {
+    "quoteText": "The way to get started is to quit talking and begin doing.",
+    "quoteAuthor": "Walt Disney"
+  },
+  {
+    "quoteText": "Don't let yesterday take up too much of today.",
+    "quoteAuthor": "Will Rogers"
+  },
+  {
+    "quoteText": "You learn more from failure than from success. Don't let it stop you. Failure builds character.",
+    "quoteAuthor": "Unknown"
+  },
+  {
+    "quoteText": "It's not whether you get knocked down, it's whether you get up.",
+    "quoteAuthor": "Vince Lombardi"
+  },
+  {
+    "quoteText": "If you are working on something that you really care about, you don't have to be pushed. The vision pulls you.",
+    "quoteAuthor": "Steve Jobs"
+  },
+  {
+    "quoteText": "People who are crazy enough to think they can change the world, are the ones who do.",
+    "quoteAuthor": "Rob Siltanen"
+  },
+  {
+    "quoteText": "Failure will never overtake me if my determination to succeed is strong enough.",
+    "quoteAuthor": "Og Mandino"
+  },
+  {
+    "quoteText": "Entrepreneurs are great at dealing with uncertainty and also very good at minimizing risk. That's the classic entrepreneur.",
+    "quoteAuthor": "Mohnish Pabrai"
+  },
+  {
+    "quoteText": "We may encounter many defeats but we must not be defeated.",
+    "quoteAuthor": "Maya Angelou"
+  },
+  {
+    "quoteText": "Knowing is not enough; we must apply. Wishing is not enough; we must do.",
+    "quoteAuthor": "Johann Wolfgang Von Goethe"
+  },
+  {
+    "quoteText": "Imagine your life is perfect in every respect; what would it look like?",
+    "quoteAuthor": "Brian Tracy"
+  },
+  {
+    "quoteText": "We generate fears while we sit. We overcome them by action.",
+    "quoteAuthor": "Dr. Henry Link"
+  },
+  {
+    "quoteText": "Whether you think you can or think you can't, you're right.",
+    "quoteAuthor": "Henry Ford"
+  },
+  {
+    "quoteText": "Security is mostly a superstition. Life is either a daring adventure or nothing.",
+    "quoteAuthor": "Helen Keller"
+  },
+  {
+    "quoteText": "The man who has confidence in himself gains the confidence of others.",
+    "quoteAuthor": "Hasidic Proverb"
+  },
+  {
+    "quoteText": "The only limit to our realization of tomorrow will be our doubts of today.",
+    "quoteAuthor": "Franklin D. Roosevelt"
+  },
+  {
+    "quoteText": "Creativity is intelligence having fun.",
+    "quoteAuthor": "Albert Einstein"
+  },
+  {
+    "quoteText": "What you lack in talent can be made up with desire, hustle and giving 110% all the time.",
+    "quoteAuthor": "Don Zimmer"
+  },
+  {
+    "quoteText": "Do what you can with all you have, wherever you are.",
+    "quoteAuthor": "Theodore Roosevelt"
+  },
+  {
+    "quoteText": "You don't need to see the whole staircase, just take the first step.",
+    "quoteAuthor": "Martin Luther King Jr."
+  },
+  {
+    "quoteText": "The man who moves a mountain begins by carrying away small stones.",
+    "quoteAuthor": "Confucius"
+  },
+  {
+    "quoteText": "The difference between ordinary and extraordinary is that little extra.",
+    "quoteAuthor": "Jimmy Johnson"
+  },
+  {
+    "quoteText": "Nothing will work unless you do.",
+    "quoteAuthor": "Maya Angelou"
+  },
+  {
+    "quoteText": "Believe you can and you're halfway there.",
+    "quoteAuthor": "Theodore Roosevelt"
+  },
+  {
+    "quoteText": "The only person you are destined to become is the person you decide to be.",
+    "quoteAuthor": "Ralph Waldo Emerson"
+  },
+  {
+    "quoteText": "Everything you've ever wanted is on the other side of fear.",
+    "quoteAuthor": "George Addair"
+  },
+  {
+    "quoteText": "Happiness is not something readymade. It comes from your own actions.",
+    "quoteAuthor": "Dalai Lama"
+  },
+  {
+    "quoteText": "The most beautiful experience we can have is the mysterious. It is the fundamental emotion that stands at the cradle of true art and true science.",
+    "quoteAuthor": "Albert Einstein"
+  },
+  {
+    "quoteText": "The only calibration that counts is how much heart people invest, how much they ignore their fears of being hurt or caught out or humiliated.",
+    "quoteAuthor": "Ted Hughes"
+  },
+  {
+    "quoteText": "The fundamental cause of the trouble is that in the modern world the stupid are cocksure while the intelligent are full of doubt.",
+    "quoteAuthor": "Bertrand Russell"
+  },
+  {
+    "quoteText": "The paradox of education is precisely this - that as one begins to become conscious one begins to examine the society in which he is being educated.",
+    "quoteAuthor": "James Baldwin"
+  },
+  {
+    "quoteText": "The most dangerous man to any government is the man who is able to think things out for himself, without regard to the prevailing superstitions and taboos.",
+    "quoteAuthor": "H.L. Mencken"
+  }
+]
 
 

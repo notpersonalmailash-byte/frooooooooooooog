@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { Quote, GameStatus, Settings, GameMode } from '../types';
 import { calculateXP } from '../utils/gameLogic';
@@ -79,10 +80,15 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     setSessionMistakeWords([]);
     setRetryCount(0);
     setLastError(null);
+    
+    // Auto-focus logic: If we are "focused" (e.g. from Next button), ensure the DOM element gets focus
+    // We use a timeout to allow the render cycle to enable the textarea (since status changed to IDLE)
     if (isFocused) {
-        inputRef.current?.focus();
+        setTimeout(() => {
+            inputRef.current?.focus();
+        }, 10);
     }
-  }, [quote, isFocused]);
+  }, [quote]); // Removed isFocused to prevent reset on blur/focus
 
   // Focus management for buttons when game ends
   useEffect(() => {
@@ -111,6 +117,8 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   const handleNext = useCallback(() => {
     const isPerfectMaster = retryCount === 0 && sessionMistakes === 0;
     const xp = calculateXP(wpm, quote.text.length, streak, isPerfectMaster, settings.readAheadLevel);
+    // Ensure we stay focused for the next quote to avoid the "Click to Start" overlay
+    setIsFocused(true);
     onComplete(xp, wpm, sessionMistakeWords, retryCount);
   }, [onComplete, wpm, quote.text.length, streak, retryCount, sessionMistakes, sessionMistakeWords, settings.readAheadLevel]);
 
@@ -704,6 +712,11 @@ const TypingArea: React.FC<TypingAreaProps> = ({
           onFocus={() => {
               setIsFocused(true);
               onInteract?.();
+          }}
+          onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                  e.preventDefault();
+              }
           }}
           onPaste={(e) => e.preventDefault()}
           onCopy={(e) => e.preventDefault()}
