@@ -363,6 +363,7 @@ const App: React.FC = () => {
   const generateMistakeQuote = useCallback((): Quote | null => {
     if (mistakePool.length === 0) return null;
     let pool = [...mistakePool];
+    // Allow random selection including duplicates to reinforce learning
     while (pool.length < 15) {
        pool = [...pool, ...mistakePool];
     }
@@ -538,10 +539,17 @@ const App: React.FC = () => {
         }
     }
 
-    // Fix Mistake Mode Logic
+    // Fix Mistake Mode Logic - Updated to remove only one instance per successful type
     if (gameMode === 'FIX_MISTAKE' && currentQuote) {
-      const wordsFixed = [...new Set(currentQuote.text.split(' '))]; 
-      setMistakePool(prev => prev.filter(word => !wordsFixed.includes(word)));
+      const wordsFixed = currentQuote.text.split(' '); // Keep all instances
+      setMistakePool(prev => {
+          const newPool = [...prev];
+          wordsFixed.forEach(fixedWord => {
+              const idx = newPool.indexOf(fixedWord);
+              if (idx > -1) newPool.splice(idx, 1);
+          });
+          return newPool;
+      });
     }
 
     // --- SMART PRACTICE LOGIC (MASTERY UPDATE) ---
@@ -763,11 +771,12 @@ const App: React.FC = () => {
     // So we reset streak here too just in case.
     setStreak(0);
 
-    // Track Words for FIX MISTAKE mode (Classic)
+    // Track Words for FIX MISTAKE mode (Classic) - REQUIRE 3 REPETITIONS TO CLEAR
     if (word && word.length > 1) {
        setMistakePool(prev => {
-         if (prev.includes(word)) return prev;
-         return [...prev, word];
+         // Reset this word's debt to 3 if mistakenly typed
+         const clean = prev.filter(w => w !== word);
+         return [...clean, word, word, word];
        });
        
        const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
@@ -986,7 +995,7 @@ const App: React.FC = () => {
                       className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
                         ${gameMode === 'FIX_MISTAKE' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-red-500 text-white shadow-sm ring-1 ring-red-600' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}
                         ${mistakePool.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                        ${isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE' ? 'ring-2 ring-red-500 bg-red-50 text-red-600 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]' : ''}
+                        ${isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE' ? 'ring-2 ring-orange-200 bg-orange-200 text-orange-900 animate-pulse shadow-[0_0_10px_rgba(253,186,116,0.6)]' : ''}
                       `}
                       title={mistakePool.length === 0 ? "No mistakes recorded yet" : `${mistakePool.length} words to fix`}
                   >
@@ -1067,15 +1076,15 @@ const App: React.FC = () => {
       <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative">
         <div className="w-full flex flex-col items-center justify-center min-h-[60vh]">
           {isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE' && (
-              <div className="mb-8 relative group overflow-hidden bg-orange-400 text-white px-8 py-4 rounded-3xl shadow-xl shadow-orange-200 flex items-center gap-5 transition-all transform ring-4 ring-orange-100 animate-pulse z-50 cursor-wait">
-                  <div className="absolute inset-0 bg-white/10 skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 infinite"></div>
-                  <div className="bg-white/20 p-3 rounded-full shadow-inner">
-                      <AlertTriangle className="w-8 h-8 text-white fill-white/20" />
+              <div className="mb-8 relative group overflow-hidden bg-orange-200 text-orange-900 px-8 py-4 rounded-3xl shadow-xl shadow-orange-100 flex items-center gap-5 transition-all transform ring-4 ring-orange-100 animate-pulse z-50 cursor-wait">
+                  <div className="absolute inset-0 bg-white/30 skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 infinite"></div>
+                  <div className="bg-white/50 p-3 rounded-full shadow-inner text-orange-600">
+                      <AlertTriangle className="w-8 h-8" />
                   </div>
                   <div className="text-left">
-                      <div className="font-black text-xl uppercase tracking-tight leading-none text-white">Evolution Pending</div>
-                      <div className="font-medium text-sm text-orange-50 mt-1">
-                          Redirecting to fix <span className="font-black text-white border-b-2 border-orange-200/50">{mistakePool.length} mistakes</span>...
+                      <div className="font-black text-xl uppercase tracking-tight leading-none text-orange-800">Evolution Pending</div>
+                      <div className="font-medium text-sm text-orange-700 mt-1">
+                          Redirecting to fix <span className="font-black border-b-2 border-orange-400">{mistakePool.length} pending corrections</span>...
                       </div>
                   </div>
                   <div className="bg-white text-orange-500 p-2.5 rounded-full shadow-lg ml-2 animate-spin">
