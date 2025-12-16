@@ -152,9 +152,14 @@ const App: React.FC = () => {
         mergedSettings.ambientVolume = legacyVolume;
     }
 
-    // 2. Auto-Start Logic (Force music on if autoStartMusic is true)
-    if (mergedSettings.autoStartMusic && mergedSettings.musicConfig.source === 'NONE') {
+    // 2. Auto-Start Logic
+    // If enabled, we FORCE reset to Default Satie, ignoring whatever was saved.
+    // This ensures a consistent "clean slate" start with the default ambience.
+    if (mergedSettings.autoStartMusic) {
         mergedSettings.musicConfig = { source: 'GENERATED', presetId: 'PIANO_SATIE' };
+    } else {
+        // If disabled, we ensure music is off on load, even if it was saved as playing.
+        mergedSettings.musicConfig = { source: 'NONE', presetId: '' };
     }
 
     return mergedSettings;
