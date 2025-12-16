@@ -1057,6 +1057,14 @@ const App: React.FC = () => {
 
               <div className="flex items-center gap-1.5 shrink-0">
                    <button 
+                     onClick={toggleMusic} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="Background Music"
+                   >
+                      <Music className="w-5 h-5" />
+                   </button>
+
+                   <button 
                      onClick={cycleReadAhead}
                      className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 group relative ${raConfig.bg} ${raConfig.color}`}
                      title={`Read Ahead: ${raConfig.label} (${raConfig.bonus ? raConfig.bonus + ' XP' : 'No Bonus'})`}
@@ -1070,12 +1078,21 @@ const App: React.FC = () => {
                    </button>
 
                    <button 
+                     onClick={toggleStats} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isStatsOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="Statistics & History"
+                   >
+                      <TrendingUp className="w-5 h-5" />
+                   </button>
+
+                   <button 
                      onClick={toggleAchievements} 
                      className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isAchievementsOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
                      title="Achievements"
                    >
                       <Award className="w-5 h-5" />
                    </button>
+
                    <button 
                      onClick={toggleTheme} 
                      className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isThemeOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
@@ -1083,13 +1100,7 @@ const App: React.FC = () => {
                    >
                       <Palette className="w-5 h-5" />
                    </button>
-                   <button 
-                     onClick={toggleStats} 
-                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isStatsOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
-                     title="Statistics & History"
-                   >
-                      <TrendingUp className="w-5 h-5" />
-                   </button>
+
                    <button 
                      onClick={toggleHelp} 
                      className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isHelpOpen ? 'bg-stone-100 text-stone-700' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
@@ -1097,13 +1108,7 @@ const App: React.FC = () => {
                    >
                       <CircleHelp className="w-5 h-5" />
                    </button>
-                   <button 
-                     onClick={toggleMusic} 
-                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
-                     title="Background Music"
-                   >
-                      <Music className="w-5 h-5" />
-                   </button>
+
                    <button onClick={toggleSettings} className="p-2 hover:bg-stone-100 rounded-full text-stone-400 hover:text-stone-600 transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2">
                       <SettingsIcon className="w-5 h-5" />
                    </button>
@@ -1111,20 +1116,9 @@ const App: React.FC = () => {
 
             </div>
           </header>
-
-          <div className="w-full bg-white/95 backdrop-blur-md border-b border-stone-200 px-6 py-2">
-               <div className="max-w-[1400px] mx-auto">
-                   <ProgressBar 
-                     xp={userXP} 
-                     avgWpm={getAverageWPM(wpmHistory)} 
-                     mistakeCount={mistakePool.length} 
-                     remediationCount={Object.keys(failedQuoteRepetitions).length}
-                   />
-               </div>
-          </div>
       </div>
       
-      <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative">
+      <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative pb-32">
         <div className="w-full flex flex-col items-center justify-center min-h-[60vh]">
           {isGatedLocked && !isPlayingRemediation ? (
               <div className="mb-8 w-full max-w-2xl relative overflow-hidden bg-orange-50 border-2 border-orange-200 p-8 rounded-3xl shadow-xl flex flex-col items-center text-center gap-6 animate-in slide-in-from-top-5 duration-500 z-50">
@@ -1222,6 +1216,21 @@ const App: React.FC = () => {
         </div>
       </main>
 
+      <footer className="p-6 text-center text-stone-300 text-[10px] pb-24">
+        <p>© {new Date().getFullYear()} Frog Type. Wisdom from the Ages.</p>
+      </footer>
+
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-stone-200 px-6 py-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+           <div className="max-w-[1400px] mx-auto">
+               <ProgressBar 
+                 xp={userXP} 
+                 avgWpm={getAverageWPM(wpmHistory)} 
+                 mistakeCount={mistakePool.length} 
+                 remediationCount={Object.keys(failedQuoteRepetitions).length}
+               />
+           </div>
+      </div>
+
       <SettingsModal 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
@@ -1277,10 +1286,6 @@ const App: React.FC = () => {
         setSettings={setSettings}
         userXP={userXP}
       />
-
-      <footer className="p-6 text-center text-stone-300 text-[10px]">
-        <p>© {new Date().getFullYear()} Frog Type. Wisdom from the Ages.</p>
-      </footer>
     </div>
   );
 };

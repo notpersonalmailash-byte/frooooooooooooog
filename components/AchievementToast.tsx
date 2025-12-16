@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { NotificationItem } from '../types';
 import { Award, X, Music } from 'lucide-react';
@@ -37,7 +38,7 @@ const AchievementToast: React.FC<AchievementToastProps> = ({ notifications, onCl
   if (!current || !visible) return null;
 
   return (
-    <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[150] animate-in slide-in-from-bottom-5 fade-in duration-300">
+    <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-[150] animate-in slide-in-from-bottom-5 fade-in duration-300">
       <div className="bg-stone-900 text-white pl-4 pr-10 py-3 rounded-full shadow-2xl flex items-center gap-4 border border-stone-700 min-w-[300px] relative">
          {/* Icon Circle */}
          <div className={`p-2 rounded-full text-stone-900 shadow-lg ${current.type === 'UNLOCK' ? 'bg-frog-green' : 'bg-white'}`}>
