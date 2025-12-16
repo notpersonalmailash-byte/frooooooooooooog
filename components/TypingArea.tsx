@@ -16,6 +16,7 @@ interface TypingAreaProps {
   settings: Settings;
   gameMode: GameMode;
   onInteract?: () => void;
+  autoFocus?: boolean;
 }
 
 const TypingArea: React.FC<TypingAreaProps> = ({ 
@@ -28,12 +29,13 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   ghostWpm,
   settings,
   gameMode,
-  onInteract
+  onInteract,
+  autoFocus = false
 }) => {
   const [input, setInput] = useState('');
   const [startTime, setStartTime] = useState<number | null>(null);
   const [endTime, setEndTime] = useState<number | null>(null);
-  const [isFocused, setIsFocused] = useState(false);
+  const [isFocused, setIsFocused] = useState(autoFocus);
   const [status, setStatus] = useState<GameStatus>(GameStatus.IDLE);
   const [wpm, setWpm] = useState(0);
   const [ghostIndex, setGhostIndex] = useState(0);
@@ -520,7 +522,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     return 'text-base md:text-lg leading-relaxed';
   };
 
-  const isPerfectMasterPotential = retryCount === 0 && sessionMistakes === 0 && status !== GameStatus.FAILED;
+  const isPerfectMasterPotential = retryCount === 0 && sessionMistakes === 0;
 
   return (
     <div 

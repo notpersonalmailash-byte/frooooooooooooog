@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import ProgressBar from './components/ProgressBar';
 import TypingArea from './components/TypingArea';
@@ -189,6 +190,7 @@ const App: React.FC = () => {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
   const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
+  const [shouldAutoFocus, setShouldAutoFocus] = useState(false);
   
   // Start time tracking for current quote
   const [quoteStartTime, setQuoteStartTime] = useState<number | null>(null);
@@ -458,6 +460,7 @@ const App: React.FC = () => {
 
   const handleQuoteComplete = (xpCalc: number, wpm: number, mistakes: string[], retryCount: number) => {
     let finalXp = xpCalc; 
+    setShouldAutoFocus(true);
 
     // Update Time Played
     if (quoteStartTime) {
@@ -751,6 +754,8 @@ const App: React.FC = () => {
     if (mode === 'PRACTICE' && isPracticeLocked) return;
     if (mode === 'MINIGAMES' && isArcadeLocked) return;
     
+    setShouldAutoFocus(false);
+
     if (mode === 'MINIGAMES') {
         setIsMiniGameMenuOpen(true);
         setActiveMiniGame(null);
@@ -1051,6 +1056,7 @@ const App: React.FC = () => {
                     settings={settings}
                     gameMode={gameMode}
                     onInteract={() => setIsMusicOpen(false)}
+                    autoFocus={shouldAutoFocus}
                     />
                 ) : (
                     <div className="flex flex-col items-center justify-center text-stone-400">

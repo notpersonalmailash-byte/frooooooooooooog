@@ -1587,6 +1587,86 @@ export const QUOTES: RawQuote[] = [
   {
     "quoteText": "The most dangerous man to any government is the man who is able to think things out for himself, without regard to the prevailing superstitions and taboos.",
     "quoteAuthor": "H.L. Mencken"
+  },
+  {
+    "quoteText": "The whole problem with the world is that fools and fanatics are always so certain of themselves, and wiser people so full of doubts.",
+    "quoteAuthor": "Bertrand Russell"
+  },
+  {
+    "quoteText": "The most courageous act is still to think for yourself. Aloud.",
+    "quoteAuthor": "Coco Chanel"
+  },
+  {
+    "quoteText": "The individual has always had to struggle to keep from being overwhelmed by the tribe. If you try it, you will be lonely often, and sometimes frightened.",
+    "quoteAuthor": "Friedrich Nietzsche"
+  },
+  {
+    "quoteText": "The most perfidious way of harming a cause consists of defending it deliberately with faulty arguments.",
+    "quoteAuthor": "Friedrich Nietzsche"
+  },
+  {
+    "quoteText": "The surest way to corrupt a youth is to instruct him to hold in higher esteem those who think alike than those who think differently.",
+    "quoteAuthor": "Friedrich Nietzsche"
+  },
+  {
+    "quoteText": "The essence of the independent mind lies not in what it thinks, but in how it thinks.",
+    "quoteAuthor": "Christopher Hitchens"
+  },
+  {
+    "quoteText": "The greatest enemy of knowledge is not ignorance, it is the illusion of knowledge.",
+    "quoteAuthor": "Stephen Hawking"
+  },
+  {
+    "quoteText": "The peculiar evil of silencing the expression of an opinion is, that it is robbing the human race; posterity as well as the existing generation.",
+    "quoteAuthor": "John Stuart Mill"
+  },
+  {
+    "quoteText": "The most successful people are those who are good at plan B.",
+    "quoteAuthor": "James Yorke"
+  },
+  {
+    "quoteText": "The conventional view serves to protect us from the painful job of thinking.",
+    "quoteAuthor": "John Kenneth Galbraith"
+  },
+  {
+    "quoteText": "The greatest obstacle to discovery is not ignorance - it is the illusion of knowledge.",
+    "quoteAuthor": "Daniel J. Boorstin"
+  },
+  {
+    "quoteText": "The most important decision you make is to be in a good mood.",
+    "quoteAuthor": "Voltaire"
+  },
+  {
+    "quoteText": "The most beautiful thing we can experience is the mysterious. It is the source of all true art and science.",
+    "quoteAuthor": "Albert Einstein"
+  },
+  {
+    "quoteText": "The individual has always had to struggle to keep from being overwhelmed by the tribe. To be your own man is hard business.",
+    "quoteAuthor": "Rudyard Kipling"
+  },
+  {
+    "quoteText": "The most dangerous phrase in the language is, 'We've always done it this way.'",
+    "quoteAuthor": "Grace Hopper"
+  },
+  {
+    "quoteText": "The greatest tragedy of mankind is that people hold on to their opinions, not because they are true, but because they are theirs.",
+    "quoteAuthor": "Eric Hoffer"
+  },
+  {
+    "quoteText": "The most important thing in communication is hearing what isn't said.",
+    "quoteAuthor": "Peter Drucker"
+  },
+  {
+    "quoteText": "The most difficult thing is the decision to act, the rest is merely tenacity.",
+    "quoteAuthor": "Amelia Earhart"
+  },
+  {
+    "quoteText": "The most powerful weapon on earth is the human soul on fire.",
+    "quoteAuthor": "Ferdinand Foch"
+  },
+  {
+    "quoteText": "The greatest discovery of my generation is that a human being can alter his life by altering his attitudes.",
+    "quoteAuthor": "William James"
   }
 ]
 
