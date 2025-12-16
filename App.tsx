@@ -872,17 +872,6 @@ const App: React.FC = () => {
   };
   const raConfig = getReadAheadConfig();
 
-  // Auto-redirect for Mastery Gate
-  useEffect(() => {
-      if (isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE') {
-          const timer = setTimeout(() => {
-              switchMode('FIX_MISTAKE');
-              soundEngine.playKeypress(); // Audio cue
-          }, 2000); // 2 second delay to see the orange screen
-          return () => clearTimeout(timer);
-      }
-  }, [isGated, reason, gameMode, switchMode]);
-
   const renderMiniGame = () => {
       if (activeMiniGame === 'SURVIVAL_SWAMP') {
           return (
@@ -1075,85 +1064,99 @@ const App: React.FC = () => {
       
       <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative">
         <div className="w-full flex flex-col items-center justify-center min-h-[60vh]">
-          {isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE' && (
-              <div className="mb-8 relative group overflow-hidden bg-orange-200 text-orange-900 px-8 py-4 rounded-3xl shadow-xl shadow-orange-100 flex items-center gap-5 transition-all transform ring-4 ring-orange-100 animate-pulse z-50 cursor-wait">
-                  <div className="absolute inset-0 bg-white/30 skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 infinite"></div>
-                  <div className="bg-white/50 p-3 rounded-full shadow-inner text-orange-600">
-                      <AlertTriangle className="w-8 h-8" />
+          {isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE' ? (
+              <div className="mb-8 w-full max-w-2xl relative overflow-hidden bg-orange-50 border-2 border-orange-200 p-8 rounded-3xl shadow-xl flex flex-col items-center text-center gap-6 animate-in slide-in-from-top-5 duration-500 z-50">
+                  <div className="absolute top-0 left-0 w-full h-2 bg-orange-400/20"></div>
+                  
+                  <div className="p-4 bg-orange-100 rounded-full text-orange-500 ring-4 ring-orange-50">
+                      <AlertTriangle className="w-10 h-10" />
                   </div>
-                  <div className="text-left">
-                      <div className="font-black text-xl uppercase tracking-tight leading-none text-orange-800">Evolution Pending</div>
-                      <div className="font-medium text-sm text-orange-700 mt-1">
-                          Redirecting to fix <span className="font-black border-b-2 border-orange-400">{mistakePool.length} pending corrections</span>...
+                  
+                  <div className="space-y-2">
+                      <h3 className="text-3xl font-black text-orange-900 uppercase tracking-tight">Evolution Blocked</h3>
+                      <p className="text-orange-800 font-medium text-lg max-w-md leading-relaxed">
+                          You cannot evolve to the next level until you prove mastery over your mistakes.
+                      </p>
+                      <div className="bg-orange-100/50 px-4 py-2 rounded-lg border border-orange-200 inline-block">
+                          <p className="text-orange-700 text-sm font-bold">
+                              Requirement: Correctly type {mistakePool.length} words (3x each)
+                          </p>
                       </div>
                   </div>
-                  <div className="bg-white text-orange-500 p-2.5 rounded-full shadow-lg ml-2 animate-spin">
+
+                  <button 
+                    onClick={() => switchMode('FIX_MISTAKE')}
+                    className="mt-2 px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white font-black text-xl rounded-2xl shadow-lg shadow-orange-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-3 ring-4 ring-orange-500/20"
+                  >
                       <RefreshCcw className="w-6 h-6" />
-                  </div>
+                      FIX MISTAKES
+                  </button>
               </div>
-          )}
-
-          {isGated && reason === 'REMEDIATION' && gameMode === 'QUOTES' && (
-              <div className="mb-8 relative group overflow-hidden bg-orange-500 text-white px-8 py-4 rounded-3xl shadow-xl shadow-orange-200 flex items-center gap-5 transition-all transform hover:-translate-y-1 hover:shadow-2xl ring-4 ring-orange-100 animate-pulse z-50 cursor-default">
-                  <div className="bg-white/20 p-3 rounded-full shadow-inner">
-                      <RefreshCcw className="w-8 h-8 text-white fill-white/20" />
-                  </div>
-                  <div className="text-left">
-                      <div className="font-black text-xl uppercase tracking-tight leading-none text-white">Tier Gated!</div>
-                      <div className="font-medium text-sm text-orange-100 mt-1">
-                          Remediate <span className="font-black text-white border-b-2 border-orange-300/50">{Object.keys(failedQuoteRepetitions).length} failed quotes</span>
-                      </div>
-                  </div>
-              </div>
-          )}
-
-          {gameMode === 'PRACTICE' && !isMiniGameMenuOpen && !activeMiniGame && (
-              <div className="w-full flex flex-col items-center">
-                  {smartPracticeQueue.length > 0 && (
-                      <div className="mb-4 flex items-center gap-2 text-stone-500 text-xs font-bold uppercase tracking-wide bg-stone-100 px-4 py-1.5 rounded-full">
-                          <Brain className="w-4 h-4 text-purple-500" />
-                          <span>Smart Queue: {smartPracticeQueue.length} words to master</span>
-                      </div>
-                  )}
-                  <PracticeProgress level={practiceLevel} />
-              </div>
-          )}
-
-          {isMiniGameMenuOpen ? (
-              <MiniGameMenu 
-                  onSelect={handleMiniGameSelect} 
-                  onBack={() => setIsMiniGameMenuOpen(false)} 
-              />
-          ) : activeMiniGame ? (
-              renderMiniGame()
           ) : (
              <>
-                {loading && !currentQuote ? (
-                    <div className="flex flex-col items-center justify-center text-stone-400 animate-pulse">
-                    <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" />
-                    <p className="font-mono text-xs">
-                        Hatching wisdom...
-                    </p>
+                {isGated && reason === 'REMEDIATION' && gameMode === 'QUOTES' && (
+                    <div className="mb-8 relative group overflow-hidden bg-orange-500 text-white px-8 py-4 rounded-3xl shadow-xl shadow-orange-200 flex items-center gap-5 transition-all transform hover:-translate-y-1 hover:shadow-2xl ring-4 ring-orange-100 animate-pulse z-50 cursor-default">
+                        <div className="bg-white/20 p-3 rounded-full shadow-inner">
+                            <RefreshCcw className="w-8 h-8 text-white fill-white/20" />
+                        </div>
+                        <div className="text-left">
+                            <div className="font-black text-xl uppercase tracking-tight leading-none text-white">Tier Gated!</div>
+                            <div className="font-medium text-sm text-orange-100 mt-1">
+                                Remediate <span className="font-black text-white border-b-2 border-orange-300/50">{Object.keys(failedQuoteRepetitions).length} failed quotes</span>
+                            </div>
+                        </div>
                     </div>
-                ) : currentQuote ? (
-                    <TypingArea 
-                    quote={currentQuote} 
-                    onComplete={handleQuoteComplete} 
-                    onFail={handleQuoteFail}
-                    onMistake={handleMistake}
-                    onRequestNewQuote={handleRequestNextQuote}
-                    streak={streak}
-                    ghostWpm={getAverageWPM(wpmHistory)}
-                    settings={settings}
-                    gameMode={gameMode}
-                    onInteract={() => setIsMusicOpen(false)}
-                    autoFocus={shouldAutoFocus}
+                )}
+
+                {gameMode === 'PRACTICE' && !isMiniGameMenuOpen && !activeMiniGame && (
+                    <div className="w-full flex flex-col items-center">
+                        {smartPracticeQueue.length > 0 && (
+                            <div className="mb-4 flex items-center gap-2 text-stone-500 text-xs font-bold uppercase tracking-wide bg-stone-100 px-4 py-1.5 rounded-full">
+                                <Brain className="w-4 h-4 text-purple-500" />
+                                <span>Smart Queue: {smartPracticeQueue.length} words to master</span>
+                            </div>
+                        )}
+                        <PracticeProgress level={practiceLevel} />
+                    </div>
+                )}
+
+                {isMiniGameMenuOpen ? (
+                    <MiniGameMenu 
+                        onSelect={handleMiniGameSelect} 
+                        onBack={() => setIsMiniGameMenuOpen(false)} 
                     />
+                ) : activeMiniGame ? (
+                    renderMiniGame()
                 ) : (
-                    <div className="flex flex-col items-center justify-center text-stone-400">
-                    <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" />
-                    <p className="font-mono text-xs">Fetching wisdom...</p>
-                    </div>
+                   <>
+                      {loading && !currentQuote ? (
+                          <div className="flex flex-col items-center justify-center text-stone-400 animate-pulse">
+                          <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" />
+                          <p className="font-mono text-xs">
+                              Hatching wisdom...
+                          </p>
+                          </div>
+                      ) : currentQuote ? (
+                          <TypingArea 
+                          quote={currentQuote} 
+                          onComplete={handleQuoteComplete} 
+                          onFail={handleQuoteFail}
+                          onMistake={handleMistake}
+                          onRequestNewQuote={handleRequestNextQuote}
+                          streak={streak}
+                          ghostWpm={getAverageWPM(wpmHistory)}
+                          settings={settings}
+                          gameMode={gameMode}
+                          onInteract={() => setIsMusicOpen(false)}
+                          autoFocus={shouldAutoFocus}
+                          />
+                      ) : (
+                          <div className="flex flex-col items-center justify-center text-stone-400">
+                          <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" />
+                          <p className="font-mono text-xs">Fetching wisdom...</p>
+                          </div>
+                      )}
+                   </>
                 )}
              </>
           )}
