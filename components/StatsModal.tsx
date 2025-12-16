@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, TrendingUp, History, Calendar, ArrowLeft, BookOpen, Eraser, RotateCcw, Clock, Flag, User, Flame, Edit2 } from 'lucide-react';
+import { X, TrendingUp, History, Calendar, ArrowLeft, BookOpen, Eraser, RotateCcw, Clock, Flag, User, Flame, Edit2, Library } from 'lucide-react';
 import { TestResult } from '../types';
+import { QUOTES } from '../data/quotes';
 
 interface StatsModalProps {
   isOpen: boolean;
@@ -33,7 +34,7 @@ const StatsModal: React.FC<StatsModalProps> = ({
   if (!isOpen) return null;
 
   // Calculate some aggregate stats
-  const maxWpm = history.reduce((max, result) => Math.max(max, result.wpm), 0);
+  const totalQuotesAvailable = QUOTES.length;
   
   // Format date helper
   const formatDate = (isoString: string) => {
@@ -215,9 +216,14 @@ const StatsModal: React.FC<StatsModalProps> = ({
                               </h2>
                           )}
                       </div>
-                      <p className="text-xs text-stone-400 font-medium flex items-center gap-1 mt-1">
-                          <Calendar className="w-3 h-3" /> Joined {formatDate(joinDate)}
-                      </p>
+                      <div className="flex flex-col gap-0.5 mt-1">
+                          <p className="text-xs text-stone-400 font-medium flex items-center gap-1">
+                              <Calendar className="w-3 h-3" /> Joined {formatDate(joinDate)}
+                          </p>
+                          <p className="text-xs text-stone-400 font-medium flex items-center gap-1">
+                              <Library className="w-3 h-3" /> {totalQuotesAvailable} Quotes Available
+                          </p>
+                      </div>
                   </div>
               </div>
               <button onClick={onClose} className="p-2 -mr-2 text-stone-400 hover:text-stone-600 rounded-full hover:bg-stone-50 transition-colors">
