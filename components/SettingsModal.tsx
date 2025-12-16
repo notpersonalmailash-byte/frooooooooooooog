@@ -1,6 +1,6 @@
 
 import React, { useRef } from 'react';
-import { Settings, MechanicalSoundPreset, ReadAheadLevel } from '../types';
+import { Settings, MechanicalSoundPreset, ReadAheadLevel, TTSMode } from '../types';
 import { X, Ghost, EyeOff, Volume2, Music, Download, Upload, Database, Keyboard, Eye, PlayCircle, AlertTriangle, CheckCircle2, Speech } from 'lucide-react';
 import { getCurrentLevel } from '../utils/gameLogic';
 
@@ -22,7 +22,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
   const toggleMechanical = () => setSettings({ ...settings, mechanicalSoundEnabled: !settings.mechanicalSoundEnabled });
   const setMechanicalPreset = (preset: MechanicalSoundPreset) => setSettings({ ...settings, mechanicalSoundPreset: preset });
   const toggleAutoStart = () => setSettings({ ...settings, autoStartMusic: !settings.autoStartMusic });
-  const toggleTTS = () => setSettings({ ...settings, ttsEnabled: !settings.ttsEnabled });
+  const setTTSMode = (mode: TTSMode) => setSettings({ ...settings, ttsMode: mode });
   
   const handleExport = () => {
     const backupData: Record<string, string> = {};
@@ -214,24 +214,52 @@ Are you sure you want to restore?
             </div>
           </button>
 
-          {/* Text-to-Speech Toggle (Orange) */}
-          <button 
-            onClick={toggleTTS}
-            className={`w-full text-left flex items-center justify-between p-3 rounded-xl cursor-pointer border transition-all focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 ${settings.ttsEnabled ? 'bg-orange-50 border-orange-200' : 'bg-stone-50 border-transparent hover:bg-stone-100'}`}
-          >
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${settings.ttsEnabled ? 'bg-orange-100 text-orange-600' : 'bg-stone-200 text-stone-500'}`}>
-                <Speech className="w-5 h-5" />
+          {/* Text-to-Speech Selector (Orange) */}
+          <div className={`rounded-xl border transition-all overflow-hidden ${settings.ttsMode !== 'OFF' ? 'bg-orange-50 border-orange-200' : 'bg-stone-50 border-transparent hover:bg-stone-100'}`}>
+              <div className="p-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`p-2 rounded-lg ${settings.ttsMode !== 'OFF' ? 'bg-orange-100 text-orange-600' : 'bg-stone-200 text-stone-500'}`}>
+                    <Speech className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-sm text-stone-700">Read Aloud Mode</div>
+                    <div className="text-[10px] text-stone-400">Speak words while typing</div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-1 p-1 bg-stone-200/50 rounded-lg">
+                    {(['OFF', 'QUOTE', 'WORD', 'FLOW', 'NEXT', 'SCOUT'] as TTSMode[]).map(mode => {
+                        const labels = { 
+                            OFF: 'Off', 
+                            QUOTE: 'Full Quote', 
+                            WORD: 'Current', 
+                            FLOW: 'Flow',
+                            NEXT: 'Next',
+                            SCOUT: 'Scout (+2)'
+                        };
+                        const isActive = settings.ttsMode === mode;
+                        
+                        let activeClass = 'bg-white text-stone-700 shadow-sm';
+                        // Orange theme for TTS active states
+                        if (isActive && mode !== 'OFF') activeClass = 'bg-orange-500 text-white shadow-sm';
+
+                        return (
+                           <button
+                             key={mode}
+                             onClick={() => setTTSMode(mode)}
+                             className={`
+                                text-[9px] font-bold py-1.5 px-1 rounded-md transition-all flex flex-col items-center justify-center
+                                focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1
+                                ${isActive ? activeClass : 'text-stone-500 hover:bg-white/50'}
+                             `}
+                           >
+                               <span>{labels[mode]}</span>
+                           </button>
+                        );
+                    })}
+                </div>
               </div>
-              <div>
-                <div className="font-bold text-sm text-stone-700">Read Aloud</div>
-                <div className="text-[10px] text-stone-400">Speak quotes when typing</div>
-              </div>
-            </div>
-            <div className={`w-10 h-6 rounded-full relative transition-colors ${settings.ttsEnabled ? 'bg-orange-500' : 'bg-stone-300'}`}>
-               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.ttsEnabled ? 'left-5' : 'left-1'}`} />
-            </div>
-          </button>
+          </div>
 
           {/* Mechanical Sounds Toggle (Amber) */}
           <div className={`rounded-xl border transition-all overflow-hidden ${settings.mechanicalSoundEnabled ? 'bg-amber-50 border-amber-200' : 'bg-stone-50 border-transparent hover:bg-stone-100'}`}>

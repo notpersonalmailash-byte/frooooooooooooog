@@ -136,6 +136,13 @@ const App: React.FC = () => {
     if (parsed.readAheadEnabled === true && !initialReadAhead) initialReadAhead = 'FOCUS';
     if (!initialReadAhead) initialReadAhead = 'NONE';
 
+    // Migrate old ttsEnabled boolean to new ttsMode
+    let initialTTSMode = parsed.ttsMode;
+    if (!initialTTSMode) {
+        if (parsed.ttsEnabled === true) initialTTSMode = 'QUOTE';
+        else initialTTSMode = 'OFF';
+    }
+
     // Construct settings with defaults
     const mergedSettings: Settings = {
       ghostEnabled: false, 
@@ -147,7 +154,7 @@ const App: React.FC = () => {
       musicConfig: { source: 'NONE', presetId: '' },
       themeId: 'CLASSIC',
       autoStartMusic: true, // Default to true
-      ttsEnabled: false, // Default text-to-speech to false
+      ttsMode: initialTTSMode, // Default to OFF or migrated value
       ...parsed // Overwrite with saved values
     };
 

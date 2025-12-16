@@ -43,6 +43,8 @@ export type MechanicalSoundPreset = 'THOCK' | 'CLICKY' | 'BUBBLE' | 'TYPEWRITER'
 
 export type ReadAheadLevel = 'NONE' | 'FOCUS' | 'ULTRA' | 'BLIND';
 
+export type TTSMode = 'OFF' | 'QUOTE' | 'WORD' | 'FLOW' | 'NEXT' | 'SCOUT';
+
 export interface Settings {
   ghostEnabled: boolean;
   readAheadLevel: ReadAheadLevel; // Changed from boolean
@@ -53,7 +55,7 @@ export interface Settings {
   musicConfig: MusicConfig;
   themeId: string; // New: Selected Theme ID
   autoStartMusic: boolean; // Control whether music starts automatically on load
-  ttsEnabled: boolean; // Text-to-Speech Read Aloud
+  ttsMode: TTSMode; // Text-to-Speech Mode
 }
 
 export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES';

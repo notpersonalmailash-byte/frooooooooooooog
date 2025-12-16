@@ -290,11 +290,40 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     }
   }, [status, calculateStats, settings.ghostEnabled, ghostWpm, startTime]);
 
-  const getWordAt = (index: number, text: string) => {
-    const start = text.lastIndexOf(' ', index) + 1;
-    let end = text.indexOf(' ', index);
-    if (end === -1) end = text.length;
-    return text.slice(start, end); 
+  // --- TTS LOGIC ---
+  const speakText = (text: string) => {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.2; 
+      window.speechSynthesis.speak(utterance);
+  };
+
+  const triggerTTS = (index: number) => {
+      if (settings.ttsMode === 'OFF') return;
+      
+      const words = quote.text.split(' ');
+      
+      if (settings.ttsMode === 'QUOTE') {
+          if (index === 0) speakText(quote.text);
+          return;
+      }
+
+      let textToSpeak = '';
+      
+      if (settings.ttsMode === 'WORD') {
+          textToSpeak = words[index] || '';
+      } else if (settings.ttsMode === 'FLOW') {
+          // Current + Next
+          const w1 = words[index] || '';
+          const w2 = words[index + 1] || '';
+          textToSpeak = `${w1} ${w2}`;
+      } else if (settings.ttsMode === 'NEXT') {
+          textToSpeak = words[index + 1] || '';
+      } else if (settings.ttsMode === 'SCOUT') {
+          textToSpeak = words[index + 2] || '';
+      }
+      
+      if (textToSpeak.trim()) speakText(textToSpeak);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -303,21 +332,24 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     const val = e.target.value;
     const prevLen = input.length;
     
+    // --- Start Game Logic ---
     if (status === GameStatus.IDLE && val.length > 0) {
       setStartTime(Date.now());
       setStatus(GameStatus.PLAYING);
       
-      // Text-To-Speech Trigger
-      if (settings.ttsEnabled) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(quote.text);
-          utterance.rate = 1.1; // Slightly faster than default for flow
-          window.speechSynthesis.speak(utterance);
-      }
+      // Trigger Initial TTS (Index 0)
+      triggerTTS(0);
     }
 
     if (val.length > prevLen) {
         soundEngine.playKeypress();
+    }
+
+    // --- TTS Trigger on Space (Word Completion) ---
+    // Detect if we just typed a space, moving to the next word
+    if (val.endsWith(' ') && !input.endsWith(' ')) {
+        const nextWordIndex = val.trim().split(' ').length;
+        triggerTTS(nextWordIndex);
     }
 
     // --- Instant Fail Check (All Modes) ---
