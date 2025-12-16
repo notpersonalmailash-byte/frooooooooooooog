@@ -7,17 +7,16 @@ import StatsModal from './components/StatsModal';
 import ThemeModal from './components/ThemeModal';
 import AchievementsModal from './components/AchievementsModal';
 import AchievementToast from './components/AchievementToast';
-import PracticeProgress from './components/PracticeProgress';
 import SurvivalGame from './components/SurvivalGame';
 import TimeAttackGame from './components/TimeAttackGame';
 import CosmicDefenseGame from './components/CosmicDefenseGame';
 import MiniGameMenu from './components/MiniGameMenu';
 import { MusicPlayer } from './components/MusicPlayer';
-import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel, PracticeWord } from './types';
+import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel, PracticeWord, AchievementStats } from './types';
 import { fetchQuotes, getPracticeLetter } from './services/quoteService';
 import { getCurrentLevel, getNextLevel, getAverageWPM, LEVELS, calculateXP, checkLevelProgress } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw, FileText } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
 import { ACHIEVEMENTS } from './data/achievements';
@@ -458,17 +457,25 @@ const App: React.FC = () => {
     }
   }, [currentQuote, quotesQueue, gameMode, generateXWordQuote, generateXQuoteQuote, loadMoreQuotes]);
 
-  const checkAchievements = (wpm: number) => {
+  // Enhanced Achievement Checker
+  const checkAchievements = (
+      wpm: number, 
+      arcadeScore: number = 0, 
+      arcadeWave: number = 0
+  ) => {
     const newNotifications: NotificationItem[] = [];
     const newUnlockIds: string[] = [];
 
-    const stats = {
+    const stats: AchievementStats = {
        wpm,
        totalQuotes: completedQuotes.length + 1, 
-       maxStreak: Math.max(streak + 1, streak + 1),
+       maxStreak: Math.max(streak + 1, streak + 1), // Using current streak as session max roughly
        currentStreak: streak + 1,
        mode: gameMode,
-       practiceLevel
+       dailyStreak: dailyStreak,
+       totalTime: totalTimePlayed,
+       arcadeScore: arcadeScore,
+       arcadeWave: arcadeWave
     };
 
     ACHIEVEMENTS.forEach(ach => {
@@ -581,25 +588,6 @@ const App: React.FC = () => {
         });
     }
 
-    // Practice Mode Level Up Logic
-    if (gameMode === 'PRACTICE') {
-        if (retryCount === 0 && mistakes.length === 0 && wpm > 30) {
-            const nextLevel = practiceLevel + 1;
-            setPracticeLevel(nextLevel);
-            const newLetter = getPracticeLetter(nextLevel);
-            
-            setNotificationQueue(prev => [...prev, {
-                id: `practice_level_${nextLevel}`,
-                title: "Practice Level Up!",
-                description: `Unlocked letter: ${newLetter}`,
-                icon: <ArrowUpCircle className="w-5 h-5 text-frog-green" />,
-                type: 'INFO'
-            }]);
-            
-            setQuotesQueue([]);
-        }
-    }
-
     if (currentQuote && gameMode !== 'XWORDS' && gameMode !== 'PRACTICE' && gameMode !== 'XQUOTES') {
        setCompletedQuotes(prev => [...prev, currentQuote.text]);
     }
@@ -621,6 +609,7 @@ const App: React.FC = () => {
     };
     setTestHistory(prev => [...prev, newTestResult]);
 
+    // Check achievements (Standard WPM)
     checkAchievements(wpm);
 
     // Calculate XP and Handle Gates/Unlocks
@@ -650,6 +639,10 @@ const App: React.FC = () => {
       setTestHistory(prev => [...prev, newTestResult]);
 
       handleXPGain(xp, getAverageWPM(wpmHistory));
+      
+      // Trigger Arcade Achievements
+      checkAchievements(0, score, wave);
+
       setNotificationQueue(prev => [...prev, {
           id: `survival_${Date.now()}`,
           title: "Arcade Run Complete",
@@ -937,7 +930,7 @@ const App: React.FC = () => {
                   <button 
                       onClick={() => switchMode('PRACTICE')}
                       disabled={isPracticeLocked}
-                      title={isPracticeLocked ? `Calibrating skill profile... (${testHistory.length}/20)` : "Smart Practice Mode"}
+                      title={isPracticeLocked ? `Calibrating skill profile... (${testHistory.length}/20)` : "Dynamic Words Mode"}
                       className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
                         ${gameMode === 'PRACTICE' && !isMiniGameMenuOpen && !activeMiniGame 
                             ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' 
@@ -945,8 +938,8 @@ const App: React.FC = () => {
                                 ? 'opacity-50 cursor-not-allowed text-stone-400 bg-stone-100 border border-stone-200' 
                                 : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
                   >
-                      {isPracticeLocked ? <Lock className="w-3.5 h-3.5" /> : <Keyboard className="w-3.5 h-3.5" />} 
-                      Practice
+                      {isPracticeLocked ? <Lock className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />} 
+                      Words
                   </button>
                   <button 
                       onClick={() => switchMode('HARDCORE')}
@@ -1130,18 +1123,6 @@ const App: React.FC = () => {
               </div>
           ) : (
              <>
-                {gameMode === 'PRACTICE' && !isMiniGameMenuOpen && !activeMiniGame && (
-                    <div className="w-full flex flex-col items-center">
-                        {smartPracticeQueue.length > 0 && (
-                            <div className="mb-4 flex items-center gap-2 text-stone-500 text-xs font-bold uppercase tracking-wide bg-stone-100 px-4 py-1.5 rounded-full">
-                                <Brain className="w-4 h-4 text-purple-500" />
-                                <span>Smart Queue: {smartPracticeQueue.length} words to master</span>
-                            </div>
-                        )}
-                        <PracticeProgress level={practiceLevel} />
-                    </div>
-                )}
-
                 {isMiniGameMenuOpen ? (
                     <MiniGameMenu 
                         onSelect={handleMiniGameSelect} 
@@ -1215,6 +1196,8 @@ const App: React.FC = () => {
       <HelpModal
         isOpen={isHelpOpen}
         onClose={() => setIsHelpOpen(false)}
+        currentLevel={getCurrentLevel(userXP)}
+        completedTestsCount={testHistory.length}
       />
 
       <StatsModal

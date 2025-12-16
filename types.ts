@@ -76,13 +76,25 @@ export interface Theme {
   };
 }
 
+export interface AchievementStats {
+  wpm: number;
+  totalQuotes: number;
+  maxStreak: number; // Session streak
+  currentStreak: number;
+  dailyStreak: number;
+  mode: GameMode;
+  totalTime: number; // Seconds
+  arcadeScore?: number;
+  arcadeWave?: number;
+}
+
 export interface Achievement {
   id: string;
   title: string;
   description: string;
   icon: React.ReactNode;
-  category: 'SPEED' | 'STREAK' | 'VOLUME' | 'MASTERY' | 'HIDDEN' | 'PRACTICE';
-  condition: (stats: { wpm: number; totalQuotes: number; maxStreak: number; currentStreak: number; mode: GameMode; practiceLevel: number }) => boolean;
+  category: 'SPEED' | 'STREAK' | 'VOLUME' | 'MASTERY' | 'HIDDEN' | 'PRACTICE' | 'TIME' | 'CONSISTENCY' | 'ARCADE';
+  condition: (stats: AchievementStats) => boolean;
 }
 
 export interface NotificationItem {

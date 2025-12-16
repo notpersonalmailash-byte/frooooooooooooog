@@ -1,3 +1,4 @@
+
 import { Quote, PracticeWord } from '../types';
 import { QUOTES } from '../data/quotes';
 
@@ -43,34 +44,44 @@ const SORTED_QUOTES = [...QUOTES].map(q => ({
     normalizedText: normalizeText(q.quoteText)
 })).sort((a, b) => a.difficulty - b.difficulty);
 
-// Build a dictionary of all words found in quotes for Practice Mode
+// Build a dictionary of all words found in quotes
 const WORD_DATABASE = Array.from(new Set(
     SORTED_QUOTES
         .map(q => q.normalizedText.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/))
         .flat()
-        .filter(w => w.length > 2)
+        .filter(w => w.length >= 2)
 ));
 
-// --- PRACTICE MODE GENERATOR ---
+// Legacy Export needed for types? No, but maybe used elsewhere. keeping for safety but not logic.
 export const PRACTICE_ORDER = "enitrlsauoychgmpbkvwjqxz".split('');
-
 export const getPracticeLetter = (level: number) => {
-    const idx = Math.min(6 + level - 1, PRACTICE_ORDER.length - 1);
-    return PRACTICE_ORDER[idx].toUpperCase();
+    return ""; // Deprecated logic
 }
 
-const getLocalPracticeWords = (allowedLetters: string[], count: number = 20): string[] => {
-    // Filter the global word database for words that ONLY contain allowed letters
-    const validWords = WORD_DATABASE.filter(word => {
-        return word.split('').every(char => allowedLetters.includes(char));
-    });
-
-    if (validWords.length < 5) {
-        // Fallback if strict filtering is too restrictive (early levels)
-        return ["tee", "ten", "net", "tin", "rent", "tent", "test", "rest", "sent", "nest", "site", "rise", "tire"];
+const getDifficultyConfig = (tier: string) => {
+    switch(tier) {
+        case 'Egg': return { minLen: 2, maxLen: 4, punctProb: 0, count: 10 };
+        case 'Tadpole': return { minLen: 3, maxLen: 6, punctProb: 0, count: 12 };
+        case 'Polliwog': return { minLen: 4, maxLen: 8, punctProb: 0.1, count: 12 };
+        case 'Froglet': return { minLen: 4, maxLen: 10, punctProb: 0.3, count: 15 };
+        case 'Hopper': return { minLen: 5, maxLen: 12, punctProb: 0.5, count: 15 };
+        case 'Tree Frog': return { minLen: 5, maxLen: 15, punctProb: 0.7, count: 18 };
+        case 'Bullfrog': return { minLen: 6, maxLen: 20, punctProb: 0.9, count: 20 };
+        case 'Frog Sage': return { minLen: 6, maxLen: 99, punctProb: 1.0, count: 25 };
+        default: return { minLen: 2, maxLen: 5, punctProb: 0, count: 10 };
     }
+};
 
-    return validWords;
+const applyPunctuation = (word: string, prob: number) => {
+    if (Math.random() > prob) return word;
+    
+    const r = Math.random();
+    if (r < 0.4) return word + ',';
+    if (r < 0.7) return word + '.';
+    if (r < 0.8) return word + '?';
+    if (r < 0.9) return word + '!';
+    if (r < 0.95) return `"${word}"`;
+    return word + ';';
 };
 
 export const fetchQuotes = async (
@@ -83,69 +94,47 @@ export const fetchQuotes = async (
     smartPracticeQueue: PracticeWord[] = []
 ): Promise<Quote[]> => {
   
-  // --- PRACTICE MODE LOGIC (LOCAL) ---
+  // --- WORDS MODE LOGIC (Formerly Practice) ---
   if (mode === 'PRACTICE') {
-      const unlockedCount = Math.min(6 + practiceLevel, PRACTICE_ORDER.length);
-      const unlockedLetters = PRACTICE_ORDER.slice(0, unlockedCount);
-      const newLetter = unlockedLetters[unlockedLetters.length - 1];
+      // Determine complexity based on Tier name extraction
+      const tier = levelName.split(' ')[0] || 'Egg';
+      const config = getDifficultyConfig(tier);
       
-      const unlockedSet = new Set(unlockedLetters);
+      // Filter words based on complexity
+      let availableWords = WORD_DATABASE.filter(w => w.length >= config.minLen && w.length <= config.maxLen);
       
-      // 1. Get Trouble Words from Smart Queue (Lowest proficiency first)
-      const troubleWords = smartPracticeQueue
-          .sort((a, b) => a.proficiency - b.proficiency)
-          .slice(0, 5) // Focus on top 5 worst words
-          .map(pw => pw.word);
-
-      // 2. Determine weak letters from stats
-      const weakLetters = Object.entries(charStats)
-        .filter(([char]) => unlockedLetters.includes(char.toLowerCase()))
-        .sort((a, b) => b[1] - a[1]) // Descending order of misses
-        .map(([char]) => char)
-        .slice(0, 3); // Top 3 weakest
-      
-      const focusLetters = Array.from(new Set([...weakLetters, newLetter]));
-
-      // 3. Get generic words based on unlocked letters
-      let practiceWords = getLocalPracticeWords(unlockedLetters);
-      
-      // Prioritize words containing focus letters
-      const focusedWords = practiceWords.filter(w => 
-          w.split('').some(c => focusLetters.includes(c))
-      );
-      
-      // Use focused words if we have enough, otherwise mix
-      const wordPool = focusedWords.length > 10 ? focusedWords : practiceWords;
+      // Fallback if filter is too aggressive
+      if (availableWords.length < 50) {
+          availableWords = WORD_DATABASE.filter(w => w.length <= config.maxLen);
+      }
 
       const quotes: Quote[] = [];
       
-      // Generate 'count' number of practice strings
       for(let i=0; i<count; i++) {
-         // Create a sentence mixing trouble words and practice pool
-         const sentenceComponents = [];
+         const sentenceWords: string[] = [];
          
-         // Inject 1-2 trouble words if available
-         if (troubleWords.length > 0) {
-             const tWord = troubleWords[Math.floor(Math.random() * troubleWords.length)];
-             sentenceComponents.push(tWord);
-             if (Math.random() > 0.5) {
-                 sentenceComponents.push(troubleWords[Math.floor(Math.random() * troubleWords.length)]);
+         // Inject Smart Queue words if available (Mistakes)
+         // Only use 1-2 to avoid frustration
+         const mistakes = smartPracticeQueue.sort((a,b) => a.proficiency - b.proficiency).slice(0, 3);
+         
+         for(let j=0; j<config.count; j++) {
+             // 10% chance to inject a mistake word regardless of difficulty
+             if (mistakes.length > 0 && Math.random() < 0.1) {
+                 sentenceWords.push(mistakes[Math.floor(Math.random() * mistakes.length)].word);
+             } else {
+                 let word = availableWords[Math.floor(Math.random() * availableWords.length)];
+                 // Apply punctuation logic scaling with level
+                 word = applyPunctuation(word, config.punctProb);
+                 sentenceWords.push(word);
              }
          }
 
-         // Fill rest with 4-6 random pool words
-         const fillCount = 4 + Math.floor(Math.random() * 3);
-         for(let j=0; j<fillCount; j++) {
-             sentenceComponents.push(wordPool[Math.floor(Math.random() * wordPool.length)]);
-         }
-
-         // Shuffle the sentence
-         const finalSentence = sentenceComponents.sort(() => 0.5 - Math.random()).join(" ");
+         const finalSentence = sentenceWords.join(" ");
          
          quotes.push({
              text: finalSentence,
-             source: "Smart Practice",
-             author: troubleWords.length > 0 ? "Focus: Weak Words & Keys" : `Level ${practiceLevel + 1}: ${unlockedLetters.join('').toUpperCase()}`
+             source: "Words Mode",
+             author: `Difficulty: ${tier}`
          });
       }
       return quotes;

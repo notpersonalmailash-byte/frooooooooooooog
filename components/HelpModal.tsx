@@ -5,16 +5,28 @@ import {
   Gamepad2, Keyboard, Ghost, EyeOff, 
   Database, Music, ShieldAlert, 
   ArrowUpRight, Award, History, 
-  GraduationCap 
+  GraduationCap, Lock, RefreshCcw, Eraser, FileText
 } from 'lucide-react';
+import { Level } from '../types';
 
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  currentLevel: Level;
+  completedTestsCount: number;
 }
 
-const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
+const TIER_ORDER = ['Egg', 'Tadpole', 'Polliwog', 'Froglet', 'Hopper', 'Tree Frog', 'Bullfrog', 'Frog Sage'];
+
+const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, currentLevel, completedTestsCount }) => {
   if (!isOpen) return null;
+
+  const currentTierIndex = TIER_ORDER.indexOf(currentLevel.tier);
+  
+  // Unlock Logic
+  const isPracticeLocked = completedTestsCount < 20;
+  const isHardcoreLocked = currentTierIndex < TIER_ORDER.indexOf('Polliwog');
+  const isArcadeLocked = currentTierIndex < TIER_ORDER.indexOf('Froglet');
 
   return (
     <div 
@@ -96,7 +108,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                                   <ShieldAlert className="w-3.5 h-3.5 text-orange-500" /> Remediation Protocol
                               </h4>
                               <p className="text-xs text-stone-500 leading-relaxed">
-                                  To ensure mastery, if you fail a quote in standard mode, you must strictly pass that specific quote <strong>3 times</strong> before you are allowed to evolve to the next major Tier.
+                                  To ensure mastery, if you fail a quote in standard mode, you must strictly pass that specific quote <strong>3 times</strong> before you are allowed to evolve to the next major Tier. This is handled via <strong>XQuotes</strong> mode.
                               </p>
                           </div>
                       </div>
@@ -108,15 +120,23 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                           <GraduationCap className="w-4 h-4 text-frog-green" /> Smart Training
                       </h3>
                       <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-3">
-                          <div className="flex gap-3 items-start">
-                              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0"><Keyboard className="w-4 h-4" /></div>
+                          
+                          {/* Words Mode Block */}
+                          <div className={`flex gap-3 items-start relative ${isPracticeLocked ? 'opacity-50 grayscale' : ''}`}>
+                              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0"><FileText className="w-4 h-4" /></div>
                               <div>
-                                  <h4 className="font-bold text-stone-700 text-sm">Smart Practice Mode</h4>
+                                  <div className="flex items-center gap-2">
+                                      <h4 className="font-bold text-stone-700 text-sm">Words Mode</h4>
+                                      {isPracticeLocked && <span className="text-[9px] font-bold bg-stone-200 px-1.5 py-0.5 rounded text-stone-600 flex items-center gap-1"><Lock className="w-2 h-2"/> Unlocks after 20 tests</span>}
+                                  </div>
                                   <p className="text-xs text-stone-500 mt-0.5">
-                                      The game tracks every missed character. Practice Mode generates custom sentences using your weakest keys and unlocked letters (Leitner System).
+                                      Infinite flow of words. Complexity scales dynamically with your user Tier—starting from simple words to complex sentences with punctuation.
+                                      <br/>
+                                      <span className="font-bold text-blue-500">Bonus: Only 5% XP penalty for mistakes.</span>
                                   </p>
                               </div>
                           </div>
+
                           <div className="flex gap-3 items-start">
                               <div className="p-2 bg-purple-50 text-purple-600 rounded-lg shrink-0"><Ghost className="w-4 h-4" /></div>
                               <div>
@@ -146,12 +166,14 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                   {/* 4. Game Modes */}
                   <section>
                       <h3 className="flex items-center gap-2 text-sm font-black text-stone-800 uppercase tracking-widest mb-4 border-b border-stone-200 pb-2">
-                          <Zap className="w-4 h-4 text-frog-green" /> Standard Modes
+                          <Zap className="w-4 h-4 text-frog-green" /> Game Modes
                       </h3>
                       <div className="grid grid-cols-1 gap-3">
+                          
+                          {/* Standard Quotes */}
                           <div className="group relative bg-white p-4 rounded-xl border border-stone-200 shadow-sm hover:border-frog-green/30 transition-colors">
                               <div className="flex justify-between items-center mb-1">
-                                  <span className="font-bold text-stone-800 text-sm">Quotes (Standard)</span>
+                                  <span className="font-bold text-stone-800 text-sm flex items-center gap-2"><BookOpen className="w-3.5 h-3.5 text-frog-green"/> Quotes (Standard)</span>
                                   <span className="text-[10px] bg-stone-100 text-stone-500 px-2 py-0.5 rounded font-bold">Ranked</span>
                               </div>
                               <p className="text-xs text-stone-500">
@@ -159,23 +181,35 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                               </p>
                           </div>
                           
-                          <div className="group relative bg-white p-4 rounded-xl border border-stone-200 shadow-sm hover:border-red-500/30 transition-colors">
+                          {/* Hardcore Mode */}
+                          <div className={`group relative p-4 rounded-xl border shadow-sm transition-colors ${isHardcoreLocked ? 'bg-stone-50 border-stone-200 opacity-60' : 'bg-white border-stone-200 hover:border-stone-800'}`}>
                               <div className="flex justify-between items-center mb-1">
-                                  <span className="font-bold text-stone-800 text-sm">Hardcore</span>
-                                  <span className="text-[10px] bg-stone-800 text-white px-2 py-0.5 rounded font-bold">5x XP</span>
+                                  <span className={`font-bold text-sm flex items-center gap-2 ${isHardcoreLocked ? 'text-stone-500' : 'text-stone-800'}`}>
+                                      <Skull className={`w-3.5 h-3.5 ${isHardcoreLocked ? 'text-stone-400' : 'text-stone-800'}`}/> Hardcore
+                                  </span>
+                                  {isHardcoreLocked ? (
+                                      <span className="text-[10px] bg-stone-200 text-stone-500 px-2 py-0.5 rounded font-bold flex items-center gap-1"><Lock className="w-2 h-2"/> Unlocks at Polliwog</span>
+                                  ) : (
+                                      <span className="text-[10px] bg-stone-800 text-white px-2 py-0.5 rounded font-bold">5x XP</span>
+                                  )}
                               </div>
                               <p className="text-xs text-stone-500">
-                                  Mistakes deduct <span className="text-red-500 font-bold">50% XP</span>. Only for the brave. Unlocks at Polliwog.
+                                  Mistakes deduct <span className="font-bold">50% XP</span>. Only for the brave. 
                               </p>
                           </div>
 
-                          <div className="group relative bg-white p-4 rounded-xl border border-stone-200 shadow-sm hover:border-blue-500/30 transition-colors">
+                          {/* Remediation Modes */}
+                          <div className="group relative bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
                               <div className="flex justify-between items-center mb-1">
-                                  <span className="font-bold text-stone-800 text-sm">Fix Mistakes</span>
+                                  <span className="font-bold text-stone-800 text-sm flex items-center gap-2"><Eraser className="w-3.5 h-3.5 text-red-500"/> XWords & XQuotes</span>
                                   <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">Recovery</span>
                               </div>
-                              <p className="text-xs text-stone-500">
-                                  Re-play words you previously failed. Reduced penalty (-5%).
+                              <p className="text-xs text-stone-500 mt-1">
+                                  <span className="font-bold text-stone-700">XWords:</span> Generates sentences from your misspelled words. (Requires 3x repetition).
+                                  <br/>
+                                  <span className="font-bold text-stone-700">XQuotes:</span> Forces you to retry failed quotes 3 times.
+                                  <br/>
+                                  <span className="text-[10px] text-stone-400 italic block mt-1">* Both must be cleared to advance Tiers. Low XP penalty (5%).</span>
                               </p>
                           </div>
                       </div>
@@ -186,26 +220,31 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                       <h3 className="flex items-center gap-2 text-sm font-black text-stone-800 uppercase tracking-widest mb-4 border-b border-stone-200 pb-2">
                           <Gamepad2 className="w-4 h-4 text-purple-500" /> Arcade Center
                       </h3>
-                      <div className="bg-stone-900 p-5 rounded-2xl border border-stone-800 shadow-lg text-stone-300 space-y-4">
-                          <p className="text-xs italic opacity-70">
-                              Unlocked at <strong>Froglet</strong> rank. These modes test endurance and adaptability.
-                          </p>
+                      <div className={`p-5 rounded-2xl border shadow-lg space-y-4 ${isArcadeLocked ? 'bg-stone-100 border-stone-200 opacity-70 grayscale' : 'bg-stone-900 border-stone-800 text-stone-300'}`}>
+                          {isArcadeLocked && (
+                              <div className="flex justify-center mb-2">
+                                  <span className="bg-stone-200 text-stone-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
+                                      <Lock className="w-3 h-3" /> Unlocks at Froglet Tier
+                                  </span>
+                              </div>
+                          )}
+                          
                           <div className="space-y-3">
                               <div className="flex gap-3">
-                                  <div className="mt-1"><Skull className="w-4 h-4 text-red-500" /></div>
+                                  <div className="mt-1"><Skull className={`w-4 h-4 ${isArcadeLocked ? 'text-stone-400' : 'text-red-500'}`} /></div>
                                   <div>
-                                      <h4 className="font-bold text-white text-sm">Survival (Swamp & Outbreak Z)</h4>
+                                      <h4 className={`font-bold text-sm ${isArcadeLocked ? 'text-stone-600' : 'text-white'}`}>Survival (Swamp & Outbreak Z)</h4>
                                       <p className="text-xs opacity-70 mt-0.5">
                                           Defend against waves of enemies. 
                                           <br/>
-                                          <span className="text-red-400 font-mono">1 Mistake = 1 Life Lost.</span>
+                                          <span className={`font-mono ${isArcadeLocked ? 'text-stone-500' : 'text-red-400'}`}>1 Mistake = 1 Life Lost.</span>
                                       </p>
                                   </div>
                               </div>
                               <div className="flex gap-3">
-                                  <div className="mt-1"><ArrowUpRight className="w-4 h-4 text-cyan-400" /></div>
+                                  <div className="mt-1"><ArrowUpRight className={`w-4 h-4 ${isArcadeLocked ? 'text-stone-400' : 'text-cyan-400'}`} /></div>
                                   <div>
-                                      <h4 className="font-bold text-white text-sm">Cosmic Defense</h4>
+                                      <h4 className={`font-bold text-sm ${isArcadeLocked ? 'text-stone-600' : 'text-white'}`}>Cosmic Defense</h4>
                                       <p className="text-xs opacity-70 mt-0.5">
                                           Vertical scroller. Type words to launch missiles. Defeat bosses.
                                       </p>
