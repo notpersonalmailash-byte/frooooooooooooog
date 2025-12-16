@@ -120,45 +120,44 @@ const App: React.FC = () => {
   
   const [settings, setSettings] = useState<Settings>(() => {
     const saved = localStorage.getItem('frogType_settings');
+    const parsed = saved ? JSON.parse(saved) : {};
     
-    if (!saved) {
-      return { 
-        ghostEnabled: false, 
-        readAheadLevel: 'NONE', 
-        sfxEnabled: true,
-        mechanicalSoundEnabled: false,
-        mechanicalSoundPreset: 'THOCK',
-        ambientVolume: 0.02, 
-        musicConfig: { source: 'GENERATED', presetId: 'PIANO_SATIE' },
-        themeId: 'CLASSIC'
-      };
-    }
-
-    const parsed = JSON.parse(saved);
+    // Legacy migration helper values
     const legacyBrownNoiseEnabled = parsed.brownNoiseEnabled === true;
     const legacyVolume = parsed.brownNoiseVolume ?? 0.5;
-
-    // Migration for legacy boolean readAhead
+    
     let initialReadAhead = parsed.readAheadLevel;
     if (parsed.readAheadEnabled === true && !initialReadAhead) initialReadAhead = 'FOCUS';
     if (!initialReadAhead) initialReadAhead = 'NONE';
 
-    let initialMusicConfig = parsed.musicConfig || { source: 'NONE', presetId: '' };
-    if (legacyBrownNoiseEnabled && initialMusicConfig.source === 'NONE') {
-        initialMusicConfig = { source: 'GENERATED', presetId: 'BROWN_NOISE' };
-    }
-
-    return { 
+    // Construct settings with defaults
+    const mergedSettings: Settings = {
       ghostEnabled: false, 
       readAheadLevel: initialReadAhead, 
       sfxEnabled: true,
-      mechanicalSoundEnabled: parsed.mechanicalSoundEnabled ?? false,
-      mechanicalSoundPreset: parsed.mechanicalSoundPreset || 'THOCK',
-      ambientVolume: parsed.ambientVolume ?? legacyVolume, 
-      musicConfig: initialMusicConfig,
-      themeId: parsed.themeId || 'CLASSIC',
-      ...parsed
+      mechanicalSoundEnabled: false,
+      mechanicalSoundPreset: 'THOCK',
+      ambientVolume: 0.02, 
+      musicConfig: { source: 'NONE', presetId: '' },
+      themeId: 'CLASSIC',
+      autoStartMusic: true, // Default to true
+      ...parsed // Overwrite with saved values
     };
+
+    // --- MIGRATION & LOGIC OVERRIDES ---
+
+    // 1. Recover legacy brown noise setting if musicConfig wasn't explicitly saved
+    if (legacyBrownNoiseEnabled && (!parsed.musicConfig || parsed.musicConfig.source === 'NONE')) {
+        mergedSettings.musicConfig = { source: 'GENERATED', presetId: 'BROWN_NOISE' };
+        mergedSettings.ambientVolume = legacyVolume;
+    }
+
+    // 2. Auto-Start Logic (Force music on if autoStartMusic is true)
+    if (mergedSettings.autoStartMusic && mergedSettings.musicConfig.source === 'NONE') {
+        mergedSettings.musicConfig = { source: 'GENERATED', presetId: 'PIANO_SATIE' };
+    }
+
+    return mergedSettings;
   });
 
   const [gameMode, setGameMode] = useState<GameMode>(() => {

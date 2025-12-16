@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export interface Quote {
@@ -51,6 +52,7 @@ export interface Settings {
   ambientVolume: number; // Volume for GENERATED sources (Brown Noise, Piano, etc.)
   musicConfig: MusicConfig;
   themeId: string; // New: Selected Theme ID
+  autoStartMusic: boolean; // Control whether music starts automatically on load
 }
 
 export type GameMode = 'QUOTES' | 'HARDCORE' | 'FIX_MISTAKE' | 'PRACTICE' | 'MINIGAMES';

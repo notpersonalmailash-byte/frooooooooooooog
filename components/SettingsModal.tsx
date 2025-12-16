@@ -1,6 +1,7 @@
+
 import React, { useRef } from 'react';
 import { Settings, MechanicalSoundPreset, ReadAheadLevel } from '../types';
-import { X, Ghost, EyeOff, Volume2, Music, Download, Upload, Database, Keyboard, Eye } from 'lucide-react';
+import { X, Ghost, EyeOff, Volume2, Music, Download, Upload, Database, Keyboard, Eye, PlayCircle } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
   const toggleSfx = () => setSettings({ ...settings, sfxEnabled: !settings.sfxEnabled });
   const toggleMechanical = () => setSettings({ ...settings, mechanicalSoundEnabled: !settings.mechanicalSoundEnabled });
   const setMechanicalPreset = (preset: MechanicalSoundPreset) => setSettings({ ...settings, mechanicalSoundPreset: preset });
+  const toggleAutoStart = () => setSettings({ ...settings, autoStartMusic: !settings.autoStartMusic });
   
   const handleExport = () => {
     const data: Record<string, string> = {};
@@ -133,6 +135,25 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
             </div>
             <div className={`w-10 h-6 rounded-full relative transition-colors ${settings.sfxEnabled ? 'bg-teal-500' : 'bg-stone-300'}`}>
                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.sfxEnabled ? 'left-5' : 'left-1'}`} />
+            </div>
+          </button>
+
+          {/* Auto-Start Music Toggle (Green) */}
+          <button 
+            onClick={toggleAutoStart}
+            className={`w-full text-left flex items-center justify-between p-3 rounded-xl cursor-pointer border transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-1 ${settings.autoStartMusic ? 'bg-frog-50 border-frog-200' : 'bg-stone-50 border-transparent hover:bg-stone-100'}`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${settings.autoStartMusic ? 'bg-frog-100 text-frog-600' : 'bg-stone-200 text-stone-500'}`}>
+                <PlayCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="font-bold text-sm text-stone-700">Auto-Start Music</div>
+                <div className="text-[10px] text-stone-400">Play background music on load</div>
+              </div>
+            </div>
+            <div className={`w-10 h-6 rounded-full relative transition-colors ${settings.autoStartMusic ? 'bg-frog-500' : 'bg-stone-300'}`}>
+               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.autoStartMusic ? 'left-5' : 'left-1'}`} />
             </div>
           </button>
 
