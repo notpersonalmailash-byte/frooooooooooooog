@@ -1,7 +1,8 @@
 
 import React, { useRef } from 'react';
 import { Settings, MechanicalSoundPreset, ReadAheadLevel } from '../types';
-import { X, Ghost, EyeOff, Volume2, Music, Download, Upload, Database, Keyboard, Eye, PlayCircle } from 'lucide-react';
+import { X, Ghost, EyeOff, Volume2, Music, Download, Upload, Database, Keyboard, Eye, PlayCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { getCurrentLevel } from '../utils/gameLogic';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -23,26 +24,44 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
   const toggleAutoStart = () => setSettings({ ...settings, autoStartMusic: !settings.autoStartMusic });
   
   const handleExport = () => {
-    const data: Record<string, string> = {};
-    let count = 0;
+    const backupData: Record<string, string> = {};
+    let itemCount = 0;
+
+    // 1. Capture all relevant LocalStorage keys
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      // Capture all keys related to Frog Type
+      // Capture all keys related to Frog Type namespace + the legacy/root XP key
       if (key && (key.startsWith('frogType_') || key === 'frogXP')) {
-        data[key] = localStorage.getItem(key) || "";
-        count++;
+        const value = localStorage.getItem(key);
+        if (value !== null) {
+            backupData[key] = value;
+            itemCount++;
+        }
       }
     }
     
-    if (count === 0) {
+    if (itemCount === 0) {
         alert("No game data found to export.");
         return;
     }
 
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    // 2. Wrap in a structured object with metadata
+    const payload = {
+        meta: {
+            version: 2, // Increment version for the new system
+            app: "Frog Type",
+            timestamp: new Date().toISOString(),
+            itemCount: itemCount
+        },
+        data: backupData
+    };
+
+    // 3. Trigger Download
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
+    // Filename includes date for version control
     a.download = `frog-type-backup-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
@@ -61,35 +80,72 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const json = JSON.parse(event.target?.result as string);
+        const jsonStr = event.target?.result as string;
+        const parsed = JSON.parse(jsonStr);
         
-        if (typeof json !== 'object' || json === null) {
-            throw new Error("Invalid file format");
+        let dataToRestore: Record<string, string> = {};
+        
+        // --- VALIDATION & DETECTION ---
+        
+        // Check 1: Is this the new format (v2)?
+        if (parsed.meta && parsed.data && parsed.meta.app === "Frog Type") {
+            dataToRestore = parsed.data;
+        } 
+        // Check 2: Is this the legacy flat format?
+        else {
+            // Check if it has at least one recognizable key
+            const keys = Object.keys(parsed);
+            const hasValidKeys = keys.some(k => k.startsWith('frogType_') || k === 'frogXP');
+            
+            if (hasValidKeys) {
+                dataToRestore = parsed;
+            } else {
+                throw new Error("Unrecognized file format");
+            }
         }
 
-        // Validate that it looks like a frog backup (check for at least one known key or just generic structure)
-        const keys = Object.keys(json);
-        const hasValidKeys = keys.some(k => k.startsWith('frogType_') || k === 'frogXP');
+        // --- PREVIEW LOGIC ---
+        // Extract stats from the backup to show the user what they are loading
+        const backupXP = parseInt(dataToRestore['frogXP'] || dataToRestore['frogType_xp'] || '0', 10);
+        const backupName = dataToRestore['frogType_userName'] || 'Froggy';
+        const backupLevel = getCurrentLevel(backupXP);
+        const backupStreak = dataToRestore['frogType_dailyStreak'] || '0';
         
-        if (!hasValidKeys) {
-             if (!confirm("This file doesn't look like a valid Frog Type backup. Try to import anyway?")) {
-                 return;
-             }
-        }
-        
-        if (confirm("This will overwrite your current progress. Are you sure?")) {
-            keys.forEach(key => {
-               // Only restore frog related keys for safety
-               if (key.startsWith('frogType_') || key === 'frogXP') {
-                 localStorage.setItem(key, json[key]);
-               }
+        const confirmMessage = `
+Found Backup Profile:
+👤 Name: ${backupName}
+🐸 Rank: ${backupLevel.name}
+🔥 Streak: ${backupStreak}
+✨ XP: ${backupXP.toLocaleString()}
+
+This will OVERWRITE your current data on this device.
+Are you sure you want to restore?
+        `.trim();
+
+        if (window.confirm(confirmMessage)) {
+            // 1. Clear existing Frog Type data to prevent conflicts
+            const keysToRemove: string[] = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.startsWith('frogType_') || key === 'frogXP')) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+
+            // 2. Write new data
+            Object.entries(dataToRestore).forEach(([key, value]) => {
+                 // Double check we only write frog keys (security measure)
+                 if (key.startsWith('frogType_') || key === 'frogXP') {
+                     localStorage.setItem(key, value);
+                 }
             });
             
             alert("Backup restored successfully! The page will now reload.");
             window.location.reload();
         }
       } catch (err) {
-        alert("Failed to restore backup: Invalid file format.");
+        alert("Failed to restore backup: Invalid file format or corrupted data.");
         console.error(err);
       }
       
@@ -264,23 +320,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
           
           {/* Backup & Restore Section */}
           <div className="pt-4 border-t border-stone-100">
-             <div className="flex items-center gap-2 mb-3 text-stone-400 font-bold text-xs uppercase tracking-wider">
-                <Database className="w-3 h-3" /> Data & Backup
+             <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 text-stone-700 font-bold text-xs uppercase tracking-wider">
+                    <Database className="w-3.5 h-3.5 text-frog-green" /> Cloud Save (Manual)
+                </div>
+                <div className="flex items-center gap-1 text-[9px] text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded">
+                    <span>v2.0</span>
+                </div>
              </div>
+             
              <div className="grid grid-cols-2 gap-3">
                 <button 
                   onClick={handleExport}
-                  className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-stone-50 border border-stone-200 hover:bg-stone-100 hover:border-stone-300 transition-all text-stone-600 focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-offset-1"
+                  className="group flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-stone-50 border border-stone-200 hover:bg-frog-green/5 hover:border-frog-green/30 transition-all text-stone-600 hover:text-frog-green focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-1"
                 >
-                    <Download className="w-5 h-5" />
-                    <span className="text-xs font-bold">Export Save</span>
+                    <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+                    <span className="text-xs font-bold">Backup File</span>
                 </button>
                 <button 
                   onClick={handleImportClick}
-                  className="flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-stone-50 border border-stone-200 hover:bg-stone-100 hover:border-stone-300 transition-all text-stone-600 relative focus:outline-none focus:ring-2 focus:ring-stone-400 focus:ring-offset-1"
+                  className="group flex flex-col items-center justify-center gap-2 p-3 rounded-xl bg-stone-50 border border-stone-200 hover:bg-purple-50 hover:border-purple-200 transition-all text-stone-600 hover:text-purple-600 relative focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1"
                 >
-                    <Upload className="w-5 h-5" />
-                    <span className="text-xs font-bold">Import Save</span>
+                    <Upload className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
+                    <span className="text-xs font-bold">Restore</span>
                     <input 
                         type="file" 
                         ref={fileInputRef}
@@ -290,9 +352,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
                     />
                 </button>
              </div>
-             <p className="text-[10px] text-stone-400 mt-2 text-center">
-                Export your progress to a file to transfer to another device or keep as a backup.
-             </p>
+             
+             <div className="mt-3 p-2 bg-blue-50 border border-blue-100 rounded-lg flex gap-2">
+                <div className="shrink-0 pt-0.5"><CheckCircle2 className="w-3 h-3 text-blue-500" /></div>
+                <p className="text-[10px] text-blue-700 leading-tight">
+                    Includes <strong>everything</strong>: XP, streaks, settings, history, unlocked themes, and stats. Safe to transfer between devices.
+                </p>
+             </div>
           </div>
 
         </div>
