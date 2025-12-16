@@ -53,6 +53,7 @@ export interface Settings {
   musicConfig: MusicConfig;
   themeId: string; // New: Selected Theme ID
   autoStartMusic: boolean; // Control whether music starts automatically on load
+  ttsEnabled: boolean; // Text-to-Speech Read Aloud
 }
 
 export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES';

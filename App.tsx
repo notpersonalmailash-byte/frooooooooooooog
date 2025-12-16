@@ -17,7 +17,7 @@ import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel
 import { fetchQuotes, getPracticeLetter } from './services/quoteService';
 import { getCurrentLevel, getNextLevel, getAverageWPM, LEVELS, calculateXP, checkLevelProgress } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw, FileText, User } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw, FileText, User, Leaf, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
 import { ACHIEVEMENTS } from './data/achievements';
@@ -147,6 +147,7 @@ const App: React.FC = () => {
       musicConfig: { source: 'NONE', presetId: '' },
       themeId: 'CLASSIC',
       autoStartMusic: true, // Default to true
+      ttsEnabled: false, // Default text-to-speech to false
       ...parsed // Overwrite with saved values
     };
 
@@ -1107,52 +1108,60 @@ const App: React.FC = () => {
       <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative pb-32">
         <div className="w-full flex flex-col items-center justify-center min-h-[60vh]">
           {isGatedLocked && !isPlayingRemediation ? (
-              <div className="mb-8 w-full max-w-2xl relative overflow-hidden bg-orange-50 border-2 border-orange-200 p-8 rounded-3xl shadow-xl flex flex-col items-center text-center gap-6 animate-in slide-in-from-top-5 duration-500 z-50">
-                  <div className="absolute top-0 left-0 w-full h-2 bg-orange-400/20"></div>
+              <div className="mb-8 w-full max-w-2xl relative overflow-hidden bg-white/80 backdrop-blur-xl border-4 border-frog-100 p-10 rounded-[2.5rem] shadow-2xl shadow-frog-100/50 flex flex-col items-center text-center gap-6 animate-in zoom-in-95 duration-500 z-50">
+                  <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-frog-50 via-transparent to-transparent opacity-50 pointer-events-none"></div>
                   
-                  <div className="p-4 bg-orange-100 rounded-full text-orange-500 ring-4 ring-orange-50">
-                      <AlertTriangle className="w-10 h-10" />
+                  {/* Decorative Elements */}
+                  <div className="absolute top-6 left-6 text-frog-200 animate-pulse delay-75"><Leaf className="w-6 h-6 transform -rotate-45" /></div>
+                  <div className="absolute bottom-6 right-6 text-frog-200 animate-pulse delay-150"><Leaf className="w-8 h-8 transform rotate-12" /></div>
+                  <div className="absolute top-10 right-12 text-frog-100 animate-pulse"><Sparkles className="w-5 h-5" /></div>
+
+                  <div className="relative">
+                      <div className="absolute inset-0 bg-frog-200 blur-xl opacity-50 rounded-full"></div>
+                      <div className="p-5 bg-white rounded-full text-frog-500 shadow-lg ring-4 ring-frog-50 relative z-10">
+                          <Lock className="w-8 h-8" />
+                      </div>
                   </div>
                   
-                  <div className="space-y-2">
-                      <h3 className="text-3xl font-black text-orange-900 uppercase tracking-tight">Evolution Blocked</h3>
-                      <p className="text-orange-800 font-medium text-lg max-w-md leading-relaxed">
-                          You cannot evolve to the next level until you prove mastery over your mistakes.
+                  <div className="space-y-2 z-10">
+                      <h3 className="text-3xl font-black text-frog-800 tracking-tight">Evolution Awaits</h3>
+                      <p className="text-stone-500 font-medium text-lg max-w-md leading-relaxed">
+                          You are ready to grow, but first you must master your past lessons.
                       </p>
                       
-                      <div className="flex gap-4 justify-center mt-2">
+                      <div className="flex gap-4 justify-center mt-4">
                           {mistakePool.length > 0 && (
-                              <div className="bg-red-50 px-4 py-2 rounded-lg border border-red-100">
-                                  <div className="text-[10px] uppercase font-bold text-red-400 tracking-wider">Mistakes</div>
-                                  <div className="text-xl font-black text-red-600">{mistakePool.length} Words</div>
+                              <div className="bg-white px-5 py-3 rounded-2xl border border-frog-100 shadow-sm flex flex-col items-center min-w-[100px]">
+                                  <div className="text-[10px] uppercase font-bold text-frog-400 tracking-wider mb-1">Mistakes</div>
+                                  <div className="text-xl font-black text-frog-700">{mistakePool.length} Words</div>
                               </div>
                           )}
                           {Object.keys(failedQuoteRepetitions).length > 0 && (
-                              <div className="bg-orange-50 px-4 py-2 rounded-lg border border-orange-100">
-                                  <div className="text-[10px] uppercase font-bold text-orange-400 tracking-wider">Failures</div>
-                                  <div className="text-xl font-black text-orange-600">{Object.keys(failedQuoteRepetitions).length} Quotes</div>
+                              <div className="bg-white px-5 py-3 rounded-2xl border border-stone-100 shadow-sm flex flex-col items-center min-w-[100px]">
+                                  <div className="text-[10px] uppercase font-bold text-stone-400 tracking-wider mb-1">Pending</div>
+                                  <div className="text-xl font-black text-stone-600">{Object.keys(failedQuoteRepetitions).length} Quotes</div>
                               </div>
                           )}
                       </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                  <div className="flex flex-col sm:flex-row gap-4 w-full justify-center z-10 mt-2">
                       {mistakePool.length > 0 && (
                           <button 
                             onClick={() => switchMode('XWORDS')}
-                            className="flex-1 px-6 py-4 bg-red-500 hover:bg-red-600 text-white font-black text-lg rounded-2xl shadow-lg shadow-red-200 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                            className="flex-1 px-6 py-4 bg-gradient-to-r from-frog-500 to-frog-600 hover:from-frog-600 hover:to-frog-700 text-white font-black text-lg rounded-2xl shadow-lg shadow-frog-200 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
                           >
                               <Eraser className="w-5 h-5" />
-                              FIX XWORDS
+                              Practice Words
                           </button>
                       )}
                       {Object.keys(failedQuoteRepetitions).length > 0 && (
                           <button 
                             onClick={() => switchMode('XQUOTES')}
-                            className="flex-1 px-6 py-4 bg-orange-500 hover:bg-orange-600 text-white font-black text-lg rounded-2xl shadow-lg shadow-orange-200 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                            className="flex-1 px-6 py-4 bg-gradient-to-r from-stone-600 to-stone-700 hover:from-stone-700 hover:to-stone-800 text-white font-black text-lg rounded-2xl shadow-lg shadow-stone-200 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
                           >
                               <RefreshCcw className="w-5 h-5" />
-                              FIX XQUOTES
+                              Retry Quotes
                           </button>
                       )}
                   </div>

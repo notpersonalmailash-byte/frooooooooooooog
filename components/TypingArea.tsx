@@ -83,6 +83,9 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     setRetryCount(0);
     setLastError(null);
     
+    // Stop any existing speech when switching quotes
+    window.speechSynthesis.cancel();
+    
     // Auto-focus logic: If we are "focused" (e.g. from Next button), ensure the DOM element gets focus
     // We use a timeout to allow the render cycle to enable the textarea (since status changed to IDLE)
     if (isFocused) {
@@ -112,6 +115,9 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     setSessionMistakes(0); 
     setLastError(null);
     setRetryCount(prev => prev + 1);
+    
+    window.speechSynthesis.cancel();
+    
     setIsFocused(true);
     setTimeout(() => inputRef.current?.focus(), 10);
   }, []);
@@ -300,6 +306,14 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     if (status === GameStatus.IDLE && val.length > 0) {
       setStartTime(Date.now());
       setStatus(GameStatus.PLAYING);
+      
+      // Text-To-Speech Trigger
+      if (settings.ttsEnabled) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(quote.text);
+          utterance.rate = 1.1; // Slightly faster than default for flow
+          window.speechSynthesis.speak(utterance);
+      }
     }
 
     if (val.length > prevLen) {
