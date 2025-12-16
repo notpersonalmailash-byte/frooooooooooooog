@@ -101,7 +101,6 @@ export const QUOTES: RawQuote[] = [
   { "quoteText": "Make love, not war.", "quoteAuthor": "Bob Marley" },
   { "quoteText": "Music heals the soul.", "quoteAuthor": "Bob Marley" },
   { "quoteText": "Spread love everywhere.", "quoteAuthor": "Bob Marley" },
-  { "quoteText": "Jah is love.", "quoteAuthor": "Bob Marley" },
   { "quoteText": "Love conquers all.", "quoteAuthor": "Bob Marley" },
   { "quoteText": "One love, one heart, one destiny.", "quoteAuthor": "Bob Marley" },
   { "quoteText": "Live, love, laugh.", "quoteAuthor": "Bob Marley" },
