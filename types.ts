@@ -90,3 +90,9 @@ export interface NotificationItem {
   icon: React.ReactNode;
   type: 'ACHIEVEMENT' | 'UNLOCK' | 'INFO';
 }
+
+export interface PracticeWord {
+  word: string;
+  proficiency: number; // 0 to 3 (3 = Mastered)
+  lastPracticed: number;
+}

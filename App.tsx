@@ -13,11 +13,11 @@ import TimeAttackGame from './components/TimeAttackGame';
 import CosmicDefenseGame from './components/CosmicDefenseGame';
 import MiniGameMenu from './components/MiniGameMenu';
 import { MusicPlayer } from './components/MusicPlayer';
-import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel } from './types';
+import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel, PracticeWord } from './types';
 import { fetchQuotes, getPracticeLetter } from './services/quoteService';
 import { getCurrentLevel, getNextLevel, getAverageWPM, LEVELS, calculateXP, checkLevelProgress } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2 } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
 import { ACHIEVEMENTS } from './data/achievements';
@@ -79,6 +79,12 @@ const App: React.FC = () => {
   const [practiceLevel, setPracticeLevel] = useState<number>(() => {
       const saved = localStorage.getItem('frogType_practiceLevel');
       return saved ? parseInt(saved, 10) : 0;
+  });
+
+  // Smart Practice Queue (Leitner-ish system)
+  const [smartPracticeQueue, setSmartPracticeQueue] = useState<PracticeWord[]>(() => {
+      const saved = localStorage.getItem('frogType_smartQueue');
+      return saved ? JSON.parse(saved) : [];
   });
 
   const [notificationQueue, setNotificationQueue] = useState<NotificationItem[]>([]);
@@ -216,6 +222,7 @@ const App: React.FC = () => {
   useEffect(() => { localStorage.setItem('frogType_history', JSON.stringify(testHistory)); }, [testHistory]);
   useEffect(() => { localStorage.setItem('frogType_settings', JSON.stringify(settings)); }, [settings]);
   useEffect(() => { localStorage.setItem('frogType_mistakes', JSON.stringify(mistakePool)); }, [mistakePool]);
+  useEffect(() => { localStorage.setItem('frogType_smartQueue', JSON.stringify(smartPracticeQueue)); }, [smartPracticeQueue]);
   useEffect(() => { localStorage.setItem('frogType_charStats', JSON.stringify(charStats)); }, [charStats]);
   useEffect(() => { localStorage.setItem('frogType_userName', userName); }, [userName]);
   useEffect(() => { localStorage.setItem('frogType_totalTime', totalTimePlayed.toString()); }, [totalTimePlayed]);
@@ -367,15 +374,15 @@ const App: React.FC = () => {
     
     try {
       const level = getCurrentLevel(userXP);
-      // Pass the specific level name (e.g., 'Egg III') to get the correct 1-20 difficulty bucket
-      const newQuotes = await fetchQuotes(5, completedQuotes, level.name, gameMode, practiceLevel, charStats);
+      // Pass smartPracticeQueue to generator
+      const newQuotes = await fetchQuotes(5, completedQuotes, level.name, gameMode, practiceLevel, charStats, smartPracticeQueue);
       setQuotesQueue(prev => [...prev, ...newQuotes]);
     } catch (error) {
       console.error("Failed to load quotes", error);
     } finally {
       isFetchingRef.current = false;
     }
-  }, [completedQuotes, userXP, gameMode, practiceLevel, charStats]);
+  }, [completedQuotes, userXP, gameMode, practiceLevel, charStats, smartPracticeQueue]);
 
   useEffect(() => {
     const init = async () => {
@@ -466,6 +473,45 @@ const App: React.FC = () => {
     if (gameMode === 'FIX_MISTAKE' && currentQuote) {
       const wordsFixed = [...new Set(currentQuote.text.split(' '))]; 
       setMistakePool(prev => prev.filter(word => !wordsFixed.includes(word)));
+    }
+
+    // --- SMART PRACTICE LOGIC (MASTERY UPDATE) ---
+    if (currentQuote) {
+        const quoteWords = currentQuote.text.split(/\s+/).map(w => w.replace(/[^a-zA-Z]/g, '').toLowerCase()).filter(w => w.length > 1);
+        
+        // Filter out mistakes made during *this* specific run
+        const runMistakes = new Set(mistakes.map(w => w.toLowerCase()));
+        
+        setSmartPracticeQueue(prevQueue => {
+            const newQueue = [...prevQueue];
+            let changed = false;
+
+            quoteWords.forEach(qWord => {
+                // Find if this word is in our tracking queue
+                const index = newQueue.findIndex(pw => pw.word === qWord);
+                
+                if (index !== -1) {
+                    if (runMistakes.has(qWord)) {
+                        // If we messed it up again, reset proficiency!
+                        newQueue[index] = { ...newQueue[index], proficiency: 0, lastPracticed: Date.now() };
+                        changed = true;
+                    } else {
+                        // If we got it right, increase proficiency
+                        const newProficiency = newQueue[index].proficiency + 1;
+                        if (newProficiency >= 3) {
+                            // Mastered! Remove from queue.
+                            newQueue.splice(index, 1);
+                            // Optional: Notification for mastered word?
+                        } else {
+                            newQueue[index] = { ...newQueue[index], proficiency: newProficiency, lastPracticed: Date.now() };
+                        }
+                        changed = true;
+                    }
+                }
+            });
+            
+            return changed ? newQueue : prevQueue;
+        });
     }
 
     // Practice Mode Level Up Logic
@@ -640,12 +686,30 @@ const App: React.FC = () => {
 
     setStreak(0);
 
-    // Track Words for FIX MISTAKE mode
+    // Track Words for FIX MISTAKE mode (Classic)
     if (word && word.length > 1) {
        setMistakePool(prev => {
          if (prev.includes(word)) return prev;
          return [...prev, word];
        });
+       
+       // --- SMART PRACTICE QUEUE ADDITION ---
+       // Add to intelligent practice queue with 0 proficiency (needs work)
+       const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+       if (cleanWord.length > 1) {
+           setSmartPracticeQueue(prev => {
+               const idx = prev.findIndex(p => p.word === cleanWord);
+               if (idx !== -1) {
+                   // Reset proficiency if it exists
+                   const updated = [...prev];
+                   updated[idx] = { ...updated[idx], proficiency: 0, lastPracticed: Date.now() };
+                   return updated;
+               } else {
+                   // Add new
+                   return [...prev, { word: cleanWord, proficiency: 0, lastPracticed: Date.now() }];
+               }
+           });
+       }
     }
 
     // Track Specific Characters for Smart Practice
@@ -948,7 +1012,15 @@ const App: React.FC = () => {
           )}
 
           {gameMode === 'PRACTICE' && !isMiniGameMenuOpen && !activeMiniGame && (
-              <PracticeProgress level={practiceLevel} />
+              <div className="w-full flex flex-col items-center">
+                  {smartPracticeQueue.length > 0 && (
+                      <div className="mb-4 flex items-center gap-2 text-stone-500 text-xs font-bold uppercase tracking-wide bg-stone-100 px-4 py-1.5 rounded-full">
+                          <Brain className="w-4 h-4 text-purple-500" />
+                          <span>Smart Queue: {smartPracticeQueue.length} words to master</span>
+                      </div>
+                  )}
+                  <PracticeProgress level={practiceLevel} />
+              </div>
           )}
 
           {isMiniGameMenuOpen ? (

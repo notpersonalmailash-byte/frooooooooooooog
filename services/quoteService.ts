@@ -1,4 +1,4 @@
-import { Quote } from '../types';
+import { Quote, PracticeWord } from '../types';
 import { QUOTES } from '../data/quotes';
 
 // Helper to sanitize text for standard keyboards
@@ -79,7 +79,8 @@ export const fetchQuotes = async (
     levelName: string = 'Egg III', 
     mode: string = 'QUOTES', 
     practiceLevel: number = 0,
-    charStats: Record<string, number> = {}
+    charStats: Record<string, number> = {},
+    smartPracticeQueue: PracticeWord[] = []
 ): Promise<Quote[]> => {
   
   // --- PRACTICE MODE LOGIC (LOCAL) ---
@@ -90,7 +91,13 @@ export const fetchQuotes = async (
       
       const unlockedSet = new Set(unlockedLetters);
       
-      // Determine weak letters (highest miss count) that are also currently unlocked
+      // 1. Get Trouble Words from Smart Queue (Lowest proficiency first)
+      const troubleWords = smartPracticeQueue
+          .sort((a, b) => a.proficiency - b.proficiency)
+          .slice(0, 5) // Focus on top 5 worst words
+          .map(pw => pw.word);
+
+      // 2. Determine weak letters from stats
       const weakLetters = Object.entries(charStats)
         .filter(([char]) => unlockedLetters.includes(char.toLowerCase()))
         .sort((a, b) => b[1] - a[1]) // Descending order of misses
@@ -99,7 +106,7 @@ export const fetchQuotes = async (
       
       const focusLetters = Array.from(new Set([...weakLetters, newLetter]));
 
-      // Get words strictly from local DB
+      // 3. Get generic words based on unlocked letters
       let practiceWords = getLocalPracticeWords(unlockedLetters);
       
       // Prioritize words containing focus letters
@@ -114,16 +121,31 @@ export const fetchQuotes = async (
       
       // Generate 'count' number of practice strings
       for(let i=0; i<count; i++) {
-         // Shuffle words to create a "sentence"
-         const shuffledWords = [...wordPool].sort(() => 0.5 - Math.random());
-         // Variable length 5-10 words
-         const sliceLength = 5 + Math.floor(Math.random() * 6);
-         const sentence = shuffledWords.slice(0, sliceLength).join(" ");
+         // Create a sentence mixing trouble words and practice pool
+         const sentenceComponents = [];
+         
+         // Inject 1-2 trouble words if available
+         if (troubleWords.length > 0) {
+             const tWord = troubleWords[Math.floor(Math.random() * troubleWords.length)];
+             sentenceComponents.push(tWord);
+             if (Math.random() > 0.5) {
+                 sentenceComponents.push(troubleWords[Math.floor(Math.random() * troubleWords.length)]);
+             }
+         }
+
+         // Fill rest with 4-6 random pool words
+         const fillCount = 4 + Math.floor(Math.random() * 3);
+         for(let j=0; j<fillCount; j++) {
+             sentenceComponents.push(wordPool[Math.floor(Math.random() * wordPool.length)]);
+         }
+
+         // Shuffle the sentence
+         const finalSentence = sentenceComponents.sort(() => 0.5 - Math.random()).join(" ");
          
          quotes.push({
-             text: sentence,
-             source: "Practice Drills",
-             author: `Level ${practiceLevel + 1}: ${unlockedLetters.join('').toUpperCase()}`
+             text: finalSentence,
+             source: "Smart Practice",
+             author: troubleWords.length > 0 ? "Focus: Weak Words & Keys" : `Level ${practiceLevel + 1}: ${unlockedLetters.join('').toUpperCase()}`
          });
       }
       return quotes;
