@@ -1667,6 +1667,550 @@ export const QUOTES: RawQuote[] = [
   {
     "quoteText": "The greatest discovery of my generation is that a human being can alter his life by altering his attitudes.",
     "quoteAuthor": "William James"
+  },
+  {
+    "quoteText": "Be brave.",
+    "quoteAuthor": "Quran 2:286"
+  },
+  {
+    "quoteText": "The unexamined life is not worth living for man.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "Hope anchors the soul.",
+    "quoteAuthor": "Hebrews 6:19"
+  },
+  {
+    "quoteText": "Walk your path.",
+    "quoteAuthor": "Buddha"
+  },
+  {
+    "quoteText": "Knowledge is light.",
+    "quoteAuthor": "Prophet Muhammad"
+  },
+  {
+    "quoteText": "The cave you fear to enter holds the treasure you seek.",
+    "quoteAuthor": "Joseph Campbell"
+  },
+  {
+    "quoteText": "Do good quietly.",
+    "quoteAuthor": "Matthew 6:4"
+  },
+  {
+    "quoteText": "The wound is the place where the Light enters you.",
+    "quoteAuthor": "Rumi"
+  },
+  {
+    "quoteText": "Truth sets free.",
+    "quoteAuthor": "John 8:32"
+  },
+  {
+    "quoteText": "Act with courage.",
+    "quoteAuthor": "Bhagavad Gita"
+  },
+  {
+    "quoteText": "The most beautiful experience we can have is the mysterious—the fundamental emotion which stands at the cradle of true art and true science.",
+    "quoteAuthor": "Albert Einstein"
+  },
+  {
+    "quoteText": "Forgive others.",
+    "quoteAuthor": "Quran 24:22"
+  },
+  {
+    "quoteText": "Choose joy today.",
+    "quoteAuthor": "Psalm 118:24"
+  },
+  {
+    "quoteText": "Doubt kills dreams.",
+    "quoteAuthor": "Suzy Kassem"
+  },
+  {
+    "quoteText": "Serve humanity.",
+    "quoteAuthor": "Abdul-Baha"
+  },
+  {
+    "quoteText": "The only calibration that counts is how much heart people invest, how much they ignore their fears of being hurt or caught out or humiliated.",
+    "quoteAuthor": "Ted Hughes"
+  },
+  {
+    "quoteText": "Stay patient.",
+    "quoteAuthor": "Quran 2:45"
+  },
+  {
+    "quoteText": "Love endures all.",
+    "quoteAuthor": "1 Corinthians 13:7"
+  },
+  {
+    "quoteText": "Question everything.",
+    "quoteAuthor": "Aristotle"
+  },
+  {
+    "quoteText": "Find your stillness.",
+    "quoteAuthor": "Lao Tzu"
+  },
+  {
+    "quoteText": "The fundamental cause of the trouble is that in the modern world the stupid are cocksure while the intelligent are full of doubt.",
+    "quoteAuthor": "Bertrand Russell"
+  },
+  {
+    "quoteText": "Seek harmony.",
+    "quoteAuthor": "Confucius"
+  },
+  {
+    "quoteText": "Grace changes hearts.",
+    "quoteAuthor": "Ephesians 2:8"
+  },
+  {
+    "quoteText": "Rise after falling.",
+    "quoteAuthor": "Proverbs 24:16"
+  },
+  {
+    "quoteText": "Create your future.",
+    "quoteAuthor": "Abraham Lincoln"
+  },
+  {
+    "quoteText": "The paradox of education is precisely this—that as one begins to become conscious one begins to examine the society in which he is being educated.",
+    "quoteAuthor": "James Baldwin"
+  },
+  {
+    "quoteText": "Guard your heart.",
+    "quoteAuthor": "Proverbs 4:23"
+  },
+  {
+    "quoteText": "Kindness is strength.",
+    "quoteAuthor": "Prophet Muhammad"
+  },
+  {
+    "quoteText": "Think deeply.",
+    "quoteAuthor": "Rene Descartes"
+  },
+  {
+    "quoteText": "Live deliberately.",
+    "quoteAuthor": "Henry David Thoreau"
+  },
+  {
+    "quoteText": "The most dangerous man to any government is the man who is able to think things out for himself, without regard to the prevailing superstitions and taboos.",
+    "quoteAuthor": "H.L. Mencken"
+  },
+  {
+    "quoteText": "Keep promises.",
+    "quoteAuthor": "Quran 17:34"
+  },
+  {
+    "quoteText": "Faith moves mountains.",
+    "quoteAuthor": "Matthew 17:20"
+  },
+  {
+    "quoteText": "Dare to know.",
+    "quoteAuthor": "Immanuel Kant"
+  },
+  {
+    "quoteText": "Seek the truth.",
+    "quoteAuthor": "Guru Nanak"
+  },
+  {
+    "quoteText": "The whole problem with the world is that fools and fanatics are always so certain of themselves, and wiser people so full of doubts.",
+    "quoteAuthor": "Bertrand Russell"
+  },
+  {
+    "quoteText": "Help the weak.",
+    "quoteAuthor": "Acts 20:35"
+  },
+  {
+    "quoteText": "Love your enemies.",
+    "quoteAuthor": "Matthew 5:44"
+  },
+  {
+    "quoteText": "Doubt grows with knowledge.",
+    "quoteAuthor": "Johann Wolfgang von Goethe"
+  },
+  {
+    "quoteText": "Act with purpose.",
+    "quoteAuthor": "Viktor Frankl"
+  },
+  {
+    "quoteText": "The most courageous act is still to think for yourself. Aloud.",
+    "quoteAuthor": "Coco Chanel"
+  },
+  {
+    "quoteText": "Practice mercy.",
+    "quoteAuthor": "Luke 6:36"
+  },
+  {
+    "quoteText": "Wisdom fears arrogance.",
+    "quoteAuthor": "Ali ibn Abi Talib"
+  },
+  {
+    "quoteText": "Challenge assumptions.",
+    "quoteAuthor": "Peter Drucker"
+  },
+  {
+    "quoteText": "Find inner peace.",
+    "quoteAuthor": "Thich Nhat Hanh"
+  },
+  {
+    "quoteText": "The individual has always had to struggle to keep from being overwhelmed by the tribe. If you try it, you will be lonely often, and sometimes frightened.",
+    "quoteAuthor": "Friedrich Nietzsche"
+  },
+  {
+    "quoteText": "Work honestly.",
+    "quoteAuthor": "Quran 4:58"
+  },
+  {
+    "quoteText": "Rejoice in hope.",
+    "quoteAuthor": "Romans 12:12"
+  },
+  {
+    "quoteText": "Question authority.",
+    "quoteAuthor": "Timothy Leary"
+  },
+  {
+    "quoteText": "Seek enlightenment.",
+    "quoteAuthor": "Buddha"
+  },
+  {
+    "quoteText": "The most perfidious way of harming a cause consists of defending it deliberately with faulty arguments.",
+    "quoteAuthor": "Friedrich Nietzsche"
+  },
+  {
+    "quoteText": "Speak gently.",
+    "quoteAuthor": "Quran 17:53"
+  },
+  {
+    "quoteText": "Forgive seventy times.",
+    "quoteAuthor": "Matthew 18:22"
+  },
+  {
+    "quoteText": "Knowledge is power.",
+    "quoteAuthor": "Francis Bacon"
+  },
+  {
+    "quoteText": "Choose compassion.",
+    "quoteAuthor": "Dalai Lama"
+  },
+  {
+    "quoteText": "The surest way to corrupt a youth is to instruct him to hold in higher esteem those who think alike than those who think differently.",
+    "quoteAuthor": "Friedrich Nietzsche"
+  },
+  {
+    "quoteText": "Avoid extremes.",
+    "quoteAuthor": "Aristotle"
+  },
+  {
+    "quoteText": "Walk humbly.",
+    "quoteAuthor": "Micah 6:8"
+  },
+  {
+    "quoteText": "Doubt is wisdom.",
+    "quoteAuthor": "Ibn Arabi"
+  },
+  {
+    "quoteText": "Create meaning.",
+    "quoteAuthor": "Jean-Paul Sartre"
+  },
+  {
+    "quoteText": "The essence of the independent mind lies not in what it thinks, but in how it thinks.",
+    "quoteAuthor": "Christopher Hitchens"
+  },
+  {
+    "quoteText": "Show gratitude.",
+    "quoteAuthor": "Quran 14:7"
+  },
+  {
+    "quoteText": "Love never fails.",
+    "quoteAuthor": "1 Corinthians 13:8"
+  },
+  {
+    "quoteText": "Think critically.",
+    "quoteAuthor": "Carl Sagan"
+  },
+  {
+    "quoteText": "Pursue excellence.",
+    "quoteAuthor": "Aristotle"
+  },
+  {
+    "quoteText": "The greatest enemy of knowledge is not ignorance, it is the illusion of knowledge.",
+    "quoteAuthor": "Stephen Hawking"
+  },
+  {
+    "quoteText": "Keep learning.",
+    "quoteAuthor": "Prophet Muhammad"
+  },
+  {
+    "quoteText": "Seek justice.",
+    "quoteAuthor": "Isaiah 1:17"
+  },
+  {
+    "quoteText": "Doubt everything wisely.",
+    "quoteAuthor": "Rene Descartes"
+  },
+  {
+    "quoteText": "Serve others.",
+    "quoteAuthor": "Mother Teresa"
+  },
+  {
+    "quoteText": "The peculiar evil of silencing the expression of an opinion is, that it is robbing the human race; posterity as well as the existing generation.",
+    "quoteAuthor": "John Stuart Mill"
+  },
+  {
+    "quoteText": "Practice humility.",
+    "quoteAuthor": "Philippians 2:3"
+  },
+  {
+    "quoteText": "Wisdom brings sorrow.",
+    "quoteAuthor": "Ecclesiastes 1:18"
+  },
+  {
+    "quoteText": "Challenge yourself.",
+    "quoteAuthor": "Plato"
+  },
+  {
+    "quoteText": "Find balance.",
+    "quoteAuthor": "Buddha"
+  },
+  {
+    "quoteText": "The most successful people are those who are good at plan B.",
+    "quoteAuthor": "James Yorke"
+  },
+  {
+    "quoteText": "Remain hopeful.",
+    "quoteAuthor": "Quran 65:3"
+  },
+  {
+    "quoteText": "Consider the lilies.",
+    "quoteAuthor": "Matthew 6:28"
+  },
+  {
+    "quoteText": "Question reality.",
+    "quoteAuthor": "Philip K. Dick"
+  },
+  {
+    "quoteText": "Seek simplicity.",
+    "quoteAuthor": "Leonardo da Vinci"
+  },
+  {
+    "quoteText": "The conventional view serves to protect us from the painful job of thinking.",
+    "quoteAuthor": "John Kenneth Galbraith"
+  },
+  {
+    "quoteText": "Act justly.",
+    "quoteAuthor": "Quran 5:8"
+  },
+  {
+    "quoteText": "Love covers sins.",
+    "quoteAuthor": "Proverbs 10:12"
+  },
+  {
+    "quoteText": "Doubt bravely.",
+    "quoteAuthor": "Robert G. Ingersoll"
+  },
+  {
+    "quoteText": "Embrace uncertainty.",
+    "quoteAuthor": "Richard Feynman"
+  },
+  {
+    "quoteText": "The greatest obstacle to discovery is not ignorance—it is the illusion of knowledge.",
+    "quoteAuthor": "Daniel J. Boorstin"
+  },
+  {
+    "quoteText": "Stay curious.",
+    "quoteAuthor": "Albert Einstein"
+  },
+  {
+    "quoteText": "Pursue wisdom.",
+    "quoteAuthor": "Proverbs 4:7"
+  },
+  {
+    "quoteText": "Think independently.",
+    "quoteAuthor": "Voltaire"
+  },
+  {
+    "quoteText": "Find truth.",
+    "quoteAuthor": "Gandhi"
+  },
+  {
+    "quoteText": "The most important decision you make is to be in a good mood.",
+    "quoteAuthor": "Voltaire"
+  },
+  {
+    "quoteText": "Choose kindness.",
+    "quoteAuthor": "Prophet Muhammad"
+  },
+  {
+    "quoteText": "Mercy triumphs judgment.",
+    "quoteAuthor": "James 2:13"
+  },
+  {
+    "quoteText": "Doubt intelligently.",
+    "quoteAuthor": "Bertrand Russell"
+  },
+  {
+    "quoteText": "Seek understanding.",
+    "quoteAuthor": "St. Augustine"
+  },
+  {
+    "quoteText": "The most beautiful thing we can experience is the mysterious. It is the source of all true art and science.",
+    "quoteAuthor": "Albert Einstein"
+  },
+  {
+    "quoteText": "Practice sincerity.",
+    "quoteAuthor": "Quran 33:35"
+  },
+  {
+    "quoteText": "Consider eternity.",
+    "quoteAuthor": "Ecclesiastes 3:11"
+  },
+  {
+    "quoteText": "Question deeply.",
+    "quoteAuthor": "Socrates"
+  },
+  {
+    "quoteText": "Live authentically.",
+    "quoteAuthor": "Soren Kierkegaard"
+  },
+  {
+    "quoteText": "The individual has always had to struggle to keep from being overwhelmed by the tribe. To be your own man is hard business.",
+    "quoteAuthor": "Rudyard Kipling"
+  },
+  {
+    "quoteText": "Trust the process.",
+    "quoteAuthor": "Quran 65:3"
+  },
+  {
+    "quoteText": "Wisdom cries aloud.",
+    "quoteAuthor": "Proverbs 1:20"
+  },
+  {
+    "quoteText": "Doubt productively.",
+    "quoteAuthor": "Richard Feynman"
+  },
+  {
+    "quoteText": "Create consciously.",
+    "quoteAuthor": "Deepak Chopra"
+  },
+  {
+    "quoteText": "The most dangerous phrase in the language is, 'We've always done it this way.'",
+    "quoteAuthor": "Grace Hopper"
+  },
+  {
+    "quoteText": "Seek refinement.",
+    "quoteAuthor": "Confucius"
+  },
+  {
+    "quoteText": "Love conquers fear.",
+    "quoteAuthor": "1 John 4:18"
+  },
+  {
+    "quoteText": "Challenge consensus.",
+    "quoteAuthor": "Thomas Kuhn"
+  },
+  {
+    "quoteText": "Pursue truth relentlessly.",
+    "quoteAuthor": "Karl Popper"
+  },
+  {
+    "quoteText": "The greatest tragedy of mankind is that people hold on to their opinions, not because they are true, but because they are theirs.",
+    "quoteAuthor": "Eric Hoffer"
+  },
+  {
+    "quoteText": "Maintain integrity.",
+    "quoteAuthor": "Quran 26:181-183"
+  },
+  {
+    "quoteText": "Consider consequences.",
+    "quoteAuthor": "Galatians 6:7"
+  },
+  {
+    "quoteText": "Doubt systematically.",
+    "quoteAuthor": "Rene Descartes"
+  },
+  {
+    "quoteText": "Embrace complexity.",
+    "quoteAuthor": "Niels Bohr"
+  },
+  {
+    "quoteText": "The most important thing in communication is hearing what isn't said.",
+    "quoteAuthor": "Peter Drucker"
+  },
+  {
+    "quoteText": "Seek transcendence.",
+    "quoteAuthor": "Abraham Maslow"
+  },
+  {
+    "quoteText": "Judge righteously.",
+    "quoteAuthor": "John 7:24"
+  },
+  {
+    "quoteText": "Question perpetually.",
+    "quoteAuthor": "Isaac Newton"
+  },
+  {
+    "quoteText": "Live deliberately.",
+    "quoteAuthor": "Henry David Thoreau"
+  },
+  {
+    "quoteText": "The most difficult thing is the decision to act, the rest is merely tenacity.",
+    "quoteAuthor": "Amelia Earhart"
+  },
+  {
+    "quoteText": "Practice mindfulness.",
+    "quoteAuthor": "Thich Nhat Hanh"
+  },
+  {
+    "quoteText": "Wisdom preserves life.",
+    "quoteAuthor": "Ecclesiastes 7:12"
+  },
+  {
+    "quoteText": "Doubt courageously.",
+    "quoteAuthor": "Galileo Galilei"
+  },
+  {
+    "quoteText": "Seek synthesis.",
+    "quoteAuthor": "Georg Wilhelm Friedrich Hegel"
+  },
+  {
+    "quoteText": "The most powerful weapon on earth is the human soul on fire.",
+    "quoteAuthor": "Ferdinand Foch"
+  },
+  {
+    "quoteText": "Cultivate wisdom.",
+    "quoteAuthor": "James 1:5"
+  },
+  {
+    "quoteText": "Consider perspectives.",
+    "quoteAuthor": "Marcel Proust"
+  },
+  {
+    "quoteText": "Challenge dogma.",
+    "quoteAuthor": "Richard Dawkins"
+  },
+  {
+    "quoteText": "Pursue excellence persistently.",
+    "quoteAuthor": "Aristotle"
+  },
+  {
+    "quoteText": "The greatest discovery of my generation is that a human being can alter his life by altering his attitudes.",
+    "quoteAuthor": "William James"
+  },
+  {
+    "quoteText": "Maintain humility.",
+    "quoteAuthor": "Quran 17:37"
+  },
+  {
+    "quoteText": "Love understands all.",
+    "quoteAuthor": "1 Corinthians 13:2"
+  },
+  {
+    "quoteText": "Doubt rigorously.",
+    "quoteAuthor": "Karl Popper"
+  },
+  {
+    "quoteText": "Seek enlightenment patiently.",
+    "quoteAuthor": "Buddha"
+  },
+  {
+    "quoteText": "The most beautiful experience we can have is the mysterious—the fundamental emotion which stands at the cradle of true art and true science.",
+    "quoteAuthor": "Albert Einstein"
   }
 ]
 
