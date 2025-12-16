@@ -756,7 +756,7 @@ const App: React.FC = () => {
 
     if (gameMode === 'HARDCORE') {
         penaltyMultiplier = 0.5;
-    } else if (gameMode === 'XWORDS' || gameMode === 'XQUOTES') {
+    } else if (gameMode === 'XWORDS' || gameMode === 'XQUOTES' || gameMode === 'PRACTICE') {
         penaltyMultiplier = 0.95;
     }
 
