@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from
 import { Quote, GameStatus, Settings, GameMode } from '../types';
 import { calculateXP } from '../utils/gameLogic';
 import { soundEngine } from '../utils/soundEngine';
-import { Play, RotateCcw, Award, Flame, Ghost, EyeOff, Sparkles, ArrowUp, Lock, XCircle, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Play, RotateCcw, Award, Flame, Ghost, EyeOff, Sparkles, ArrowUp, Lock, XCircle, AlertTriangle, ArrowRight, Eraser, Skull, FileText } from 'lucide-react';
 
 interface TypingAreaProps {
   quote: Quote;
@@ -551,6 +551,44 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
   const isPerfectMasterPotential = retryCount === 0 && sessionMistakes === 0;
 
+  // Determine Completion Text and Icon
+  const getCompletionContent = () => {
+      switch(gameMode) {
+          case 'XWORDS':
+              return { 
+                  title: 'Correction Complete!', 
+                  btnLabel: 'Next Batch',
+                  Icon: Eraser 
+              };
+          case 'PRACTICE':
+              return { 
+                  title: 'Words Mastered!', 
+                  btnLabel: 'More Words',
+                  Icon: FileText 
+              };
+          case 'HARDCORE':
+              return { 
+                  title: 'Survival Successful!', 
+                  btnLabel: 'Next Challenge',
+                  Icon: Skull 
+              };
+          case 'XQUOTES':
+              return {
+                  title: 'Redemption!',
+                  btnLabel: 'Continue',
+                  Icon: RotateCcw
+              };
+          default:
+              return { 
+                  title: 'Quote Complete!', 
+                  btnLabel: 'Next Quote',
+                  Icon: Award 
+              };
+      }
+  };
+
+  const { title: completionTitle, btnLabel: completionBtn, Icon: CompletionIcon } = getCompletionContent();
+
   return (
     <div 
       className="relative w-full max-w-6xl mx-auto min-h-[400px] flex flex-col"
@@ -595,7 +633,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
                 onClick={(e) => e.stopPropagation()} 
              >
                 <div className="text-frog-green font-black text-xl tracking-tight flex items-center gap-2">
-                   <Award className="w-6 h-6" /> Quote Complete!
+                   <CompletionIcon className="w-6 h-6" /> {completionTitle}
                 </div>
                 
                 <div className="grid grid-cols-2 gap-x-12 gap-y-6 w-full">
@@ -630,7 +668,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
                     bg-frog-green text-white hover:bg-green-500 shadow-green-200/50 focus:ring-frog-green
                   `}
                 >
-                   Next Quote <Award className="w-4 h-4" />
+                   {completionBtn} <CompletionIcon className="w-4 h-4" />
                 </button>
              </div>
           </div>
