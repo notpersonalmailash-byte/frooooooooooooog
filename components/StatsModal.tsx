@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, TrendingUp, History, Calendar, ArrowLeft, BookOpen, Eraser, RotateCcw, Clock, Flag, User, Flame, Edit2, Library } from 'lucide-react';
 import { TestResult } from '../types';
@@ -277,9 +278,10 @@ const StatsModal: React.FC<StatsModalProps> = ({
                              <div className="flex items-center gap-2">
                                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded text-white ${
                                     result.mode === 'HARDCORE' ? 'bg-stone-800' : 
-                                    result.mode === 'FIX_MISTAKE' ? 'bg-red-500' : 'bg-frog-green'
+                                    result.mode === 'XWORDS' ? 'bg-red-500' :
+                                    result.mode === 'XQUOTES' ? 'bg-orange-500' : 'bg-frog-green'
                                 }`}>
-                                    {result.mode === 'FIX_MISTAKE' ? 'FIX' : result.mode}
+                                    {result.mode === 'XWORDS' ? 'XWORDS' : result.mode === 'XQUOTES' ? 'XQUOTES' : result.mode}
                                 </span>
                                 <span className="text-xs text-stone-400 flex items-center gap-1 group-hover:text-frog-green transition-colors">
                                     <Calendar className="w-3 h-3" /> {formatDateTime(result.date)}

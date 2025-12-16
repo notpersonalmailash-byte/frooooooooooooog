@@ -170,7 +170,7 @@ const App: React.FC = () => {
 
   const [gameMode, setGameMode] = useState<GameMode>(() => {
     const saved = localStorage.getItem('frogType_gameMode');
-    // Default fallback
+    if (saved === 'FIX_MISTAKE') return 'XWORDS'; // Legacy migration
     return (saved as GameMode) || 'QUOTES';
   });
 
@@ -360,7 +360,7 @@ const App: React.FC = () => {
       }
   };
 
-  const generateMistakeQuote = useCallback((): Quote | null => {
+  const generateXWordQuote = useCallback((): Quote | null => {
     if (mistakePool.length === 0) return null;
     let pool = [...mistakePool];
     // Allow random selection including duplicates to reinforce learning
@@ -373,14 +373,28 @@ const App: React.FC = () => {
     
     return {
       text,
-      source: "Personal Training",
+      source: "Training",
       author: "Your Mistakes"
     };
   }, [mistakePool]);
 
+  const generateXQuoteQuote = useCallback((): Quote | null => {
+      const keys = Object.keys(failedQuoteRepetitions);
+      if (keys.length === 0) return null;
+      
+      const randomKey = keys[Math.floor(Math.random() * keys.length)];
+      const repsLeft = failedQuoteRepetitions[randomKey];
+      
+      return {
+          text: randomKey,
+          source: "Remediation",
+          author: `Repeat Required (${repsLeft} left)`
+      };
+  }, [failedQuoteRepetitions]);
+
   const loadMoreQuotes = useCallback(async () => {
     if (isFetchingRef.current) return;
-    if (gameMode === 'MINIGAMES') return; 
+    if (gameMode === 'MINIGAMES' || gameMode === 'XWORDS' || gameMode === 'XQUOTES') return; 
     
     isFetchingRef.current = true;
     
@@ -390,42 +404,23 @@ const App: React.FC = () => {
       // 1. Fetch Standard Quotes
       const newQuotes = await fetchQuotes(5, completedQuotes, level.name, gameMode, practiceLevel, charStats, smartPracticeQueue);
       
-      // 2. Inject Remediation Quotes (High Priority)
-      // If we have failed quotes that need clearing, inject them.
-      const pendingRemediations = Object.keys(failedQuoteRepetitions);
-      
-      if (pendingRemediations.length > 0 && gameMode === 'QUOTES') {
-          // Shuffle remediations
-          const toInject = pendingRemediations.sort(() => 0.5 - Math.random()).slice(0, 2);
-          
-          const injectionQuotes: Quote[] = toInject.map(text => ({
-              text: text,
-              source: "Remediation",
-              author: `Repeat Required (${failedQuoteRepetitions[text]} left)`
-          }));
-          
-          // Mix them in: 2 remediations + 3 new quotes
-          const mixed = [...injectionQuotes, ...newQuotes.slice(0, 3)];
-          // Shuffle again so it's not always first
-          setQuotesQueue(prev => [...prev, ...mixed.sort(() => 0.5 - Math.random())]);
-      } else {
-          setQuotesQueue(prev => [...prev, ...newQuotes]);
-      }
+      // Note: XQuotes are now handled exclusively in XQUOTES mode, not injected here.
+      setQuotesQueue(prev => [...prev, ...newQuotes]);
 
     } catch (error) {
       console.error("Failed to load quotes", error);
     } finally {
       isFetchingRef.current = false;
     }
-  }, [completedQuotes, userXP, gameMode, practiceLevel, charStats, smartPracticeQueue, failedQuoteRepetitions]);
+  }, [completedQuotes, userXP, gameMode, practiceLevel, charStats, smartPracticeQueue]);
 
   useEffect(() => {
     const init = async () => {
-      if (!currentQuote && quotesQueue.length === 0 && gameMode !== 'MINIGAMES') {
+      if (!currentQuote && quotesQueue.length === 0 && gameMode !== 'MINIGAMES' && gameMode !== 'XWORDS' && gameMode !== 'XQUOTES') {
          setLoading(true);
          await loadMoreQuotes();
          setLoading(false);
-      } else if (quotesQueue.length < 3 && gameMode !== 'MINIGAMES') {
+      } else if (quotesQueue.length < 3 && gameMode !== 'MINIGAMES' && gameMode !== 'XWORDS' && gameMode !== 'XQUOTES') {
          loadMoreQuotes();
       }
     };
@@ -436,12 +431,19 @@ const App: React.FC = () => {
   useEffect(() => {
     if (currentQuote || gameMode === 'MINIGAMES') return;
 
-    if (gameMode === 'FIX_MISTAKE') {
-      const mistakeQuote = generateMistakeQuote();
+    if (gameMode === 'XWORDS') {
+      const mistakeQuote = generateXWordQuote();
       if (mistakeQuote) {
         setCurrentQuote(mistakeQuote);
       } else {
         setGameMode('QUOTES'); 
+      }
+    } else if (gameMode === 'XQUOTES') {
+      const remediationQuote = generateXQuoteQuote();
+      if (remediationQuote) {
+          setCurrentQuote(remediationQuote);
+      } else {
+          setGameMode('QUOTES');
       }
     } else {
       if (quotesQueue.length > 0) {
@@ -454,7 +456,7 @@ const App: React.FC = () => {
         loadMoreQuotes();
       }
     }
-  }, [currentQuote, quotesQueue, gameMode, generateMistakeQuote, loadMoreQuotes]);
+  }, [currentQuote, quotesQueue, gameMode, generateXWordQuote, generateXQuoteQuote, loadMoreQuotes]);
 
   const checkAchievements = (wpm: number) => {
     const newNotifications: NotificationItem[] = [];
@@ -505,10 +507,9 @@ const App: React.FC = () => {
       finalXp = finalXp * 5;
     }
 
-    // --- REMEDIATION SUCCESS LOGIC ---
-    if (gameMode === 'QUOTES' && currentQuote) {
+    // --- REMEDIATION SUCCESS LOGIC (XQUOTES MODE) ---
+    if (gameMode === 'XQUOTES' && currentQuote) {
         const key = currentQuote.text;
-        // Check if this quote was in the remediation list
         if (failedQuoteRepetitions[key] !== undefined) {
             setFailedQuoteRepetitions(prev => {
                 const currentVal = prev[key];
@@ -526,13 +527,7 @@ const App: React.FC = () => {
                     }]);
                 } else {
                     newObj[key] = newVal;
-                    setNotificationQueue(prevQ => [...prevQ, {
-                        id: `remediate_${Date.now()}`,
-                        title: "Progress Saved",
-                        description: `${newVal} successful repetitions left.`,
-                        icon: <RefreshCcw className="w-5 h-5 text-orange-500" />,
-                        type: 'INFO'
-                    }]);
+                    // Visual feedback is handled by next quote load
                 }
                 return newObj;
             });
@@ -540,7 +535,7 @@ const App: React.FC = () => {
     }
 
     // Fix Mistake Mode Logic - Updated to remove only one instance per successful type
-    if (gameMode === 'FIX_MISTAKE' && currentQuote) {
+    if (gameMode === 'XWORDS' && currentQuote) {
       const wordsFixed = currentQuote.text.split(' '); // Keep all instances
       setMistakePool(prev => {
           const newPool = [...prev];
@@ -550,6 +545,7 @@ const App: React.FC = () => {
           });
           return newPool;
       });
+        finalXp = Math.floor(finalXp * 0.5); // Reduced XP for farming easy words
     }
 
     // --- SMART PRACTICE LOGIC (MASTERY UPDATE) ---
@@ -604,7 +600,7 @@ const App: React.FC = () => {
         }
     }
 
-    if (currentQuote && gameMode !== 'FIX_MISTAKE' && gameMode !== 'PRACTICE') {
+    if (currentQuote && gameMode !== 'XWORDS' && gameMode !== 'PRACTICE' && gameMode !== 'XQUOTES') {
        setCompletedQuotes(prev => [...prev, currentQuote.text]);
     }
 
@@ -673,9 +669,10 @@ const App: React.FC = () => {
 
     if (nextLevelObj && potentialXp >= nextLevelObj.minXP) {
          let effectiveMistakeCount = mistakePool.length;
-         if (gameMode === 'FIX_MISTAKE' && currentQuote) {
+         if (gameMode === 'XWORDS' && currentQuote) {
+             // Heuristic: assume they fixed some if they just finished
              const wordsFixed = [...new Set(currentQuote.text.split(' '))];
-             effectiveMistakeCount = mistakePool.filter(word => !wordsFixed.includes(word)).length;
+             effectiveMistakeCount = Math.max(0, mistakePool.length - wordsFixed.length);
          }
 
          const isMasteryGated = effectiveMistakeCount > 0;
@@ -745,7 +742,7 @@ const App: React.FC = () => {
         setNotificationQueue(prev => [...prev, {
             id: `fail_${Date.now()}`,
             title: "Quote Failed",
-            description: "You must now pass this quote 3 times to proceed.",
+            description: "You must now pass this quote 3 times in XQuotes mode.",
             icon: <AlertTriangle className="w-5 h-5 text-red-500" />,
             type: 'INFO'
         }]);
@@ -759,19 +756,15 @@ const App: React.FC = () => {
 
     if (gameMode === 'HARDCORE') {
         penaltyMultiplier = 0.5;
-    } else if (gameMode === 'FIX_MISTAKE') {
+    } else if (gameMode === 'XWORDS' || gameMode === 'XQUOTES') {
         penaltyMultiplier = 0.95;
     }
 
     setUserXP(prev => Math.floor(prev * penaltyMultiplier));
 
-    // Note: streak is reset in handleQuoteFail for consistency when the entire quote fails
-    // But mistakes in 'QUOTES' mode cause instant failure via TypingArea logic which calls onFail.
-    // However, onMistake is called *before* onFail in TypingArea.
-    // So we reset streak here too just in case.
     setStreak(0);
 
-    // Track Words for FIX MISTAKE mode (Classic) - REQUIRE 3 REPETITIONS TO CLEAR
+    // Track Words for XWORDS mode - REQUIRE 3 REPETITIONS TO CLEAR
     if (word && word.length > 1) {
        setMistakePool(prev => {
          // Reset this word's debt to 3 if mistakenly typed
@@ -809,7 +802,7 @@ const App: React.FC = () => {
           const newSet = new Set([...prev, ...mistakes]);
           return Array.from(newSet);
       });
-      switchMode('FIX_MISTAKE');
+      switchMode('XWORDS');
   };
 
   const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
@@ -828,7 +821,8 @@ const App: React.FC = () => {
   };
 
   const switchMode = useCallback((mode: GameMode) => {
-    if (mode === 'FIX_MISTAKE' && mistakePool.length === 0) return;
+    if (mode === 'XWORDS' && mistakePool.length === 0) return;
+    if (mode === 'XQUOTES' && Object.keys(failedQuoteRepetitions).length === 0) return;
     if (mode === 'HARDCORE' && isHardcoreLocked) return;
     if (mode === 'PRACTICE' && isPracticeLocked) return;
     if (mode === 'MINIGAMES' && isArcadeLocked) return;
@@ -845,7 +839,7 @@ const App: React.FC = () => {
         setQuotesQueue([]); 
         setCurrentQuote(null); 
     }
-  }, [mistakePool.length, isHardcoreLocked, isPracticeLocked, isArcadeLocked]);
+  }, [mistakePool.length, failedQuoteRepetitions, isHardcoreLocked, isPracticeLocked, isArcadeLocked]);
   
   const handleMiniGameSelect = (gameId: string) => {
       setGameMode('MINIGAMES');
@@ -916,6 +910,10 @@ const App: React.FC = () => {
       );
   };
 
+  const isGatedLocked = isGated && (reason === 'MASTERY' || reason === 'REMEDIATION');
+  // Check specifically if we are blocked from normal play
+  const isPlayingRemediation = gameMode === 'XWORDS' || gameMode === 'XQUOTES';
+
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200">
       <div className="sticky top-0 z-40 flex flex-col shadow-sm transition-all">
@@ -978,17 +976,32 @@ const App: React.FC = () => {
                       {isArcadeLocked ? <Lock className="w-3.5 h-3.5" /> : <Gamepad2 className="w-3.5 h-3.5" />} 
                       Arcade
                   </button>
+                  
+                  {/* Remediation Buttons */}
+                  <div className="w-px h-6 bg-stone-200 mx-1"></div>
+                  
                   <button 
-                      onClick={() => switchMode('FIX_MISTAKE')}
+                      onClick={() => switchMode('XWORDS')}
                       disabled={mistakePool.length === 0}
                       className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
-                        ${gameMode === 'FIX_MISTAKE' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-red-500 text-white shadow-sm ring-1 ring-red-600' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}
+                        ${gameMode === 'XWORDS' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-red-500 text-white shadow-sm ring-1 ring-red-600' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}
                         ${mistakePool.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                        ${isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE' ? 'ring-2 ring-orange-200 bg-orange-200 text-orange-900 animate-pulse shadow-[0_0_10px_rgba(253,186,116,0.6)]' : ''}
                       `}
                       title={mistakePool.length === 0 ? "No mistakes recorded yet" : `${mistakePool.length} words to fix`}
                   >
-                      <Eraser className="w-3.5 h-3.5" /> Fix ({mistakePool.length})
+                      <Eraser className="w-3.5 h-3.5" /> XWords ({mistakePool.length})
+                  </button>
+                  
+                  <button 
+                      onClick={() => switchMode('XQUOTES')}
+                      disabled={Object.keys(failedQuoteRepetitions).length === 0}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
+                        ${gameMode === 'XQUOTES' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-orange-500 text-white shadow-sm ring-1 ring-orange-600' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}
+                        ${Object.keys(failedQuoteRepetitions).length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}
+                      title={Object.keys(failedQuoteRepetitions).length === 0 ? "No failed quotes" : `${Object.keys(failedQuoteRepetitions).length} quotes to retry`}
+                  >
+                      <RefreshCcw className="w-3.5 h-3.5" /> XQuotes ({Object.keys(failedQuoteRepetitions).length})
                   </button>
                 </div>
               </div>
@@ -1064,7 +1077,7 @@ const App: React.FC = () => {
       
       <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative">
         <div className="w-full flex flex-col items-center justify-center min-h-[60vh]">
-          {isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE' ? (
+          {isGatedLocked && !isPlayingRemediation ? (
               <div className="mb-8 w-full max-w-2xl relative overflow-hidden bg-orange-50 border-2 border-orange-200 p-8 rounded-3xl shadow-xl flex flex-col items-center text-center gap-6 animate-in slide-in-from-top-5 duration-500 z-50">
                   <div className="absolute top-0 left-0 w-full h-2 bg-orange-400/20"></div>
                   
@@ -1077,37 +1090,46 @@ const App: React.FC = () => {
                       <p className="text-orange-800 font-medium text-lg max-w-md leading-relaxed">
                           You cannot evolve to the next level until you prove mastery over your mistakes.
                       </p>
-                      <div className="bg-orange-100/50 px-4 py-2 rounded-lg border border-orange-200 inline-block">
-                          <p className="text-orange-700 text-sm font-bold">
-                              Requirement: Correctly type {mistakePool.length} words (3x each)
-                          </p>
+                      
+                      <div className="flex gap-4 justify-center mt-2">
+                          {mistakePool.length > 0 && (
+                              <div className="bg-red-50 px-4 py-2 rounded-lg border border-red-100">
+                                  <div className="text-[10px] uppercase font-bold text-red-400 tracking-wider">Mistakes</div>
+                                  <div className="text-xl font-black text-red-600">{mistakePool.length} Words</div>
+                              </div>
+                          )}
+                          {Object.keys(failedQuoteRepetitions).length > 0 && (
+                              <div className="bg-orange-50 px-4 py-2 rounded-lg border border-orange-100">
+                                  <div className="text-[10px] uppercase font-bold text-orange-400 tracking-wider">Failures</div>
+                                  <div className="text-xl font-black text-orange-600">{Object.keys(failedQuoteRepetitions).length} Quotes</div>
+                              </div>
+                          )}
                       </div>
                   </div>
 
-                  <button 
-                    onClick={() => switchMode('FIX_MISTAKE')}
-                    className="mt-2 px-10 py-4 bg-orange-500 hover:bg-orange-600 text-white font-black text-xl rounded-2xl shadow-lg shadow-orange-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-3 ring-4 ring-orange-500/20"
-                  >
-                      <RefreshCcw className="w-6 h-6" />
-                      FIX MISTAKES
-                  </button>
+                  <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                      {mistakePool.length > 0 && (
+                          <button 
+                            onClick={() => switchMode('XWORDS')}
+                            className="flex-1 px-6 py-4 bg-red-500 hover:bg-red-600 text-white font-black text-lg rounded-2xl shadow-lg shadow-red-200 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                          >
+                              <Eraser className="w-5 h-5" />
+                              FIX XWORDS
+                          </button>
+                      )}
+                      {Object.keys(failedQuoteRepetitions).length > 0 && (
+                          <button 
+                            onClick={() => switchMode('XQUOTES')}
+                            className="flex-1 px-6 py-4 bg-orange-500 hover:bg-orange-600 text-white font-black text-lg rounded-2xl shadow-lg shadow-orange-200 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                          >
+                              <RefreshCcw className="w-5 h-5" />
+                              FIX XQUOTES
+                          </button>
+                      )}
+                  </div>
               </div>
           ) : (
              <>
-                {isGated && reason === 'REMEDIATION' && gameMode === 'QUOTES' && (
-                    <div className="mb-8 relative group overflow-hidden bg-orange-500 text-white px-8 py-4 rounded-3xl shadow-xl shadow-orange-200 flex items-center gap-5 transition-all transform hover:-translate-y-1 hover:shadow-2xl ring-4 ring-orange-100 animate-pulse z-50 cursor-default">
-                        <div className="bg-white/20 p-3 rounded-full shadow-inner">
-                            <RefreshCcw className="w-8 h-8 text-white fill-white/20" />
-                        </div>
-                        <div className="text-left">
-                            <div className="font-black text-xl uppercase tracking-tight leading-none text-white">Tier Gated!</div>
-                            <div className="font-medium text-sm text-orange-100 mt-1">
-                                Remediate <span className="font-black text-white border-b-2 border-orange-300/50">{Object.keys(failedQuoteRepetitions).length} failed quotes</span>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 {gameMode === 'PRACTICE' && !isMiniGameMenuOpen && !activeMiniGame && (
                     <div className="w-full flex flex-col items-center">
                         {smartPracticeQueue.length > 0 && (

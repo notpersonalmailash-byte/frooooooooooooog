@@ -55,7 +55,7 @@ export interface Settings {
   autoStartMusic: boolean; // Control whether music starts automatically on load
 }
 
-export type GameMode = 'QUOTES' | 'HARDCORE' | 'FIX_MISTAKE' | 'PRACTICE' | 'MINIGAMES';
+export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES';
 
 export enum GameStatus {
   IDLE = 'IDLE',

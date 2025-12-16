@@ -15,9 +15,9 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'LEGACY', title: 'The Legacy', description: 'Complete 2000 quotes.', icon: <Trophy className="w-5 h-5 text-stone-900" />, category: 'VOLUME', condition: ({ totalQuotes }) => totalQuotes >= 2000 },
   { id: 'MYTH', title: 'The Myth', description: 'Complete 5000 quotes.', icon: <Trophy className="w-5 h-5 text-stone-900" />, category: 'VOLUME', condition: ({ totalQuotes }) => totalQuotes >= 5000 },
 
-  { id: 'FIXER_UPPER', title: 'Fixer Upper', description: 'Complete 1 quote in Fix Mode.', icon: <Eraser className="w-5 h-5 text-stone-900" />, category: 'VOLUME', condition: ({ totalQuotes, mode }) => mode === 'FIX_MISTAKE' && totalQuotes >= 1 },
-  { id: 'EDITOR', title: 'The Editor', description: 'Complete 10 quotes in Fix Mode.', icon: <Eraser className="w-5 h-5 text-stone-900" />, category: 'VOLUME', condition: ({ totalQuotes, mode }) => mode === 'FIX_MISTAKE' && totalQuotes >= 10 },
-  { id: 'PROOFREADER', title: 'Proofreader', description: 'Complete 50 quotes in Fix Mode.', icon: <Eraser className="w-5 h-5 text-stone-900" />, category: 'VOLUME', condition: ({ totalQuotes, mode }) => mode === 'FIX_MISTAKE' && totalQuotes >= 50 },
+  { id: 'FIXER_UPPER', title: 'Fixer Upper', description: 'Complete 1 quote in XWords Mode.', icon: <Eraser className="w-5 h-5 text-stone-900" />, category: 'VOLUME', condition: ({ totalQuotes, mode }) => mode === 'XWORDS' && totalQuotes >= 1 },
+  { id: 'EDITOR', title: 'The Editor', description: 'Complete 10 quotes in XWords Mode.', icon: <Eraser className="w-5 h-5 text-stone-900" />, category: 'VOLUME', condition: ({ totalQuotes, mode }) => mode === 'XWORDS' && totalQuotes >= 10 },
+  { id: 'PROOFREADER', title: 'Proofreader', description: 'Complete 50 quotes in XWords Mode.', icon: <Eraser className="w-5 h-5 text-stone-900" />, category: 'VOLUME', condition: ({ totalQuotes, mode }) => mode === 'XWORDS' && totalQuotes >= 50 },
   
   // PRACTICE MODE (10 Achievements)
   { id: 'STUDENT', title: 'Student', description: 'Complete your first Practice session.', icon: <Keyboard className="w-5 h-5 text-stone-900" />, category: 'PRACTICE', condition: ({ mode, totalQuotes }) => mode === 'PRACTICE' && totalQuotes >= 1 },

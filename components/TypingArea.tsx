@@ -464,7 +464,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
           }
       }
 
-      if (gameMode === 'FIX_MISTAKE') {
+      if (gameMode === 'XWORDS' || gameMode === 'XQUOTES') {
           if (index >= input.length) {
               colorClass = 'text-red-300';
           }
@@ -505,7 +505,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     if (gameMode === 'HARDCORE') {
         return 'bg-neutral-900 border-neutral-800 text-neutral-400 shadow-[0_0_40px_rgba(0,0,0,0.2)]';
     }
-    if (gameMode === 'FIX_MISTAKE') {
+    if (gameMode === 'XWORDS' || gameMode === 'XQUOTES') {
         return 'bg-red-50 border-red-100';
     }
     
