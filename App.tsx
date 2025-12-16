@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import ProgressBar from './components/ProgressBar';
 import TypingArea from './components/TypingArea';
@@ -18,7 +17,7 @@ import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel
 import { fetchQuotes, getPracticeLetter } from './services/quoteService';
 import { getCurrentLevel, getNextLevel, getAverageWPM, LEVELS, calculateXP, checkLevelProgress } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
 import { ACHIEVEMENTS } from './data/achievements';
@@ -88,6 +87,13 @@ const App: React.FC = () => {
       return saved ? JSON.parse(saved) : [];
   });
 
+  // Failed Quotes Remediation Queue (New)
+  // Maps quote text -> number of successful repetitions required (starts at 3)
+  const [failedQuoteRepetitions, setFailedQuoteRepetitions] = useState<Record<string, number>>(() => {
+      const saved = localStorage.getItem('frogType_remediations');
+      return saved ? JSON.parse(saved) : {};
+  });
+
   const [notificationQueue, setNotificationQueue] = useState<NotificationItem[]>([]);
 
   // Track history for average WPM calculation (Last 10)
@@ -153,12 +159,9 @@ const App: React.FC = () => {
     }
 
     // 2. Auto-Start Logic
-    // If enabled, we FORCE reset to Default Satie, ignoring whatever was saved.
-    // This ensures a consistent "clean slate" start with the default ambience.
     if (mergedSettings.autoStartMusic) {
         mergedSettings.musicConfig = { source: 'GENERATED', presetId: 'PIANO_SATIE' };
     } else {
-        // If disabled, we ensure music is off on load, even if it was saved as playing.
         mergedSettings.musicConfig = { source: 'NONE', presetId: '' };
     }
 
@@ -216,7 +219,8 @@ const App: React.FC = () => {
 
   // Gating Check
   const avgWpmVal = getAverageWPM(wpmHistory);
-  const { isGated, reason } = checkLevelProgress(userXP, avgWpmVal, mistakePool.length);
+  const remediationCount = Object.keys(failedQuoteRepetitions).length;
+  const { isGated, reason } = checkLevelProgress(userXP, avgWpmVal, mistakePool.length, remediationCount);
 
   // Persistence
   useEffect(() => { localStorage.setItem('frogXP', userXP.toString()); }, [userXP]);
@@ -233,6 +237,7 @@ const App: React.FC = () => {
   useEffect(() => { localStorage.setItem('frogType_userName', userName); }, [userName]);
   useEffect(() => { localStorage.setItem('frogType_totalTime', totalTimePlayed.toString()); }, [totalTimePlayed]);
   useEffect(() => { localStorage.setItem('frogType_practiceLevel', practiceLevel.toString()); }, [practiceLevel]);
+  useEffect(() => { localStorage.setItem('frogType_remediations', JSON.stringify(failedQuoteRepetitions)); }, [failedQuoteRepetitions]);
   
   // Game Mode Persistence & Lock Check
   useEffect(() => { 
@@ -374,21 +379,44 @@ const App: React.FC = () => {
 
   const loadMoreQuotes = useCallback(async () => {
     if (isFetchingRef.current) return;
-    if (gameMode === 'MINIGAMES') return; // Don't fetch quotes for minigames
+    if (gameMode === 'MINIGAMES') return; 
     
     isFetchingRef.current = true;
     
     try {
       const level = getCurrentLevel(userXP);
-      // Pass smartPracticeQueue to generator
+      
+      // 1. Fetch Standard Quotes
       const newQuotes = await fetchQuotes(5, completedQuotes, level.name, gameMode, practiceLevel, charStats, smartPracticeQueue);
-      setQuotesQueue(prev => [...prev, ...newQuotes]);
+      
+      // 2. Inject Remediation Quotes (High Priority)
+      // If we have failed quotes that need clearing, inject them.
+      const pendingRemediations = Object.keys(failedQuoteRepetitions);
+      
+      if (pendingRemediations.length > 0 && gameMode === 'QUOTES') {
+          // Shuffle remediations
+          const toInject = pendingRemediations.sort(() => 0.5 - Math.random()).slice(0, 2);
+          
+          const injectionQuotes: Quote[] = toInject.map(text => ({
+              text: text,
+              source: "Remediation",
+              author: `Repeat Required (${failedQuoteRepetitions[text]} left)`
+          }));
+          
+          // Mix them in: 2 remediations + 3 new quotes
+          const mixed = [...injectionQuotes, ...newQuotes.slice(0, 3)];
+          // Shuffle again so it's not always first
+          setQuotesQueue(prev => [...prev, ...mixed.sort(() => 0.5 - Math.random())]);
+      } else {
+          setQuotesQueue(prev => [...prev, ...newQuotes]);
+      }
+
     } catch (error) {
       console.error("Failed to load quotes", error);
     } finally {
       isFetchingRef.current = false;
     }
-  }, [completedQuotes, userXP, gameMode, practiceLevel, charStats, smartPracticeQueue]);
+  }, [completedQuotes, userXP, gameMode, practiceLevel, charStats, smartPracticeQueue, failedQuoteRepetitions]);
 
   useEffect(() => {
     const init = async () => {
@@ -476,6 +504,40 @@ const App: React.FC = () => {
       finalXp = finalXp * 5;
     }
 
+    // --- REMEDIATION SUCCESS LOGIC ---
+    if (gameMode === 'QUOTES' && currentQuote) {
+        const key = currentQuote.text;
+        // Check if this quote was in the remediation list
+        if (failedQuoteRepetitions[key] !== undefined) {
+            setFailedQuoteRepetitions(prev => {
+                const currentVal = prev[key];
+                const newVal = currentVal - 1;
+                const newObj = { ...prev };
+                
+                if (newVal <= 0) {
+                    delete newObj[key];
+                    setNotificationQueue(prevQ => [...prevQ, {
+                        id: `remediate_${Date.now()}`,
+                        title: "Redemption!",
+                        description: "Failed quote mastered.",
+                        icon: <RefreshCcw className="w-5 h-5 text-green-500" />,
+                        type: 'INFO'
+                    }]);
+                } else {
+                    newObj[key] = newVal;
+                    setNotificationQueue(prevQ => [...prevQ, {
+                        id: `remediate_${Date.now()}`,
+                        title: "Progress Saved",
+                        description: `${newVal} successful repetitions left.`,
+                        icon: <RefreshCcw className="w-5 h-5 text-orange-500" />,
+                        type: 'INFO'
+                    }]);
+                }
+                return newObj;
+            });
+        }
+    }
+
     // Fix Mistake Mode Logic
     if (gameMode === 'FIX_MISTAKE' && currentQuote) {
       const wordsFixed = [...new Set(currentQuote.text.split(' '))]; 
@@ -486,7 +548,6 @@ const App: React.FC = () => {
     if (currentQuote) {
         const quoteWords = currentQuote.text.split(/\s+/).map(w => w.replace(/[^a-zA-Z]/g, '').toLowerCase()).filter(w => w.length > 1);
         
-        // Filter out mistakes made during *this* specific run
         const runMistakes = new Set(mistakes.map(w => w.toLowerCase()));
         
         setSmartPracticeQueue(prevQueue => {
@@ -494,21 +555,16 @@ const App: React.FC = () => {
             let changed = false;
 
             quoteWords.forEach(qWord => {
-                // Find if this word is in our tracking queue
                 const index = newQueue.findIndex(pw => pw.word === qWord);
                 
                 if (index !== -1) {
                     if (runMistakes.has(qWord)) {
-                        // If we messed it up again, reset proficiency!
                         newQueue[index] = { ...newQueue[index], proficiency: 0, lastPracticed: Date.now() };
                         changed = true;
                     } else {
-                        // If we got it right, increase proficiency
                         const newProficiency = newQueue[index].proficiency + 1;
                         if (newProficiency >= 3) {
-                            // Mastered! Remove from queue.
                             newQueue.splice(index, 1);
-                            // Optional: Notification for mastered word?
                         } else {
                             newQueue[index] = { ...newQueue[index], proficiency: newProficiency, lastPracticed: Date.now() };
                         }
@@ -523,13 +579,11 @@ const App: React.FC = () => {
 
     // Practice Mode Level Up Logic
     if (gameMode === 'PRACTICE') {
-        // If accuracy was perfect and WPM is decent, level up practice
         if (retryCount === 0 && mistakes.length === 0 && wpm > 30) {
             const nextLevel = practiceLevel + 1;
             setPracticeLevel(nextLevel);
             const newLetter = getPracticeLetter(nextLevel);
             
-            // Notification
             setNotificationQueue(prev => [...prev, {
                 id: `practice_level_${nextLevel}`,
                 title: "Practice Level Up!",
@@ -538,12 +592,10 @@ const App: React.FC = () => {
                 type: 'INFO'
             }]);
             
-            // Reset queue to force new generation with new letter
             setQuotesQueue([]);
         }
     }
 
-    // Mark quote as completed so it never shows again (if in standard modes)
     if (currentQuote && gameMode !== 'FIX_MISTAKE' && gameMode !== 'PRACTICE') {
        setCompletedQuotes(prev => [...prev, currentQuote.text]);
     }
@@ -576,7 +628,6 @@ const App: React.FC = () => {
   };
 
   const handleMiniGameOver = (score: number, xp: number, wave?: number) => {
-      // Record in History for Stats
       const gameName = activeMiniGame === 'SURVIVAL_SWAMP' ? 'Swamp Survival' 
         : activeMiniGame === 'SURVIVAL_ZOMBIE' ? 'Zombie Outbreak'
         : activeMiniGame === 'COSMIC_DEFENSE' ? 'Cosmic Defense'
@@ -585,7 +636,7 @@ const App: React.FC = () => {
       const newTestResult: TestResult = {
           id: Date.now(),
           date: new Date().toISOString(),
-          wpm: 0, // Not applicable for arcade
+          wpm: 0, 
           xpEarned: xp,
           mode: 'MINIGAMES',
           quoteText: `${gameName} - Score: ${score}${wave ? ` (Wave ${wave})` : ''}`,
@@ -609,6 +660,9 @@ const App: React.FC = () => {
     const nextLevelObj = getNextLevel(currentLevelObj);
     let potentialXp = userXP + xpAmount;
     
+    // Pass current remediation count to checkLevelProgress
+    const currentRemediationCount = Object.keys(failedQuoteRepetitions).length;
+
     if (nextLevelObj && potentialXp >= nextLevelObj.minXP) {
          let effectiveMistakeCount = mistakePool.length;
          if (gameMode === 'FIX_MISTAKE' && currentQuote) {
@@ -618,11 +672,12 @@ const App: React.FC = () => {
 
          const isMasteryGated = effectiveMistakeCount > 0;
          const isSpeedGated = currentAvgWpm < nextLevelObj.requiredWpm;
-
-         // Logic Update: Only gate Egg tier when transitioning to Tadpole (or generally strictly between tiers for Egg)
+         
          const isEggInternal = currentLevelObj.tier === 'Egg' && nextLevelObj.tier === 'Egg';
+         const isTierJump = currentLevelObj.tier !== nextLevelObj.tier;
+         const isRemediationGated = isTierJump && currentRemediationCount > 0;
 
-         if (!isEggInternal && (isMasteryGated || isSpeedGated)) {
+         if (!isEggInternal && (isMasteryGated || isSpeedGated || isRemediationGated)) {
             potentialXp = nextLevelObj.minXP - 1; 
          }
     }
@@ -671,16 +726,27 @@ const App: React.FC = () => {
   };
 
   const handleQuoteFail = () => {
+    // --- REMEDIATION TRIGGER ---
+    if (gameMode === 'QUOTES' && currentQuote) {
+        const key = currentQuote.text;
+        setFailedQuoteRepetitions(prev => {
+            // Strict: Failing resets debt to 3.
+            return { ...prev, [key]: 3 }; 
+        });
+        
+        setNotificationQueue(prev => [...prev, {
+            id: `fail_${Date.now()}`,
+            title: "Quote Failed",
+            description: "You must now pass this quote 3 times to proceed.",
+            icon: <AlertTriangle className="w-5 h-5 text-red-500" />,
+            type: 'INFO'
+        }]);
+    }
+
     setStreak(0);
   };
 
   const handleMistake = (word?: string, expectedChar?: string, typedChar?: string) => {
-    // Penalty Logic:
-    // Hardcore: 50% loss
-    // Fix Mistake: 5% loss 
-    // Normal/Practice: 15% loss
-    
-    // Default to Normal/Practice (15% penalty)
     let penaltyMultiplier = 0.85; 
 
     if (gameMode === 'HARDCORE') {
@@ -691,6 +757,10 @@ const App: React.FC = () => {
 
     setUserXP(prev => Math.floor(prev * penaltyMultiplier));
 
+    // Note: streak is reset in handleQuoteFail for consistency when the entire quote fails
+    // But mistakes in 'QUOTES' mode cause instant failure via TypingArea logic which calls onFail.
+    // However, onMistake is called *before* onFail in TypingArea.
+    // So we reset streak here too just in case.
     setStreak(0);
 
     // Track Words for FIX MISTAKE mode (Classic)
@@ -700,19 +770,15 @@ const App: React.FC = () => {
          return [...prev, word];
        });
        
-       // --- SMART PRACTICE QUEUE ADDITION ---
-       // Add to intelligent practice queue with 0 proficiency (needs work)
        const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
        if (cleanWord.length > 1) {
            setSmartPracticeQueue(prev => {
                const idx = prev.findIndex(p => p.word === cleanWord);
                if (idx !== -1) {
-                   // Reset proficiency if it exists
                    const updated = [...prev];
                    updated[idx] = { ...updated[idx], proficiency: 0, lastPracticed: Date.now() };
                    return updated;
                } else {
-                   // Add new
                    return [...prev, { word: cleanWord, proficiency: 0, lastPracticed: Date.now() }];
                }
            });
@@ -752,7 +818,7 @@ const App: React.FC = () => {
       soundEngine.playKeypress(); // Feedback
   };
 
-  const switchMode = (mode: GameMode) => {
+  const switchMode = useCallback((mode: GameMode) => {
     if (mode === 'FIX_MISTAKE' && mistakePool.length === 0) return;
     if (mode === 'HARDCORE' && isHardcoreLocked) return;
     if (mode === 'PRACTICE' && isPracticeLocked) return;
@@ -770,7 +836,7 @@ const App: React.FC = () => {
         setQuotesQueue([]); 
         setCurrentQuote(null); 
     }
-  };
+  }, [mistakePool.length, isHardcoreLocked, isPracticeLocked, isArcadeLocked]);
   
   const handleMiniGameSelect = (gameId: string) => {
       setGameMode('MINIGAMES');
@@ -787,7 +853,6 @@ const App: React.FC = () => {
     setNotificationQueue(prev => prev.slice(1));
   }, []);
 
-  // Helper for Read Ahead Icon/Color
   const getReadAheadConfig = () => {
       switch(settings.readAheadLevel) {
           case 'FOCUS': return { label: 'Focus', color: 'text-frog-green', bg: 'bg-frog-100', bonus: '+10%' };
@@ -798,7 +863,17 @@ const App: React.FC = () => {
   };
   const raConfig = getReadAheadConfig();
 
-  // Helper to render active minigame
+  // Auto-redirect for Mastery Gate
+  useEffect(() => {
+      if (isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE') {
+          const timer = setTimeout(() => {
+              switchMode('FIX_MISTAKE');
+              soundEngine.playKeypress(); // Audio cue
+          }, 2000); // 2 second delay to see the orange screen
+          return () => clearTimeout(timer);
+      }
+  }, [isGated, reason, gameMode, switchMode]);
+
   const renderMiniGame = () => {
       if (activeMiniGame === 'SURVIVAL_SWAMP') {
           return (
@@ -845,17 +920,10 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200">
-      {/* 
-         Combined Sticky Header Container 
-         - Top Row: Logo, Modes, Icons
-         - Bottom Row: Progress Bar
-      */}
       <div className="sticky top-0 z-40 flex flex-col shadow-sm transition-all">
-          {/* Row 1: Main Controls */}
           <header className="w-full bg-stone-50/95 backdrop-blur-md border-b border-stone-200 px-6 py-3">
             <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
               
-              {/* LEFT: Logo & Mode Switchers */}
               <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
                 <div className="flex flex-col items-center md:items-start flex-shrink-0">
                   <h1 className="text-xl font-black text-frog-green tracking-tight flex items-center gap-2">
@@ -927,7 +995,6 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* RIGHT: Icon Controls (Moved from ProgressBar area) */}
               <div className="flex items-center gap-1.5 shrink-0">
                    <button 
                      onClick={cycleReadAhead}
@@ -985,13 +1052,13 @@ const App: React.FC = () => {
             </div>
           </header>
 
-          {/* Row 2: Progress Bar */}
           <div className="w-full bg-white/95 backdrop-blur-md border-b border-stone-200 px-6 py-2">
                <div className="max-w-[1400px] mx-auto">
                    <ProgressBar 
                      xp={userXP} 
                      avgWpm={getAverageWPM(wpmHistory)} 
                      mistakeCount={mistakePool.length} 
+                     remediationCount={Object.keys(failedQuoteRepetitions).length}
                    />
                </div>
           </div>
@@ -1000,24 +1067,35 @@ const App: React.FC = () => {
       <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative">
         <div className="w-full flex flex-col items-center justify-center min-h-[60vh]">
           {isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE' && (
-              <button
-                  onClick={() => switchMode('FIX_MISTAKE')}
-                  className="mb-8 relative group overflow-hidden bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-3xl shadow-xl shadow-red-200 flex items-center gap-5 transition-all transform hover:-translate-y-1 hover:shadow-2xl ring-4 ring-red-100 animate-bounce z-50"
-              >
-                  <div className="absolute inset-0 bg-white/10 skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+              <div className="mb-8 relative group overflow-hidden bg-orange-400 text-white px-8 py-4 rounded-3xl shadow-xl shadow-orange-200 flex items-center gap-5 transition-all transform ring-4 ring-orange-100 animate-pulse z-50 cursor-wait">
+                  <div className="absolute inset-0 bg-white/10 skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 infinite"></div>
                   <div className="bg-white/20 p-3 rounded-full shadow-inner">
                       <AlertTriangle className="w-8 h-8 text-white fill-white/20" />
                   </div>
                   <div className="text-left">
-                      <div className="font-black text-xl uppercase tracking-tight leading-none text-white">Level Gated!</div>
-                      <div className="font-medium text-sm text-red-100 mt-1">
-                          Fix <span className="font-black text-white border-b-2 border-red-300/50">{mistakePool.length} mistakes</span> to evolve
+                      <div className="font-black text-xl uppercase tracking-tight leading-none text-white">Evolution Pending</div>
+                      <div className="font-medium text-sm text-orange-50 mt-1">
+                          Redirecting to fix <span className="font-black text-white border-b-2 border-orange-200/50">{mistakePool.length} mistakes</span>...
                       </div>
                   </div>
-                  <div className="bg-white text-red-600 p-2.5 rounded-full shadow-lg ml-2 group-hover:scale-110 transition-transform">
-                      <ArrowRight className="w-6 h-6" />
+                  <div className="bg-white text-orange-500 p-2.5 rounded-full shadow-lg ml-2 animate-spin">
+                      <RefreshCcw className="w-6 h-6" />
                   </div>
-              </button>
+              </div>
+          )}
+
+          {isGated && reason === 'REMEDIATION' && gameMode === 'QUOTES' && (
+              <div className="mb-8 relative group overflow-hidden bg-orange-500 text-white px-8 py-4 rounded-3xl shadow-xl shadow-orange-200 flex items-center gap-5 transition-all transform hover:-translate-y-1 hover:shadow-2xl ring-4 ring-orange-100 animate-pulse z-50 cursor-default">
+                  <div className="bg-white/20 p-3 rounded-full shadow-inner">
+                      <RefreshCcw className="w-8 h-8 text-white fill-white/20" />
+                  </div>
+                  <div className="text-left">
+                      <div className="font-black text-xl uppercase tracking-tight leading-none text-white">Tier Gated!</div>
+                      <div className="font-medium text-sm text-orange-100 mt-1">
+                          Remediate <span className="font-black text-white border-b-2 border-orange-300/50">{Object.keys(failedQuoteRepetitions).length} failed quotes</span>
+                      </div>
+                  </div>
+              </div>
           )}
 
           {gameMode === 'PRACTICE' && !isMiniGameMenuOpen && !activeMiniGame && (
@@ -1113,7 +1191,7 @@ const App: React.FC = () => {
         onPractice={handlePracticeFromHistory}
         totalTime={totalTimePlayed}
         joinDate={joinDate}
-        streak={dailyStreak} // Pass Daily Streak here instead of Session Streak
+        streak={dailyStreak} 
         userName={userName}
         setUserName={setUserName}
         completedTestsCount={testHistory.length}

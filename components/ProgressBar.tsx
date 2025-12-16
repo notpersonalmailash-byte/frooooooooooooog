@@ -1,15 +1,17 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { getCurrentLevel, getNextLevel, LEVELS, checkLevelProgress } from '../utils/gameLogic';
-import { Gauge, Lock, AlertTriangle } from 'lucide-react';
+import { Gauge, Lock, AlertTriangle, RefreshCcw } from 'lucide-react';
 
 interface ProgressBarProps {
   xp: number;
   avgWpm: number;
   mistakeCount: number;
+  remediationCount?: number; // Optional prop for backward compatibility or default
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ xp, avgWpm, mistakeCount }) => {
-  const { currentLevel, nextLevel, isGated, reason, requirement } = checkLevelProgress(xp, avgWpm, mistakeCount);
+const ProgressBar: React.FC<ProgressBarProps> = ({ xp, avgWpm, mistakeCount, remediationCount = 0 }) => {
+  const { currentLevel, nextLevel, isGated, reason, requirement } = checkLevelProgress(xp, avgWpm, mistakeCount, remediationCount);
   const currentLevelIndex = LEVELS.indexOf(currentLevel);
   const totalLevels = LEVELS.length;
 
@@ -45,7 +47,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ xp, avgWpm, mistakeCount }) =
         <div className="text-right flex items-center gap-2">
            {isGated ? (
              <span className="flex items-center gap-1 text-[10px] font-bold text-red-500 uppercase tracking-wide animate-pulse bg-red-50 px-2 py-0.5 rounded-full border border-red-100">
-                <Lock className="w-3 h-3" /> Gate: {requirement}
+                {reason === 'REMEDIATION' ? <RefreshCcw className="w-3 h-3" /> : <Lock className="w-3 h-3" />} 
+                Gate: {requirement}
              </span>
            ) : nextLevel ? (
              <>

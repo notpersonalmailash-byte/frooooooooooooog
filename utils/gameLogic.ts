@@ -1,3 +1,4 @@
+
 import { Level, ReadAheadLevel } from '../types';
 
 export const LEVELS: Level[] = [
@@ -98,12 +99,12 @@ export const getAverageWPM = (history: number[]): number => {
   return Math.round(sum / history.length);
 };
 
-export const checkLevelProgress = (xp: number, avgWpm: number, mistakeCount: number) => {
+export const checkLevelProgress = (xp: number, avgWpm: number, mistakeCount: number, remediationCount: number = 0) => {
   const currentLevel = getCurrentLevel(xp);
   const nextLevel = getNextLevel(currentLevel);
   
   let isGated = false;
-  let reason: 'SPEED' | 'MASTERY' | null = null;
+  let reason: 'SPEED' | 'MASTERY' | 'REMEDIATION' | null = null;
   let requirement: string | null = null;
 
   if (nextLevel) {
@@ -118,9 +119,14 @@ export const checkLevelProgress = (xp: number, avgWpm: number, mistakeCount: num
     if (xp >= xpThreshold - 1) {
        // Logic Update: Only gate Egg tier when transitioning to Tadpole (or generally strictly between tiers for Egg)
        const isEggInternal = currentLevel.tier === 'Egg' && nextLevel.tier === 'Egg';
+       const isTierJump = currentLevel.tier !== nextLevel.tier;
        
        if (!isEggInternal) {
-           if (mistakeCount > 0) {
+           if (isTierJump && remediationCount > 0) {
+               isGated = true;
+               reason = 'REMEDIATION';
+               requirement = `Remediate ${remediationCount} Failed Quotes`;
+           } else if (mistakeCount > 0) {
                isGated = true;
                reason = 'MASTERY';
                requirement = `Fix ${mistakeCount} Mistakes`;
