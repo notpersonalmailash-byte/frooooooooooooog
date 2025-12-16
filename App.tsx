@@ -382,6 +382,8 @@ const App: React.FC = () => {
       const keys = Object.keys(failedQuoteRepetitions);
       if (keys.length === 0) return null;
       
+      // Default to first available to keep it deterministic if needed, or random
+      // Random keeps it interesting if multiple failures.
       const randomKey = keys[Math.floor(Math.random() * keys.length)];
       const repsLeft = failedQuoteRepetitions[randomKey];
       
@@ -516,7 +518,7 @@ const App: React.FC = () => {
     }
 
     // --- REMEDIATION SUCCESS LOGIC (XQUOTES MODE) ---
-    // Rule: Must complete correct 1 time (was 3).
+    // Rule: Must complete correct 3 times.
     if (gameMode === 'XQUOTES' && currentQuote) {
         const key = currentQuote.text;
         if (failedQuoteRepetitions[key] !== undefined) {
@@ -534,12 +536,28 @@ const App: React.FC = () => {
                         icon: <RefreshCcw className="w-5 h-5 text-green-500" />,
                         type: 'INFO'
                     }]);
+                    
+                    // Exit XQuotes logic handled below via mode switch
                 } else {
                     newObj[key] = newVal;
-                    // Visual feedback is handled by next quote load
                 }
                 return newObj;
             });
+
+            // Handle Flow Control
+            const currentRepVal = failedQuoteRepetitions[key];
+            if (currentRepVal - 1 <= 0) {
+                 // Remediated! Go back to Quotes
+                 setGameMode('QUOTES');
+                 setCurrentQuote(null); // Triggers load for QUOTES mode
+            } else {
+                 // Still need reps. Update currentQuote to trigger TypingArea reset
+                 // We create a new object with updated author text to force update
+                 setCurrentQuote({
+                     ...currentQuote,
+                     author: `Repeat Required (${currentRepVal - 1} left)`
+                 });
+            }
         }
     }
 
@@ -560,7 +578,6 @@ const App: React.FC = () => {
     }
 
     // --- SMART PRACTICE LOGIC (MASTERY UPDATE) ---
-    // Aligning proficiency target to 3 to match the consistent rule.
     if (currentQuote) {
         const quoteWords = currentQuote.text.split(/\s+/).map(w => w.replace(/[^a-zA-Z]/g, '').toLowerCase()).filter(w => w.length > 1);
         
@@ -575,15 +592,13 @@ const App: React.FC = () => {
                 
                 if (index !== -1) {
                     if (runMistakes.has(qWord)) {
-                        // Already handled by handleMistake, but safety check: reset to 0
                         if (newQueue[index].proficiency !== 0) {
                             newQueue[index] = { ...newQueue[index], proficiency: 0, lastPracticed: Date.now() };
                             changed = true;
                         }
                     } else {
-                        // Success: Increment Proficiency
                         const newProficiency = newQueue[index].proficiency + 1;
-                        if (newProficiency >= 3) { // REQUIRE 3 SUCCESSES
+                        if (newProficiency >= 3) { 
                             newQueue.splice(index, 1);
                         } else {
                             newQueue[index] = { ...newQueue[index], proficiency: newProficiency, lastPracticed: Date.now() };
@@ -625,8 +640,12 @@ const App: React.FC = () => {
     handleXPGain(finalXp, avgWpm);
 
     setLastWpm(wpm);
-    setCurrentQuote(null); 
-    setQuoteStartTime(null);
+    
+    // Only clear quote if not XQUOTES staying in loop
+    if (gameMode !== 'XQUOTES') {
+        setCurrentQuote(null); 
+        setQuoteStartTime(null);
+    }
   };
 
   const handleMiniGameOver = (score: number, xp: number, wave?: number) => {
@@ -737,14 +756,35 @@ const App: React.FC = () => {
     if (gameMode === 'QUOTES' && currentQuote) {
         const key = currentQuote.text;
         setFailedQuoteRepetitions(prev => {
-            // Strict: Failing incurs 1 debt (Changed from 3).
-            return { ...prev, [key]: 1 }; 
+            // Strict: Failing incurs 3 debt.
+            return { ...prev, [key]: 3 }; 
         });
         
         setNotificationQueue(prev => [...prev, {
             id: `fail_${Date.now()}`,
             title: "Quote Failed",
-            description: "Pass this quote in XQuotes to recover.",
+            description: "Pass this quote 3 times in XQuotes to recover.",
+            icon: <AlertTriangle className="w-5 h-5 text-red-500" />,
+            type: 'INFO'
+        }]);
+    } else if (gameMode === 'XQUOTES' && currentQuote) {
+        // --- REMEDIATION RESET LOGIC ---
+        // If failed during remediation, reset debt to 3 to enforce consecutive success
+        const key = currentQuote.text;
+        setFailedQuoteRepetitions(prev => {
+             return { ...prev, [key]: 3 };
+        });
+        
+        // Force update quote author text to reflect reset
+        setCurrentQuote({
+            ...currentQuote,
+            author: `Repeat Required (3 left)`
+        });
+        
+        setNotificationQueue(prev => [...prev, {
+            id: `fail_remediate_${Date.now()}`,
+            title: "Streak Broken",
+            description: "Remediation reset to 3. Must be consecutive.",
             icon: <AlertTriangle className="w-5 h-5 text-red-500" />,
             type: 'INFO'
         }]);

@@ -309,9 +309,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     // --- Instant Fail Check (All Modes) ---
     if (val.length > 0) {
       if (!quote.text.startsWith(val)) {
-        soundEngine.playError(); 
-        setStatus(GameStatus.FAILED);
-        onFail();
+        soundEngine.playError();
         
         const mistakeIndex = val.length - 1;
         const expectedChar = quote.text[mistakeIndex];
@@ -341,6 +339,16 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         if (cleanWord && !sessionMistakeWords.includes(cleanWord)) {
             setSessionMistakeWords(prev => [...prev, cleanWord]);
         }
+
+        // --- XQUOTES FAST RESTART LOGIC ---
+        if (gameMode === 'XQUOTES') {
+            onFail(); // Notify parent to reset streak/debt
+            handleRetry(); // Instantly reset input and state
+            return;
+        }
+
+        setStatus(GameStatus.FAILED);
+        onFail();
         return;
       }
     }
@@ -353,13 +361,32 @@ const TypingArea: React.FC<TypingAreaProps> = ({
       
       if (isPerfect) {
         soundEngine.playSuccess(); 
+        
+        // --- XQUOTES FAST COMPLETE LOGIC ---
+        if (gameMode === 'XQUOTES') {
+            // Trigger completion logic immediately without modal
+            // Parent will decide to reload same quote (if reps > 0) or switch mode
+            const isPerfectMaster = retryCount === 0 && sessionMistakes === 0;
+            const xp = calculateXP(wpm, quote.text.length, streak, isPerfectMaster, settings.readAheadLevel);
+            onComplete(xp, wpm, sessionMistakeWords, retryCount);
+            // We do NOT set status to COMPLETED to avoid showing the modal
+            return;
+        }
+
         setStatus(GameStatus.COMPLETED);
         const finalTime = Date.now();
         const durationMins = (finalTime - (startTime || finalTime)) / 60000;
         const finalWpm = Math.round((quote.text.length / 5) / (durationMins || 1));
         setWpm(finalWpm);
       } else {
-        soundEngine.playError(); 
+        soundEngine.playError();
+        
+        if (gameMode === 'XQUOTES') {
+            onFail();
+            handleRetry();
+            return;
+        } 
+        
         setStatus(GameStatus.FAILED);
         onFail();
       }
