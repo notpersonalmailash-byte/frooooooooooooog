@@ -1220,7 +1220,7 @@ const App: React.FC = () => {
         <p>© {new Date().getFullYear()} Frog Type. Wisdom from the Ages.</p>
       </footer>
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-stone-200 px-6 py-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--bg-body)] border-t border-stone-200/50 px-6 py-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-colors duration-300">
            <div className="max-w-[1400px] mx-auto">
                <ProgressBar 
                  xp={userXP} 
