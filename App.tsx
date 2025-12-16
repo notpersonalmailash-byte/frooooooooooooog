@@ -1,166 +1,383 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  Quote, GameMode, Settings, TestResult, AchievementStats, NotificationItem, 
-  PracticeWord, Level, Theme 
-} from './types';
-import { 
-  LEVELS, getCurrentLevel, getNextLevel, calculateXP, getAverageWPM, checkLevelProgress 
-} from './utils/gameLogic';
-import { fetchQuotes } from './services/quoteService';
-import { THEMES } from './data/themes';
-import { ACHIEVEMENTS } from './data/achievements';
-import { RADIO_STATIONS } from './data/radioStations';
-import { soundEngine } from './utils/soundEngine';
-import TypingArea from './components/TypingArea';
+
+import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react';
 import ProgressBar from './components/ProgressBar';
+import TypingArea from './components/TypingArea';
 import SettingsModal from './components/SettingsModal';
-import { MusicPlayer } from './components/MusicPlayer';
+import HelpModal from './components/HelpModal';
 import StatsModal from './components/StatsModal';
 import ThemeModal from './components/ThemeModal';
 import AchievementsModal from './components/AchievementsModal';
-import HelpModal from './components/HelpModal';
-import StoryConfigModal from './components/StoryConfigModal';
-import PracticeProgress from './components/PracticeProgress';
+import AchievementToast from './components/AchievementToast';
 import SurvivalGame from './components/SurvivalGame';
 import TimeAttackGame from './components/TimeAttackGame';
 import CosmicDefenseGame from './components/CosmicDefenseGame';
 import MiniGameMenu from './components/MiniGameMenu';
-import AchievementToast from './components/AchievementToast';
-import { 
-  Menu, Settings as SettingsIcon, BarChart2, Radio, Palette, HelpCircle, 
-  AlertTriangle, RefreshCcw, Skull, Lock, ArrowLeft, Gamepad2, Play, Eraser, 
-  Music, BookOpen, Crown 
-} from 'lucide-react';
+import { MusicPlayer } from './components/MusicPlayer';
+import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel, PracticeWord, AchievementStats } from './types';
+import { fetchQuotes, getPracticeLetter } from './services/quoteService';
+import { getCurrentLevel, getNextLevel, getAverageWPM, LEVELS, calculateXP, checkLevelProgress } from './utils/gameLogic';
+import { soundEngine } from './utils/soundEngine';
+import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw, FileText } from 'lucide-react';
 import confetti from 'canvas-confetti';
-
-const DEFAULT_SETTINGS: Settings = {
-  ghostEnabled: true,
-  readAheadLevel: 'NONE',
-  sfxEnabled: true,
-  mechanicalSoundEnabled: true,
-  mechanicalSoundPreset: 'THOCK',
-  ambientVolume: 0.5,
-  musicConfig: { source: 'NONE', presetId: '' },
-  themeId: 'CLASSIC',
-  autoStartMusic: false,
-};
+import { THEMES } from './data/themes';
+import { ACHIEVEMENTS } from './data/achievements';
+import { RADIO_STATIONS } from './data/radioStations';
 
 const App: React.FC = () => {
-  // --- STATE ---
-  // Core
-  const [userXP, setUserXP] = useState<number>(() => parseInt(localStorage.getItem('frogType_xp') || '0', 10));
-  const [userName, setUserName] = useState<string>(() => localStorage.getItem('frogType_userName') || 'Froggy');
-  const [joinDate] = useState<string>(() => localStorage.getItem('frogType_joinDate') || new Date().toISOString());
-  
-  // Progression
-  const [streak, setStreak] = useState<number>(0);
-  const [dailyStreak, setDailyStreak] = useState<number>(() => parseInt(localStorage.getItem('frogType_dailyStreak') || '0', 10));
-  const [lastLoginDate, setLastLoginDate] = useState<string>(() => localStorage.getItem('frogType_lastLoginDate') || '');
-  const [totalTimePlayed, setTotalTimePlayed] = useState<number>(() => parseInt(localStorage.getItem('frogType_totalTime') || '0', 10));
-  const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>(() => JSON.parse(localStorage.getItem('frogType_achievements') || '[]'));
-  const [unlockedTiers, setUnlockedTiers] = useState<string[]>(() => JSON.parse(localStorage.getItem('frogType_unlockedTiers') || '["Egg"]'));
-  
-  // Game Logic
-  const [gameMode, setGameMode] = useState<GameMode>('QUOTES');
-  const [activeMiniGame, setActiveMiniGame] = useState<string | null>(null);
-  const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
-  const [quotesQueue, setQuotesQueue] = useState<Quote[]>([]);
-  const [completedQuotes, setCompletedQuotes] = useState<string[]>(() => JSON.parse(localStorage.getItem('frogType_completedQuotes') || '[]'));
-  const [wpmHistory, setWpmHistory] = useState<number[]>(() => JSON.parse(localStorage.getItem('frogType_wpmHistory') || '[]'));
-  const [testHistory, setTestHistory] = useState<TestResult[]>(() => JSON.parse(localStorage.getItem('frogType_testHistory') || '[]'));
-  const [lastWpm, setLastWpm] = useState<number>(0);
-  
-  // Remediation & Practice
-  const [mistakePool, setMistakePool] = useState<string[]>(() => JSON.parse(localStorage.getItem('frogType_mistakePool') || '[]'));
-  const [failedQuoteRepetitions, setFailedQuoteRepetitions] = useState<Record<string, number>>(() => JSON.parse(localStorage.getItem('frogType_failedRepetitions') || '{}'));
-  const [smartPracticeQueue, setSmartPracticeQueue] = useState<PracticeWord[]>(() => JSON.parse(localStorage.getItem('frogType_smartPractice') || '[]'));
-  const [charStats, setCharStats] = useState<Record<string, number>>({}); 
-  const [practiceLevel, setPracticeLevel] = useState(0);
-
-  // Settings & UI
-  const [settings, setSettings] = useState<Settings>(() => {
-      const saved = localStorage.getItem('frogType_settings');
-      return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
+  // User Stats Persistence
+  const [userName, setUserName] = useState<string>(() => {
+      return localStorage.getItem('frogType_userName') || 'Froggy';
   });
+
+  const [joinDate, setJoinDate] = useState<string>(() => {
+      const stored = localStorage.getItem('frogType_joinDate');
+      if (stored) return stored;
+      const now = new Date().toISOString();
+      localStorage.setItem('frogType_joinDate', now);
+      return now;
+  });
+
+  const [totalTimePlayed, setTotalTimePlayed] = useState<number>(() => {
+      const stored = localStorage.getItem('frogType_totalTime');
+      return stored ? parseInt(stored, 10) : 0;
+  });
+
+  const [userXP, setUserXP] = useState<number>(() => {
+    const saved = localStorage.getItem('frogXP');
+    const legacy = localStorage.getItem('frogType_xp');
+    if (saved) return parseInt(saved, 10);
+    if (legacy) return parseInt(legacy, 10);
+    return 0;
+  });
+  
+  const currentLevel = getCurrentLevel(userXP);
+  
+  // Track unlocked tiers persistently to prevent repeat notifications
+  const [unlockedTiers, setUnlockedTiers] = useState<string[]>(() => {
+    const saved = localStorage.getItem('frogType_unlockedTiers');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Session Streak (Consecutive Quotes)
+  const [streak, setStreak] = useState<number>(() => {
+    const saved = localStorage.getItem('frogType_streak');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
+  // Daily Streak Logic
+  const [dailyStreak, setDailyStreak] = useState<number>(() => {
+     const saved = localStorage.getItem('frogType_dailyStreak');
+     return saved ? parseInt(saved, 10) : 0;
+  });
+
+  const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>(() => {
+    const saved = localStorage.getItem('frogType_achievements');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  // PRACTICE MODE STATE
+  const [practiceLevel, setPracticeLevel] = useState<number>(() => {
+      const saved = localStorage.getItem('frogType_practiceLevel');
+      return saved ? parseInt(saved, 10) : 0;
+  });
+
+  // Smart Practice Queue (Remediation System)
+  const [smartPracticeQueue, setSmartPracticeQueue] = useState<PracticeWord[]>(() => {
+      const saved = localStorage.getItem('frogType_smartQueue');
+      return saved ? JSON.parse(saved) : [];
+  });
+
+  // Failed Quotes Remediation Queue (New)
+  // Maps quote text -> number of successful repetitions required (starts at 1)
+  const [failedQuoteRepetitions, setFailedQuoteRepetitions] = useState<Record<string, number>>(() => {
+      const saved = localStorage.getItem('frogType_remediations');
+      return saved ? JSON.parse(saved) : {};
+  });
+
   const [notificationQueue, setNotificationQueue] = useState<NotificationItem[]>([]);
+
+  // Track history for average WPM calculation (Last 10)
+  const [wpmHistory, setWpmHistory] = useState<number[]>(() => {
+    const saved = localStorage.getItem('frogType_wpmHistory');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Track full history of tests
+  const [testHistory, setTestHistory] = useState<TestResult[]>(() => {
+    const saved = localStorage.getItem('frogType_history');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [lastWpm, setLastWpm] = useState<number>(() => {
+    const saved = localStorage.getItem('frogType_lastWpm');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
+  const [mistakePool, setMistakePool] = useState<string[]>(() => {
+    const saved = localStorage.getItem('frogType_mistakes');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // New: Specific Character Statistics (e.g. {'a': 5, 'b': 2})
+  const [charStats, setCharStats] = useState<Record<string, number>>(() => {
+    const saved = localStorage.getItem('frogType_charStats');
+    return saved ? JSON.parse(saved) : {};
+  });
+  
+  const [settings, setSettings] = useState<Settings>(() => {
+    const saved = localStorage.getItem('frogType_settings');
+    const parsed = saved ? JSON.parse(saved) : {};
+    
+    // Legacy migration helper values
+    const legacyBrownNoiseEnabled = parsed.brownNoiseEnabled === true;
+    const legacyVolume = parsed.brownNoiseVolume ?? 0.5;
+    
+    let initialReadAhead = parsed.readAheadLevel;
+    if (parsed.readAheadEnabled === true && !initialReadAhead) initialReadAhead = 'FOCUS';
+    if (!initialReadAhead) initialReadAhead = 'NONE';
+
+    // Construct settings with defaults
+    const mergedSettings: Settings = {
+      ghostEnabled: false, 
+      readAheadLevel: initialReadAhead, 
+      sfxEnabled: true,
+      mechanicalSoundEnabled: false,
+      mechanicalSoundPreset: 'THOCK',
+      ambientVolume: 0.02, 
+      musicConfig: { source: 'NONE', presetId: '' },
+      themeId: 'CLASSIC',
+      autoStartMusic: true, // Default to true
+      ...parsed // Overwrite with saved values
+    };
+
+    // --- MIGRATION & LOGIC OVERRIDES ---
+
+    // 1. Recover legacy brown noise setting if musicConfig wasn't explicitly saved
+    if (legacyBrownNoiseEnabled && (!parsed.musicConfig || parsed.musicConfig.source === 'NONE')) {
+        mergedSettings.musicConfig = { source: 'GENERATED', presetId: 'BROWN_NOISE' };
+        mergedSettings.ambientVolume = legacyVolume;
+    }
+
+    // 2. Auto-Start Logic
+    if (mergedSettings.autoStartMusic) {
+        mergedSettings.musicConfig = { source: 'GENERATED', presetId: 'PIANO_SATIE' };
+    } else {
+        mergedSettings.musicConfig = { source: 'NONE', presetId: '' };
+    }
+
+    return mergedSettings;
+  });
+
+  const [gameMode, setGameMode] = useState<GameMode>(() => {
+    const saved = localStorage.getItem('frogType_gameMode');
+    if (saved === 'FIX_MISTAKE') return 'XWORDS'; // Legacy migration
+    return (saved as GameMode) || 'QUOTES';
+  });
+
+  // UI state for Mini Game Menu vs Actual Game
+  const [isMiniGameMenuOpen, setIsMiniGameMenuOpen] = useState(false);
+  const [activeMiniGame, setActiveMiniGame] = useState<string | null>(null);
+
+  const [completedQuotes, setCompletedQuotes] = useState<string[]>(() => {
+    const saved = localStorage.getItem('frogType_completedQuotes');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [quotesQueue, setQuotesQueue] = useState<Quote[]>([]);
+  
+  const [currentQuote, setCurrentQuote] = useState<Quote | null>(() => {
+    const saved = localStorage.getItem('frogType_currentQuote');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [loading, setLoading] = useState(false);
-  const [quoteStartTime, setQuoteStartTime] = useState<number | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMusicOpen, setIsMusicOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
   const [shouldAutoFocus, setShouldAutoFocus] = useState(false);
+  
+  // Start time tracking for current quote
+  const [quoteStartTime, setQuoteStartTime] = useState<number | null>(null);
 
-  // Modals
-  const [showSettings, setShowSettings] = useState(false);
-  const [showStats, setShowStats] = useState(false);
-  const [showMusic, setShowMusic] = useState(false);
-  const [showThemes, setShowThemes] = useState(false);
-  const [showAchievements, setShowAchievements] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
-  const [showStoryConfig, setShowStoryConfig] = useState(false);
-
-  // Refs
   const isFetchingRef = useRef(false);
 
-  // --- PERSISTENCE EFFECTS ---
-  useEffect(() => { localStorage.setItem('frogType_xp', userXP.toString()); }, [userXP]);
-  useEffect(() => { localStorage.setItem('frogType_userName', userName); }, [userName]);
-  useEffect(() => { localStorage.setItem('frogType_dailyStreak', dailyStreak.toString()); }, [dailyStreak]);
-  useEffect(() => { localStorage.setItem('frogType_lastLoginDate', lastLoginDate); }, [lastLoginDate]);
-  useEffect(() => { localStorage.setItem('frogType_totalTime', totalTimePlayed.toString()); }, [totalTimePlayed]);
-  useEffect(() => { localStorage.setItem('frogType_achievements', JSON.stringify(unlockedAchievements)); }, [unlockedAchievements]);
+  // Derive Lock State
+  const uniqueTiers = Array.from(new Set(LEVELS.map(l => l.tier)));
+  const currentTierIndex = uniqueTiers.indexOf(currentLevel.tier);
+  
+  const polliwogIndex = uniqueTiers.indexOf('Polliwog');
+  const isHardcoreLocked = currentTierIndex < polliwogIndex;
+  
+  const frogletIndex = uniqueTiers.indexOf('Froglet');
+  const isArcadeLocked = currentTierIndex < frogletIndex;
+  
+  // Practice Lock: Require 20 matches to gather data
+  const isPracticeLocked = testHistory.length < 20;
+
+  // Gating Check
+  const avgWpmVal = getAverageWPM(wpmHistory);
+  const remediationCount = Object.keys(failedQuoteRepetitions).length;
+  const { isGated, reason } = checkLevelProgress(userXP, avgWpmVal, mistakePool.length, remediationCount);
+
+  // Persistence
+  useEffect(() => { localStorage.setItem('frogXP', userXP.toString()); }, [userXP]);
   useEffect(() => { localStorage.setItem('frogType_unlockedTiers', JSON.stringify(unlockedTiers)); }, [unlockedTiers]);
-  useEffect(() => { localStorage.setItem('frogType_completedQuotes', JSON.stringify(completedQuotes)); }, [completedQuotes]);
+  useEffect(() => { localStorage.setItem('frogType_streak', streak.toString()); }, [streak]);
+  useEffect(() => { localStorage.setItem('frogType_dailyStreak', dailyStreak.toString()); }, [dailyStreak]);
+  useEffect(() => { localStorage.setItem('frogType_lastWpm', lastWpm.toString()); }, [lastWpm]);
   useEffect(() => { localStorage.setItem('frogType_wpmHistory', JSON.stringify(wpmHistory)); }, [wpmHistory]);
-  useEffect(() => { localStorage.setItem('frogType_testHistory', JSON.stringify(testHistory)); }, [testHistory]);
-  useEffect(() => { localStorage.setItem('frogType_mistakePool', JSON.stringify(mistakePool)); }, [mistakePool]);
-  useEffect(() => { localStorage.setItem('frogType_failedRepetitions', JSON.stringify(failedQuoteRepetitions)); }, [failedQuoteRepetitions]);
-  useEffect(() => { localStorage.setItem('frogType_smartPractice', JSON.stringify(smartPracticeQueue)); }, [smartPracticeQueue]);
+  useEffect(() => { localStorage.setItem('frogType_history', JSON.stringify(testHistory)); }, [testHistory]);
   useEffect(() => { localStorage.setItem('frogType_settings', JSON.stringify(settings)); }, [settings]);
-  useEffect(() => { if (!localStorage.getItem('frogType_joinDate')) localStorage.setItem('frogType_joinDate', joinDate); }, [joinDate]);
-
-  // --- AUDIO SETUP ---
-  useEffect(() => {
-      soundEngine.setAmbientVolume(settings.ambientVolume);
-      soundEngine.setMechanicalEnabled(settings.mechanicalSoundEnabled);
-      soundEngine.setMechanicalPreset(settings.mechanicalSoundPreset);
-      
-      // Auto start music if configured
-      if (settings.autoStartMusic && settings.musicConfig.source !== 'NONE') {
-          soundEngine.setAmbientMusic(settings.musicConfig.source === 'GENERATED' ? settings.musicConfig.presetId : '');
+  useEffect(() => { localStorage.setItem('frogType_mistakes', JSON.stringify(mistakePool)); }, [mistakePool]);
+  useEffect(() => { localStorage.setItem('frogType_smartQueue', JSON.stringify(smartPracticeQueue)); }, [smartPracticeQueue]);
+  useEffect(() => { localStorage.setItem('frogType_charStats', JSON.stringify(charStats)); }, [charStats]);
+  useEffect(() => { localStorage.setItem('frogType_userName', userName); }, [userName]);
+  useEffect(() => { localStorage.setItem('frogType_totalTime', totalTimePlayed.toString()); }, [totalTimePlayed]);
+  useEffect(() => { localStorage.setItem('frogType_practiceLevel', practiceLevel.toString()); }, [practiceLevel]);
+  useEffect(() => { localStorage.setItem('frogType_remediations', JSON.stringify(failedQuoteRepetitions)); }, [failedQuoteRepetitions]);
+  
+  // Game Mode Persistence & Lock Check
+  useEffect(() => { 
+      if (gameMode === 'HARDCORE' && isHardcoreLocked) {
+          setGameMode('QUOTES');
       }
-  }, [settings]);
+      if (gameMode === 'PRACTICE' && isPracticeLocked) {
+          setGameMode('QUOTES');
+      }
+      if (gameMode === 'MINIGAMES' && isArcadeLocked) {
+          setGameMode('QUOTES');
+      }
+      localStorage.setItem('frogType_gameMode', gameMode); 
+  }, [gameMode, isHardcoreLocked, isPracticeLocked, isArcadeLocked]);
 
-  // --- DAILY STREAK ---
-  const updateDailyStreakActivity = useCallback(() => {
+  useEffect(() => { localStorage.setItem('frogType_completedQuotes', JSON.stringify(completedQuotes)); }, [completedQuotes]);
+  useEffect(() => { localStorage.setItem('frogType_achievements', JSON.stringify(unlockedAchievements)); }, [unlockedAchievements]);
+  
+  // Audio Settings Sync
+  useEffect(() => {
+    soundEngine.setEnabled(settings.sfxEnabled);
+    soundEngine.setMechanicalEnabled(settings.mechanicalSoundEnabled);
+    soundEngine.setMechanicalPreset(settings.mechanicalSoundPreset);
+    soundEngine.setAmbientVolume(settings.ambientVolume);
+
+    if (settings.musicConfig.source === 'GENERATED') {
+      soundEngine.setAmbientMusic(settings.musicConfig.presetId);
+    } else {
+      soundEngine.stopAmbientMusic();
+    }
+  }, [settings.sfxEnabled, settings.mechanicalSoundEnabled, settings.mechanicalSoundPreset, settings.ambientVolume, settings.musicConfig]);
+
+  useLayoutEffect(() => {
+    const theme = THEMES.find(t => t.id === settings.themeId) || THEMES[0];
+    const root = document.documentElement;
+    root.style.setProperty('--bg-body', theme.colors.background);
+    Object.entries(theme.colors.frog).forEach(([key, value]) => {
+       root.style.setProperty(`--frog-${key}`, value);
+    });
+    Object.entries(theme.colors.stone).forEach(([key, value]) => {
+       root.style.setProperty(`--stone-${key}`, value);
+    });
+    root.style.setProperty('--text-body', theme.colors.stone[800]);
+  }, [settings.themeId]);
+
+  useEffect(() => {
+    const handleInteraction = () => {
+      soundEngine.resumeContext();
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('keydown', handleInteraction);
+    };
+    
+    window.addEventListener('click', handleInteraction);
+    window.addEventListener('keydown', handleInteraction);
+    return () => {
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('keydown', handleInteraction);
+    };
+  }, []);
+
+  useEffect(() => { 
+    if (currentQuote) {
+      localStorage.setItem('frogType_currentQuote', JSON.stringify(currentQuote)); 
+      setQuoteStartTime(Date.now());
+    } else {
+      localStorage.removeItem('frogType_currentQuote');
+    }
+  }, [currentQuote]);
+
+  // Check Daily Streak on Mount
+  useEffect(() => {
       const today = new Date().toDateString();
-      if (lastLoginDate !== today) {
+      const lastVisit = localStorage.getItem('frogType_lastVisitDate');
+      
+      // If user hasn't visited today, check if streak should break
+      if (lastVisit && lastVisit !== today) {
           const yesterday = new Date();
           yesterday.setDate(yesterday.getDate() - 1);
           
-          if (lastLoginDate === yesterday.toDateString()) {
-              setDailyStreak(prev => prev + 1);
-          } else {
-              setDailyStreak(1);
+          if (yesterday.toDateString() !== lastVisit) {
+              // Streak broken if last visit was not yesterday
+              setDailyStreak(0);
           }
-          setLastLoginDate(today);
+      } else if (!lastVisit) {
+          setDailyStreak(0);
       }
-  }, [lastLoginDate]);
+  }, []);
 
-  // --- QUOTE LOGIC ---
-  
+  const updateDailyStreakActivity = () => {
+      const today = new Date().toDateString();
+      const lastVisit = localStorage.getItem('frogType_lastVisitDate');
+      
+      if (lastVisit !== today) {
+          // New day activity
+          let newStreak = 1;
+          if (lastVisit) {
+              const yesterday = new Date();
+              yesterday.setDate(yesterday.getDate() - 1);
+              if (yesterday.toDateString() === lastVisit) {
+                  newStreak = dailyStreak + 1;
+              }
+          }
+          setDailyStreak(newStreak);
+          localStorage.setItem('frogType_lastVisitDate', today);
+          
+          // Toast for streak
+          setNotificationQueue(prev => [...prev, {
+              id: `daily_${Date.now()}`,
+              title: "Daily Streak!",
+              description: `You're on a ${newStreak} day streak.`,
+              icon: <Flame className="w-5 h-5 text-orange-500" />,
+              type: "INFO"
+          }]);
+      } else {
+          // Already played today, ensure streak is at least 1 if it was 0
+          if (dailyStreak === 0) {
+              setDailyStreak(1);
+              localStorage.setItem('frogType_lastVisitDate', today);
+          }
+      }
+  };
+
   const generateXWordQuote = useCallback((): Quote | null => {
-    if (mistakePool.length < 3) return null;
-    const count = Math.min(10, mistakePool.length);
-    const shuffled = [...mistakePool].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, count);
-    const text = selected.join(" ");
+    if (mistakePool.length === 0) return null;
+    let pool = [...mistakePool];
+    // Allow random selection including duplicates to reinforce learning
+    while (pool.length < 15) {
+       pool = [...pool, ...mistakePool];
+    }
+    const shuffled = pool.sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 15);
+    const text = selected.join(' ');
     
     return {
-        text,
-        source: "Mistake Remediation",
-        author: "Your Past Self"
+      text,
+      source: "Training",
+      author: "Your Mistakes"
     };
   }, [mistakePool]);
 
-  // Pasting the Logic from the prompt fragment and completing it
   const generateXQuoteQuote = useCallback((): Quote | null => {
       const keys = Object.keys(failedQuoteRepetitions);
       if (keys.length === 0) return null;
@@ -171,7 +388,7 @@ const App: React.FC = () => {
       return {
           text: randomKey,
           source: "Remediation",
-          author: `Mastery Required: ${repsLeft} in a row`
+          author: `Repeat Required (${repsLeft} left)`
       };
   }, [failedQuoteRepetitions]);
 
@@ -187,6 +404,7 @@ const App: React.FC = () => {
       // 1. Fetch Standard Quotes
       const newQuotes = await fetchQuotes(5, completedQuotes, level.name, gameMode, practiceLevel, charStats, smartPracticeQueue);
       
+      // Note: XQuotes are now handled exclusively in XQUOTES mode, not injected here.
       setQuotesQueue(prev => [...prev, ...newQuotes]);
 
     } catch (error) {
@@ -207,7 +425,8 @@ const App: React.FC = () => {
       }
     };
     init();
-  }, [currentQuote, quotesQueue.length, gameMode, loadMoreQuotes]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (currentQuote || gameMode === 'MINIGAMES') return;
@@ -282,6 +501,166 @@ const App: React.FC = () => {
     }
   };
 
+  const handleQuoteComplete = (xpCalc: number, wpm: number, mistakes: string[], retryCount: number) => {
+    let finalXp = xpCalc; 
+    setShouldAutoFocus(true);
+
+    // Update Time Played
+    if (quoteStartTime) {
+        const durationSec = Math.floor((Date.now() - quoteStartTime) / 1000);
+        setTotalTimePlayed(prev => prev + durationSec);
+    }
+
+    if (gameMode === 'HARDCORE') {
+      finalXp = finalXp * 5;
+    }
+
+    // --- REMEDIATION SUCCESS LOGIC (XQUOTES MODE) ---
+    // Rule: Must complete correct 1 time (was 3).
+    if (gameMode === 'XQUOTES' && currentQuote) {
+        const key = currentQuote.text;
+        if (failedQuoteRepetitions[key] !== undefined) {
+            setFailedQuoteRepetitions(prev => {
+                const currentVal = prev[key];
+                const newVal = currentVal - 1;
+                const newObj = { ...prev };
+                
+                if (newVal <= 0) {
+                    delete newObj[key];
+                    setNotificationQueue(prevQ => [...prevQ, {
+                        id: `remediate_${Date.now()}`,
+                        title: "Redemption!",
+                        description: "Failed quote mastered.",
+                        icon: <RefreshCcw className="w-5 h-5 text-green-500" />,
+                        type: 'INFO'
+                    }]);
+                } else {
+                    newObj[key] = newVal;
+                    // Visual feedback is handled by next quote load
+                }
+                return newObj;
+            });
+        }
+    }
+
+    // --- XWORDS LOGIC ---
+    // Rule: Each correct type removes one instance.
+    if (gameMode === 'XWORDS' && currentQuote) {
+      const wordsFixed = currentQuote.text.split(' '); 
+      setMistakePool(prev => {
+          const newPool = [...prev];
+          wordsFixed.forEach(fixedWord => {
+              // Only remove one instance per successful type
+              const idx = newPool.indexOf(fixedWord);
+              if (idx > -1) newPool.splice(idx, 1);
+          });
+          return newPool;
+      });
+        finalXp = Math.floor(finalXp * 0.5); // Reduced XP for farming easy words
+    }
+
+    // --- SMART PRACTICE LOGIC (MASTERY UPDATE) ---
+    // Aligning proficiency target to 3 to match the consistent rule.
+    if (currentQuote) {
+        const quoteWords = currentQuote.text.split(/\s+/).map(w => w.replace(/[^a-zA-Z]/g, '').toLowerCase()).filter(w => w.length > 1);
+        
+        const runMistakes = new Set(mistakes.map(w => w.toLowerCase()));
+        
+        setSmartPracticeQueue(prevQueue => {
+            const newQueue = [...prevQueue];
+            let changed = false;
+
+            quoteWords.forEach(qWord => {
+                const index = newQueue.findIndex(pw => pw.word === qWord);
+                
+                if (index !== -1) {
+                    if (runMistakes.has(qWord)) {
+                        // Already handled by handleMistake, but safety check: reset to 0
+                        if (newQueue[index].proficiency !== 0) {
+                            newQueue[index] = { ...newQueue[index], proficiency: 0, lastPracticed: Date.now() };
+                            changed = true;
+                        }
+                    } else {
+                        // Success: Increment Proficiency
+                        const newProficiency = newQueue[index].proficiency + 1;
+                        if (newProficiency >= 3) { // REQUIRE 3 SUCCESSES
+                            newQueue.splice(index, 1);
+                        } else {
+                            newQueue[index] = { ...newQueue[index], proficiency: newProficiency, lastPracticed: Date.now() };
+                        }
+                        changed = true;
+                    }
+                }
+            });
+            
+            return changed ? newQueue : prevQueue;
+        });
+    }
+
+    if (currentQuote && gameMode !== 'XWORDS' && gameMode !== 'PRACTICE' && gameMode !== 'XQUOTES') {
+       setCompletedQuotes(prev => [...prev, currentQuote.text]);
+    }
+
+    // Update History
+    const newHistory = [...wpmHistory, wpm].slice(-10); 
+    setWpmHistory(newHistory);
+    const avgWpm = getAverageWPM(newHistory);
+
+    const newTestResult: TestResult = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      wpm,
+      xpEarned: finalXp,
+      mode: gameMode,
+      quoteText: currentQuote?.text || "",
+      mistakes: mistakes,
+      retryCount: retryCount
+    };
+    setTestHistory(prev => [...prev, newTestResult]);
+
+    // Check achievements (Standard WPM)
+    checkAchievements(wpm);
+
+    // Calculate XP and Handle Gates/Unlocks
+    handleXPGain(finalXp, avgWpm);
+
+    setLastWpm(wpm);
+    setCurrentQuote(null); 
+    setQuoteStartTime(null);
+  };
+
+  const handleMiniGameOver = (score: number, xp: number, wave?: number) => {
+      const gameName = activeMiniGame === 'SURVIVAL_SWAMP' ? 'Swamp Survival' 
+        : activeMiniGame === 'SURVIVAL_ZOMBIE' ? 'Zombie Outbreak'
+        : activeMiniGame === 'COSMIC_DEFENSE' ? 'Cosmic Defense'
+        : 'Time Attack';
+
+      const newTestResult: TestResult = {
+          id: Date.now(),
+          date: new Date().toISOString(),
+          wpm: 0, 
+          xpEarned: xp,
+          mode: 'MINIGAMES',
+          quoteText: `${gameName} - Score: ${score}${wave ? ` (Wave ${wave})` : ''}`,
+          mistakes: [],
+          retryCount: 0
+      };
+      setTestHistory(prev => [...prev, newTestResult]);
+
+      handleXPGain(xp, getAverageWPM(wpmHistory));
+      
+      // Trigger Arcade Achievements
+      checkAchievements(0, score, wave);
+
+      setNotificationQueue(prev => [...prev, {
+          id: `survival_${Date.now()}`,
+          title: "Arcade Run Complete",
+          description: `Score: ${score} | +${xp} XP`,
+          icon: <Skull className="w-5 h-5 text-red-500" />,
+          type: 'INFO'
+      }]);
+  };
+
   const handleXPGain = (xpAmount: number, currentAvgWpm: number) => {
     const currentLevelObj = getCurrentLevel(userXP);
     const nextLevelObj = getNextLevel(currentLevelObj);
@@ -353,397 +732,515 @@ const App: React.FC = () => {
     updateDailyStreakActivity();
   };
 
-  const handleQuoteComplete = (xpCalc: number, wpm: number, mistakes: string[], retryCount: number) => {
-    let finalXp = xpCalc; 
-    setShouldAutoFocus(true);
-
-    // Update Time Played
-    if (quoteStartTime) {
-        const durationSec = Math.floor((Date.now() - quoteStartTime) / 1000);
-        setTotalTimePlayed(prev => prev + durationSec);
-    }
-
-    if (gameMode === 'HARDCORE') {
-      finalXp = finalXp * 5;
-    }
-
-    // --- REMEDIATION SUCCESS LOGIC (XQUOTES MODE) ---
-    if (gameMode === 'XQUOTES' && currentQuote) {
-        const key = currentQuote.text;
-        if (failedQuoteRepetitions[key] !== undefined) {
-            setFailedQuoteRepetitions(prev => {
-                const currentVal = prev[key];
-                const newVal = currentVal - 1;
-                const newObj = { ...prev };
-                
-                if (newVal <= 0) {
-                    delete newObj[key];
-                    setNotificationQueue(prevQ => [...prevQ, {
-                        id: `remediate_${Date.now()}`,
-                        title: "Redemption!",
-                        description: "Failed quote mastered.",
-                        icon: <RefreshCcw className="w-5 h-5 text-green-500" />,
-                        type: 'INFO'
-                    }]);
-                } else {
-                    newObj[key] = newVal;
-                }
-                return newObj;
-            });
-        }
-    }
-
-    // --- XWORDS LOGIC ---
-    if (gameMode === 'XWORDS' && currentQuote) {
-      const wordsFixed = currentQuote.text.split(' '); 
-      setMistakePool(prev => {
-          const newPool = [...prev];
-          wordsFixed.forEach(fixedWord => {
-              const idx = newPool.indexOf(fixedWord);
-              if (idx > -1) newPool.splice(idx, 1);
-          });
-          return newPool;
-      });
-        finalXp = Math.floor(finalXp * 0.5); 
-    }
-
-    // --- SMART PRACTICE LOGIC (MASTERY UPDATE) ---
-    if (currentQuote) {
-        const quoteWords = currentQuote.text.split(/\s+/).map(w => w.replace(/[^a-zA-Z]/g, '').toLowerCase()).filter(w => w.length > 1);
-        
-        const runMistakes = new Set(mistakes.map(w => w.toLowerCase()));
-        
-        setSmartPracticeQueue(prevQueue => {
-            const newQueue = [...prevQueue];
-            let changed = false;
-
-            quoteWords.forEach(qWord => {
-                const index = newQueue.findIndex(pw => pw.word === qWord);
-                
-                if (index !== -1) {
-                    if (runMistakes.has(qWord)) {
-                        if (newQueue[index].proficiency !== 0) {
-                            newQueue[index] = { ...newQueue[index], proficiency: 0, lastPracticed: Date.now() };
-                            changed = true;
-                        }
-                    } else {
-                        const newProficiency = newQueue[index].proficiency + 1;
-                        if (newProficiency >= 3) {
-                            newQueue.splice(index, 1);
-                        } else {
-                            newQueue[index] = { ...newQueue[index], proficiency: newProficiency, lastPracticed: Date.now() };
-                        }
-                        changed = true;
-                    }
-                }
-            });
-            
-            return changed ? newQueue : prevQueue;
-        });
-    }
-
-    if (currentQuote && gameMode !== 'XWORDS' && gameMode !== 'PRACTICE' && gameMode !== 'XQUOTES') {
-       setCompletedQuotes(prev => [...prev, currentQuote.text]);
-    }
-
-    // Update History
-    const newHistory = [...wpmHistory, wpm].slice(-10); 
-    setWpmHistory(newHistory);
-    const avgWpm = getAverageWPM(newHistory);
-
-    const newTestResult: TestResult = {
-      id: Date.now(),
-      date: new Date().toISOString(),
-      wpm,
-      xpEarned: finalXp,
-      mode: gameMode,
-      quoteText: currentQuote?.text || "",
-      mistakes: mistakes,
-      retryCount: retryCount
-    };
-    setTestHistory(prev => [...prev, newTestResult]);
-
-    checkAchievements(wpm);
-    handleXPGain(finalXp, avgWpm);
-
-    setLastWpm(wpm);
-    setCurrentQuote(null); 
-    setQuoteStartTime(null);
-  };
-
-  const handleMiniGameOver = (score: number, xp: number, wave?: number) => {
-      const gameName = activeMiniGame === 'SURVIVAL_SWAMP' ? 'Swamp Survival' 
-        : activeMiniGame === 'SURVIVAL_ZOMBIE' ? 'Zombie Outbreak'
-        : activeMiniGame === 'COSMIC_DEFENSE' ? 'Cosmic Defense'
-        : 'Time Attack';
-
-      const newTestResult: TestResult = {
-          id: Date.now(),
-          date: new Date().toISOString(),
-          wpm: 0, 
-          xpEarned: xp,
-          mode: 'MINIGAMES',
-          quoteText: `${gameName} - Score: ${score}${wave ? ` (Wave ${wave})` : ''}`,
-          mistakes: [],
-          retryCount: 0
-      };
-      setTestHistory(prev => [...prev, newTestResult]);
-
-      handleXPGain(xp, getAverageWPM(wpmHistory));
-      checkAchievements(0, score, wave);
-
-      setNotificationQueue(prev => [...prev, {
-          id: `survival_${Date.now()}`,
-          title: "Arcade Run Complete",
-          description: `Score: ${score} | +${xp} XP`,
-          icon: <Skull className="w-5 h-5 text-red-500" />,
-          type: 'INFO'
-      }]);
-      setActiveMiniGame(null);
-  };
-
   const handleQuoteFail = () => {
-    const quoteText = currentQuote?.text;
-
-    // --- REMEDIATION TRIGGER (Standard Fail) ---
-    if (gameMode === 'QUOTES' && quoteText) {
+    // --- REMEDIATION TRIGGER ---
+    if (gameMode === 'QUOTES' && currentQuote) {
+        const key = currentQuote.text;
         setFailedQuoteRepetitions(prev => {
-            return { ...prev, [quoteText]: 3 }; 
+            // Strict: Failing incurs 1 debt (Changed from 3).
+            return { ...prev, [key]: 1 }; 
         });
         
         setNotificationQueue(prev => [...prev, {
             id: `fail_${Date.now()}`,
             title: "Quote Failed",
-            description: "Pass 3 times in a row in XQuotes to recover.",
+            description: "Pass this quote in XQuotes to recover.",
             icon: <AlertTriangle className="w-5 h-5 text-red-500" />,
             type: 'INFO'
         }]);
-    }
-
-    // --- REMEDIATION RESET (XQuotes Fail) ---
-    if (gameMode === 'XQUOTES' && quoteText) {
-         setFailedQuoteRepetitions(prev => {
-            if (prev[quoteText]) {
-                 setNotificationQueue(prevQ => [...prevQ, {
-                    id: `reset_${Date.now()}`,
-                    title: "Streak Broken",
-                    description: "Remediation progress reset to 3.",
-                    icon: <RotateCcw className="w-5 h-5 text-orange-500" />,
-                    type: 'INFO'
-                }]);
-                return { ...prev, [quoteText]: 3 };
-            }
-            return prev;
-        });
     }
 
     setStreak(0);
   };
 
   const handleMistake = (word?: string, expectedChar?: string, typedChar?: string) => {
-      if (word) {
-          const lowerWord = word.toLowerCase();
-          setMistakePool(prev => {
-              // Add only if not excessive duplicate (cap at 3 instances)
-              const count = prev.filter(w => w === lowerWord).length;
-              if (count < 3) return [...prev, lowerWord];
-              return prev;
+    let penaltyMultiplier = 0.85; 
+
+    if (gameMode === 'HARDCORE') {
+        penaltyMultiplier = 0.5;
+    } else if (gameMode === 'XWORDS' || gameMode === 'XQUOTES' || gameMode === 'PRACTICE') {
+        penaltyMultiplier = 0.95;
+    }
+
+    setUserXP(prev => Math.floor(prev * penaltyMultiplier));
+
+    setStreak(0);
+
+    // Track Words for XWORDS mode - REQUIRE 1 REPETITION TO CLEAR (Changed from 3)
+    if (word && word.length > 1) {
+       setMistakePool(prev => {
+         // Reset this word's debt to 1 if mistakenly typed
+         const clean = prev.filter(w => w !== word);
+         return [...clean, word];
+       });
+       
+       const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+       if (cleanWord.length > 1) {
+           // --- SMART QUEUE UPDATE ---
+           setSmartPracticeQueue(prev => {
+               const idx = prev.findIndex(p => p.word === cleanWord);
+               if (idx !== -1) {
+                   const updated = [...prev];
+                   // RESET MASTERY TO 0 ON ERROR
+                   updated[idx] = { ...updated[idx], proficiency: 0, lastPracticed: Date.now() };
+                   return updated;
+               } else {
+                   // ADD NEW WORD TO TRACKING
+                   return [...prev, { word: cleanWord, proficiency: 0, lastPracticed: Date.now() }];
+               }
+           });
+       }
+    }
+
+    // Track Specific Characters for Smart Practice
+    if (expectedChar && /[a-zA-Z]/.test(expectedChar)) {
+        const lowerChar = expectedChar.toLowerCase();
+        setCharStats(prev => {
+            const currentCount = prev[lowerChar] || 0;
+            return { ...prev, [lowerChar]: currentCount + 1 };
+        });
+    }
+  };
+
+  const handlePracticeFromHistory = (mistakes: string[]) => {
+      setMistakePool(prev => {
+          const newSet = new Set([...prev, ...mistakes]);
+          const additions: string[] = [];
+          mistakes.forEach(m => {
+              additions.push(m);
           });
-          
-          // Smart Practice Queue Update
-          setSmartPracticeQueue(prev => {
-              const idx = prev.findIndex(pw => pw.word === lowerWord);
-              if (idx > -1) {
-                  const updated = [...prev];
-                  updated[idx] = { ...updated[idx], proficiency: 0, lastPracticed: Date.now() };
-                  return updated;
-              }
-              return [...prev, { word: lowerWord, proficiency: 0, lastPracticed: Date.now() }];
-          });
+          return [...prev, ...additions];
+      });
+      switchMode('XWORDS');
+  };
+
+  const toggleSettings = () => setIsSettingsOpen(!isSettingsOpen);
+  const toggleMusic = () => setIsMusicOpen(!isMusicOpen);
+  const toggleHelp = () => setIsHelpOpen(!isHelpOpen);
+  const toggleStats = () => setIsStatsOpen(!isStatsOpen);
+  const toggleTheme = () => setIsThemeOpen(!isThemeOpen);
+  const toggleAchievements = () => setIsAchievementsOpen(!isAchievementsOpen);
+
+  const cycleReadAhead = () => {
+      const levels: ReadAheadLevel[] = ['NONE', 'FOCUS', 'ULTRA', 'BLIND'];
+      const currentIndex = levels.indexOf(settings.readAheadLevel);
+      const nextIndex = (currentIndex + 1) % levels.length;
+      setSettings({ ...settings, readAheadLevel: levels[nextIndex] });
+      soundEngine.playKeypress(); // Feedback
+  };
+
+  const switchMode = useCallback((mode: GameMode) => {
+    if (mode === 'XWORDS' && mistakePool.length === 0) return;
+    if (mode === 'XQUOTES' && Object.keys(failedQuoteRepetitions).length === 0) return;
+    if (mode === 'HARDCORE' && isHardcoreLocked) return;
+    if (mode === 'PRACTICE' && isPracticeLocked) return;
+    if (mode === 'MINIGAMES' && isArcadeLocked) return;
+    
+    setShouldAutoFocus(false);
+
+    if (mode === 'MINIGAMES') {
+        setIsMiniGameMenuOpen(true);
+        setActiveMiniGame(null);
+    } else {
+        setIsMiniGameMenuOpen(false);
+        setActiveMiniGame(null);
+        setGameMode(mode);
+        setQuotesQueue([]); 
+        setCurrentQuote(null); 
+    }
+  }, [mistakePool.length, failedQuoteRepetitions, isHardcoreLocked, isPracticeLocked, isArcadeLocked]);
+  
+  const handleMiniGameSelect = (gameId: string) => {
+      setGameMode('MINIGAMES');
+      setActiveMiniGame(gameId);
+      setIsMiniGameMenuOpen(false);
+  };
+
+  const handleRequestNextQuote = async () => {
+      setCurrentQuote(null);
+      setQuoteStartTime(null);
+  };
+
+  const clearToast = useCallback(() => {
+    setNotificationQueue(prev => prev.slice(1));
+  }, []);
+
+  const getReadAheadConfig = () => {
+      switch(settings.readAheadLevel) {
+          case 'FOCUS': return { label: 'Focus', color: 'text-frog-green', bg: 'bg-frog-100', bonus: '+10%' };
+          case 'ULTRA': return { label: 'Ultra', color: 'text-purple-600', bg: 'bg-purple-100', bonus: '+20%' };
+          case 'BLIND': return { label: 'Blind', color: 'text-red-600', bg: 'bg-red-100', bonus: '+30%' };
+          default: return { label: 'Off', color: 'text-stone-400', bg: 'hover:bg-stone-100', bonus: '' };
       }
   };
+  const raConfig = getReadAheadConfig();
 
-  // --- RENDERING ---
-  const currentTheme = THEMES.find(t => t.id === settings.themeId) || THEMES[0];
-  const activeLevel = getCurrentLevel(userXP);
-
-  // Background style
-  const bgStyle = {
-      backgroundColor: currentTheme.colors.background,
-      color: currentTheme.colors.stone[900], // Approximation
-  };
-
-  if (activeMiniGame) {
+  const renderMiniGame = () => {
+      if (activeMiniGame === 'SURVIVAL_SWAMP') {
+          return (
+              <SurvivalGame 
+                  variant="SWAMP"
+                  onGameOver={(score, xp) => handleMiniGameOver(score, xp, 0)} 
+                  onExit={() => { setIsMiniGameMenuOpen(true); setActiveMiniGame(null); }} 
+              />
+          );
+      }
+      if (activeMiniGame === 'SURVIVAL_ZOMBIE') {
+          return (
+              <SurvivalGame 
+                  variant="ZOMBIE"
+                  onGameOver={(score, xp) => handleMiniGameOver(score, xp, 0)} 
+                  onExit={() => { setIsMiniGameMenuOpen(true); setActiveMiniGame(null); }} 
+              />
+          );
+      }
+      if (activeMiniGame === 'TIME_ATTACK') {
+          return (
+              <TimeAttackGame
+                  onGameOver={(score, xp) => handleMiniGameOver(score, xp)} 
+                  onExit={() => { setIsMiniGameMenuOpen(true); setActiveMiniGame(null); }} 
+              />
+          );
+      }
+      if (activeMiniGame === 'COSMIC_DEFENSE') {
+          return (
+              <CosmicDefenseGame
+                  onGameOver={handleMiniGameOver} 
+                  onExit={() => { setIsMiniGameMenuOpen(true); setActiveMiniGame(null); }} 
+              />
+          );
+      }
+      // Fallback
       return (
-          <div className="min-h-screen font-sans" style={bgStyle}>
-              {activeMiniGame === 'SURVIVAL_SWAMP' && <SurvivalGame variant="SWAMP" onGameOver={handleMiniGameOver} onExit={() => setActiveMiniGame(null)} />}
-              {activeMiniGame === 'SURVIVAL_ZOMBIE' && <SurvivalGame variant="ZOMBIE" onGameOver={handleMiniGameOver} onExit={() => setActiveMiniGame(null)} />}
-              {activeMiniGame === 'TIME_ATTACK' && <TimeAttackGame onGameOver={handleMiniGameOver} onExit={() => setActiveMiniGame(null)} />}
-              {activeMiniGame === 'COSMIC_DEFENSE' && <CosmicDefenseGame onGameOver={handleMiniGameOver} onExit={() => setActiveMiniGame(null)} />}
+          <div className="text-stone-400 p-10 text-center">
+              Unknown Game Mode
+              <button onClick={() => { setIsMiniGameMenuOpen(true); setActiveMiniGame(null); }} className="block mx-auto mt-4 text-frog-green underline">Return</button>
           </div>
       );
-  }
+  };
+
+  const isGatedLocked = isGated && (reason === 'MASTERY' || reason === 'REMEDIATION');
+  // Check specifically if we are blocked from normal play
+  const isPlayingRemediation = gameMode === 'XWORDS' || gameMode === 'XQUOTES';
 
   return (
-    <div className="min-h-screen font-sans flex flex-col transition-colors duration-500" style={bgStyle}>
-      {/* HEADER */}
-      <header className="px-6 py-4 flex items-center justify-between border-b border-black/5 bg-white/50 backdrop-blur-sm sticky top-0 z-50">
-          <div className="flex items-center gap-2">
-              <div className="bg-frog-green/20 p-2 rounded-lg text-2xl">🐸</div>
-              <h1 className="font-black text-2xl tracking-tighter text-stone-800 hidden md:block">FROG TYPE</h1>
-          </div>
+    <div className="min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200">
+      <div className="sticky top-0 z-40 flex flex-col shadow-sm transition-all">
+          <header className="w-full bg-stone-50/95 backdrop-blur-md border-b border-stone-200 px-6 py-3">
+            <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+              
+              <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
+                <div className="flex flex-col items-center md:items-start flex-shrink-0">
+                  <h1 className="text-xl font-black text-frog-green tracking-tight flex items-center gap-2">
+                    <span className="text-2xl">🐸</span> Frog Type
+                  </h1>
+                </div>
 
-          <div className="flex-1 max-w-xl mx-8">
-              <ProgressBar 
-                  xp={userXP} 
-                  avgWpm={getAverageWPM(wpmHistory)} 
-                  mistakeCount={mistakePool.length} 
-                  remediationCount={Object.keys(failedQuoteRepetitions).length}
-              />
-          </div>
+                <div className="flex gap-1 p-1 bg-stone-100/80 rounded-lg shadow-inner border border-stone-200/50 overflow-x-auto max-w-full">
+                  <button 
+                      onClick={() => switchMode('QUOTES')}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${gameMode === 'QUOTES' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
+                  >
+                      <BookOpen className="w-3.5 h-3.5" /> Quotes
+                  </button>
+                  <button 
+                      onClick={() => switchMode('PRACTICE')}
+                      disabled={isPracticeLocked}
+                      title={isPracticeLocked ? `Calibrating skill profile... (${testHistory.length}/20)` : "Dynamic Words Mode"}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
+                        ${gameMode === 'PRACTICE' && !isMiniGameMenuOpen && !activeMiniGame 
+                            ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' 
+                            : isPracticeLocked 
+                                ? 'opacity-50 cursor-not-allowed text-stone-400 bg-stone-100 border border-stone-200' 
+                                : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
+                  >
+                      {isPracticeLocked ? <Lock className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />} 
+                      Words
+                  </button>
+                  <button 
+                      onClick={() => switchMode('HARDCORE')}
+                      disabled={isHardcoreLocked}
+                      title={isHardcoreLocked ? "Unlocks at Polliwog level" : "High risk, high reward"}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
+                        ${gameMode === 'HARDCORE' && !isMiniGameMenuOpen && !activeMiniGame
+                          ? 'bg-stone-800 text-white shadow-sm ring-1 ring-stone-900' 
+                          : isHardcoreLocked 
+                              ? 'opacity-50 cursor-not-allowed text-stone-400 bg-stone-100' 
+                              : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
+                  >
+                      {isHardcoreLocked ? <Lock className="w-3.5 h-3.5" /> : <Skull className="w-3.5 h-3.5" />} 
+                      Hardcore
+                  </button>
+                  <button 
+                      onClick={() => switchMode('MINIGAMES')}
+                      disabled={isArcadeLocked}
+                      title={isArcadeLocked ? "Unlocks at Froglet level" : "Minigames & Boss Battles"}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
+                        ${gameMode === 'MINIGAMES' || isMiniGameMenuOpen || activeMiniGame 
+                            ? 'bg-purple-100 text-purple-600 shadow-sm ring-1 ring-purple-200' 
+                            : isArcadeLocked 
+                                ? 'opacity-50 cursor-not-allowed text-stone-400 bg-stone-100' 
+                                : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
+                  >
+                      {isArcadeLocked ? <Lock className="w-3.5 h-3.5" /> : <Gamepad2 className="w-3.5 h-3.5" />} 
+                      Arcade
+                  </button>
+                  
+                  {/* Remediation Buttons */}
+                  <div className="w-px h-6 bg-stone-200 mx-1"></div>
+                  
+                  <button 
+                      onClick={() => switchMode('XWORDS')}
+                      disabled={mistakePool.length === 0}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
+                        ${gameMode === 'XWORDS' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-red-500 text-white shadow-sm ring-1 ring-red-600' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}
+                        ${mistakePool.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}
+                      title={mistakePool.length === 0 ? "No mistakes recorded yet" : `${mistakePool.length} words to fix`}
+                  >
+                      <Eraser className="w-3.5 h-3.5" /> XWords ({mistakePool.length})
+                  </button>
+                  
+                  <button 
+                      onClick={() => switchMode('XQUOTES')}
+                      disabled={Object.keys(failedQuoteRepetitions).length === 0}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
+                        ${gameMode === 'XQUOTES' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-orange-500 text-white shadow-sm ring-1 ring-orange-600' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}
+                        ${Object.keys(failedQuoteRepetitions).length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                      `}
+                      title={Object.keys(failedQuoteRepetitions).length === 0 ? "No failed quotes" : `${Object.keys(failedQuoteRepetitions).length} quotes to retry`}
+                  >
+                      <RefreshCcw className="w-3.5 h-3.5" /> XQuotes ({Object.keys(failedQuoteRepetitions).length})
+                  </button>
+                </div>
+              </div>
 
-          <div className="flex items-center gap-2">
-              <button onClick={() => setShowStats(true)} className="p-2 rounded-full hover:bg-black/5 text-stone-600 transition-colors" title="Stats">
-                  <BarChart2 className="w-5 h-5" />
-              </button>
-              <button onClick={() => setShowAchievements(true)} className="p-2 rounded-full hover:bg-black/5 text-stone-600 transition-colors" title="Achievements">
-                  <Crown className="w-5 h-5" />
-              </button>
-              <button onClick={() => setShowThemes(true)} className="p-2 rounded-full hover:bg-black/5 text-stone-600 transition-colors" title="Themes">
-                  <Palette className="w-5 h-5" />
-              </button>
-              <button onClick={() => setShowMusic(true)} className="p-2 rounded-full hover:bg-black/5 text-stone-600 transition-colors" title="Music">
-                  <Music className="w-5 h-5" />
-              </button>
-              <button onClick={() => setShowSettings(true)} className="p-2 rounded-full hover:bg-black/5 text-stone-600 transition-colors" title="Settings">
-                  <SettingsIcon className="w-5 h-5" />
-              </button>
-          </div>
-      </header>
-
-      {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-          
-          {/* Mode Selector */}
-          {gameMode === 'MINIGAMES' ? (
-              <MiniGameMenu onSelect={setActiveMiniGame} onBack={() => setGameMode('QUOTES')} />
-          ) : (
-              <div className="w-full max-w-6xl mx-auto flex flex-col gap-6">
-                  {/* Mode Tabs */}
-                  <div className="flex justify-center gap-2 mb-4 flex-wrap">
-                      <button 
-                          onClick={() => setGameMode('QUOTES')} 
-                          className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${gameMode === 'QUOTES' ? 'bg-frog-green text-white shadow-lg' : 'bg-white/50 text-stone-500 hover:bg-white'}`}
-                      >
-                          Quotes
-                      </button>
-                      <button 
-                          onClick={() => setGameMode('PRACTICE')} 
-                          className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1 ${gameMode === 'PRACTICE' ? 'bg-blue-500 text-white shadow-lg' : 'bg-white/50 text-stone-500 hover:bg-white'}`}
-                      >
-                          Words
-                      </button>
-                      <button 
-                          onClick={() => setGameMode('HARDCORE')} 
-                          className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1 ${gameMode === 'HARDCORE' ? 'bg-stone-800 text-white shadow-lg' : 'bg-white/50 text-stone-500 hover:bg-white'}`}
-                      >
-                          <Skull className="w-3 h-3" /> Hardcore
-                      </button>
-                      
-                      {(mistakePool.length > 0) && (
-                          <button 
-                              onClick={() => setGameMode('XWORDS')} 
-                              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1 animate-pulse ${gameMode === 'XWORDS' ? 'bg-red-500 text-white shadow-lg' : 'bg-white/50 text-red-400 hover:bg-white'}`}
-                          >
-                              <Eraser className="w-3 h-3" /> XWords ({mistakePool.length})
-                          </button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                   <button 
+                     onClick={cycleReadAhead}
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 group relative ${raConfig.bg} ${raConfig.color}`}
+                     title={`Read Ahead: ${raConfig.label} (${raConfig.bonus ? raConfig.bonus + ' XP' : 'No Bonus'})`}
+                   >
+                      {settings.readAheadLevel === 'NONE' ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                      {raConfig.bonus && (
+                          <span className="absolute -top-1 -right-1 bg-frog-green text-white text-[8px] px-1 rounded-full font-bold">
+                              {raConfig.bonus.replace('+','')}
+                          </span>
                       )}
-                      
-                      {(Object.keys(failedQuoteRepetitions).length > 0) && (
-                          <button 
-                              onClick={() => setGameMode('XQUOTES')} 
-                              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1 animate-pulse ${gameMode === 'XQUOTES' ? 'bg-orange-500 text-white shadow-lg' : 'bg-white/50 text-orange-400 hover:bg-white'}`}
-                          >
-                              <RefreshCcw className="w-3 h-3" /> XQuotes ({Object.keys(failedQuoteRepetitions).length})
-                          </button>
-                      )}
+                   </button>
 
-                      <button 
-                          onClick={() => setGameMode('MINIGAMES')} 
-                          className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1 ${gameMode === 'MINIGAMES' ? 'bg-purple-500 text-white shadow-lg' : 'bg-white/50 text-stone-500 hover:bg-white'}`}
-                      >
-                          <Gamepad2 className="w-3 h-3" /> Arcade
-                      </button>
+                   <button 
+                     onClick={toggleAchievements} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isAchievementsOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="Achievements"
+                   >
+                      <Award className="w-5 h-5" />
+                   </button>
+                   <button 
+                     onClick={toggleTheme} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isThemeOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="Themes"
+                   >
+                      <Palette className="w-5 h-5" />
+                   </button>
+                   <button 
+                     onClick={toggleStats} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isStatsOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="Statistics & History"
+                   >
+                      <TrendingUp className="w-5 h-5" />
+                   </button>
+                   <button 
+                     onClick={toggleHelp} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isHelpOpen ? 'bg-stone-100 text-stone-700' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="How to Play"
+                   >
+                      <CircleHelp className="w-5 h-5" />
+                   </button>
+                   <button 
+                     onClick={toggleMusic} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="Background Music"
+                   >
+                      <Music className="w-5 h-5" />
+                   </button>
+                   <button onClick={toggleSettings} className="p-2 hover:bg-stone-100 rounded-full text-stone-400 hover:text-stone-600 transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2">
+                      <SettingsIcon className="w-5 h-5" />
+                   </button>
+              </div>
+
+            </div>
+          </header>
+
+          <div className="w-full bg-white/95 backdrop-blur-md border-b border-stone-200 px-6 py-2">
+               <div className="max-w-[1400px] mx-auto">
+                   <ProgressBar 
+                     xp={userXP} 
+                     avgWpm={getAverageWPM(wpmHistory)} 
+                     mistakeCount={mistakePool.length} 
+                     remediationCount={Object.keys(failedQuoteRepetitions).length}
+                   />
+               </div>
+          </div>
+      </div>
+      
+      <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative">
+        <div className="w-full flex flex-col items-center justify-center min-h-[60vh]">
+          {isGatedLocked && !isPlayingRemediation ? (
+              <div className="mb-8 w-full max-w-2xl relative overflow-hidden bg-orange-50 border-2 border-orange-200 p-8 rounded-3xl shadow-xl flex flex-col items-center text-center gap-6 animate-in slide-in-from-top-5 duration-500 z-50">
+                  <div className="absolute top-0 left-0 w-full h-2 bg-orange-400/20"></div>
+                  
+                  <div className="p-4 bg-orange-100 rounded-full text-orange-500 ring-4 ring-orange-50">
+                      <AlertTriangle className="w-10 h-10" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                      <h3 className="text-3xl font-black text-orange-900 uppercase tracking-tight">Evolution Blocked</h3>
+                      <p className="text-orange-800 font-medium text-lg max-w-md leading-relaxed">
+                          You cannot evolve to the next level until you prove mastery over your mistakes.
+                      </p>
+                      
+                      <div className="flex gap-4 justify-center mt-2">
+                          {mistakePool.length > 0 && (
+                              <div className="bg-red-50 px-4 py-2 rounded-lg border border-red-100">
+                                  <div className="text-[10px] uppercase font-bold text-red-400 tracking-wider">Mistakes</div>
+                                  <div className="text-xl font-black text-red-600">{mistakePool.length} Words</div>
+                              </div>
+                          )}
+                          {Object.keys(failedQuoteRepetitions).length > 0 && (
+                              <div className="bg-orange-50 px-4 py-2 rounded-lg border border-orange-100">
+                                  <div className="text-[10px] uppercase font-bold text-orange-400 tracking-wider">Failures</div>
+                                  <div className="text-xl font-black text-orange-600">{Object.keys(failedQuoteRepetitions).length} Quotes</div>
+                              </div>
+                          )}
+                      </div>
                   </div>
 
-                  {gameMode === 'PRACTICE' && <PracticeProgress level={practiceLevel} />}
-
-                  {loading ? (
-                      <div className="flex justify-center items-center h-64">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-frog-green"></div>
-                      </div>
-                  ) : currentQuote ? (
-                      <TypingArea 
-                          quote={currentQuote}
-                          onComplete={handleQuoteComplete}
+                  <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+                      {mistakePool.length > 0 && (
+                          <button 
+                            onClick={() => switchMode('XWORDS')}
+                            className="flex-1 px-6 py-4 bg-red-500 hover:bg-red-600 text-white font-black text-lg rounded-2xl shadow-lg shadow-red-200 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                          >
+                              <Eraser className="w-5 h-5" />
+                              FIX XWORDS
+                          </button>
+                      )}
+                      {Object.keys(failedQuoteRepetitions).length > 0 && (
+                          <button 
+                            onClick={() => switchMode('XQUOTES')}
+                            className="flex-1 px-6 py-4 bg-orange-500 hover:bg-orange-600 text-white font-black text-lg rounded-2xl shadow-lg shadow-orange-200 transition-all transform hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                          >
+                              <RefreshCcw className="w-5 h-5" />
+                              FIX XQUOTES
+                          </button>
+                      )}
+                  </div>
+              </div>
+          ) : (
+             <>
+                {isMiniGameMenuOpen ? (
+                    <MiniGameMenu 
+                        onSelect={handleMiniGameSelect} 
+                        onBack={() => setIsMiniGameMenuOpen(false)} 
+                    />
+                ) : activeMiniGame ? (
+                    renderMiniGame()
+                ) : (
+                   <>
+                      {loading && !currentQuote ? (
+                          <div className="flex flex-col items-center justify-center text-stone-400 animate-pulse">
+                          <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" />
+                          <p className="font-mono text-xs">
+                              Hatching wisdom...
+                          </p>
+                          </div>
+                      ) : currentQuote ? (
+                          <TypingArea 
+                          quote={currentQuote} 
+                          onComplete={handleQuoteComplete} 
                           onFail={handleQuoteFail}
                           onMistake={handleMistake}
-                          onRequestNewQuote={() => setCurrentQuote(null)}
+                          onRequestNewQuote={handleRequestNextQuote}
                           streak={streak}
                           ghostWpm={getAverageWPM(wpmHistory)}
                           settings={settings}
                           gameMode={gameMode}
-                          onInteract={() => { if (!quoteStartTime) setQuoteStartTime(Date.now()); }}
+                          onInteract={() => setIsMusicOpen(false)}
                           autoFocus={shouldAutoFocus}
-                      />
-                  ) : (
-                      <div className="flex justify-center items-center h-64 text-stone-400">
-                          <p>Preparing session...</p>
-                      </div>
-                  )}
-              </div>
+                          />
+                      ) : (
+                          <div className="flex flex-col items-center justify-center text-stone-400">
+                          <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" />
+                          <p className="font-mono text-xs">Fetching wisdom...</p>
+                          </div>
+                      )}
+                   </>
+                )}
+             </>
           )}
+        </div>
       </main>
 
-      <footer className="p-4 text-center text-[10px] text-stone-400 font-medium">
-          <button onClick={() => setShowHelp(true)} className="flex items-center justify-center gap-1 mx-auto hover:text-frog-green transition-colors">
-              <HelpCircle className="w-3 h-3" /> How to Play
-          </button>
-      </footer>
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        settings={settings} 
+        setSettings={setSettings} 
+      />
 
-      {/* MODALS */}
-      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} settings={settings} setSettings={setSettings} />
-      <StatsModal 
-          isOpen={showStats} 
-          onClose={() => setShowStats(false)} 
-          avgWpm={getAverageWPM(wpmHistory)} 
-          history={testHistory} 
-          onPractice={(mistakes) => {
-              setMistakePool(prev => [...prev, ...mistakes]);
-              setGameMode('XWORDS');
-          }}
-          totalTime={totalTimePlayed}
-          joinDate={joinDate}
-          streak={dailyStreak}
-          userName={userName}
-          setUserName={setUserName}
-          completedTestsCount={testHistory.length}
+      <ThemeModal
+        isOpen={isThemeOpen}
+        onClose={() => setIsThemeOpen(false)}
+        currentThemeId={settings.themeId}
+        setThemeId={(id) => setSettings({ ...settings, themeId: id })}
+        currentLevel={getCurrentLevel(userXP)}
+        allLevels={LEVELS}
       />
-      <ThemeModal 
-          isOpen={showThemes} 
-          onClose={() => setShowThemes(false)} 
-          currentThemeId={settings.themeId} 
-          setThemeId={(id) => setSettings(s => ({ ...s, themeId: id }))} 
-          currentLevel={activeLevel}
-          allLevels={LEVELS}
+
+      <AchievementsModal
+        isOpen={isAchievementsOpen}
+        onClose={() => setIsAchievementsOpen(false)}
+        unlockedIds={unlockedAchievements}
       />
-      <AchievementsModal isOpen={showAchievements} onClose={() => setShowAchievements(false)} unlockedIds={unlockedAchievements} />
-      <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} currentLevel={activeLevel} completedTestsCount={testHistory.length} />
-      <StoryConfigModal isOpen={showStoryConfig} onClose={() => setShowStoryConfig(false)} onStartStory={(topic) => { /* Placeholder for story */ setShowStoryConfig(false); }} />
-      
-      <MusicPlayer isOpen={showMusic} onClose={() => setShowMusic(false)} settings={settings} setSettings={setSettings} userXP={userXP} />
-      
-      <AchievementToast notifications={notificationQueue} onClear={() => setNotificationQueue(prev => prev.slice(1))} />
+
+      <AchievementToast 
+        notifications={notificationQueue}
+        onClear={clearToast}
+      />
+
+      <HelpModal
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+        currentLevel={getCurrentLevel(userXP)}
+        completedTestsCount={testHistory.length}
+      />
+
+      <StatsModal
+        isOpen={isStatsOpen}
+        onClose={() => setIsStatsOpen(false)}
+        avgWpm={getAverageWPM(wpmHistory)}
+        history={testHistory}
+        onPractice={handlePracticeFromHistory}
+        totalTime={totalTimePlayed}
+        joinDate={joinDate}
+        streak={dailyStreak} 
+        userName={userName}
+        setUserName={setUserName}
+        completedTestsCount={testHistory.length}
+      />
+
+      <MusicPlayer 
+        isOpen={isMusicOpen} 
+        onClose={() => setIsMusicOpen(false)} 
+        settings={settings}
+        setSettings={setSettings}
+        userXP={userXP}
+      />
+
+      <footer className="p-6 text-center text-stone-300 text-[10px]">
+        <p>© {new Date().getFullYear()} Frog Type. Wisdom from the Ages.</p>
+      </footer>
     </div>
   );
 };
