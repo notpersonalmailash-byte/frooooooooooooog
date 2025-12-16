@@ -1,6 +1,5 @@
 import { Quote } from '../types';
 import { QUOTES } from '../data/quotes';
-import { generateQuoteForTier, generatePracticeWords } from './geminiService';
 
 // Helper to sanitize text for standard keyboards
 const normalizeText = (text: string): string => {
@@ -12,17 +11,16 @@ const normalizeText = (text: string): string => {
     .trim();
 };
 
-// Map tiers to difficulty levels (0-6)
-const TIER_DIFFICULTY_MAP: Record<string, number> = {
-  'Egg': 0,
-  'Tadpole': 1,
-  'Polliwog': 2,
-  'Froglet': 3,
-  'Hopper': 4,
-  'Tree Frog': 5,
-  'Bullfrog': 6,
-  'Frog Sage': 6 // Sage shares the hardest pool
-};
+// Precise 1-20 Level Mapping
+const LEVEL_ORDER = [
+  'Egg III', 'Egg II', 'Egg I',
+  'Tadpole III', 'Tadpole II', 'Tadpole I',
+  'Polliwog III', 'Polliwog II', 'Polliwog I',
+  'Froglet III', 'Froglet II', 'Froglet I',
+  'Hopper III', 'Hopper II', 'Hopper I',
+  'Tree Frog III', 'Tree Frog II', 'Tree Frog I',
+  'Bullfrog', 'Frog Sage'
+];
 
 // Enhanced difficulty scoring
 const getQuoteDifficulty = (text: string): number => {
@@ -45,6 +43,14 @@ const SORTED_QUOTES = [...QUOTES].map(q => ({
     normalizedText: normalizeText(q.quoteText)
 })).sort((a, b) => a.difficulty - b.difficulty);
 
+// Build a dictionary of all words found in quotes for Practice Mode
+const WORD_DATABASE = Array.from(new Set(
+    SORTED_QUOTES
+        .map(q => q.normalizedText.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/))
+        .flat()
+        .filter(w => w.length > 2)
+));
+
 // --- PRACTICE MODE GENERATOR ---
 export const PRACTICE_ORDER = "enitrlsauoychgmpbkvwjqxz".split('');
 
@@ -53,20 +59,36 @@ export const getPracticeLetter = (level: number) => {
     return PRACTICE_ORDER[idx].toUpperCase();
 }
 
+const getLocalPracticeWords = (allowedLetters: string[], count: number = 20): string[] => {
+    // Filter the global word database for words that ONLY contain allowed letters
+    const validWords = WORD_DATABASE.filter(word => {
+        return word.split('').every(char => allowedLetters.includes(char));
+    });
+
+    if (validWords.length < 5) {
+        // Fallback if strict filtering is too restrictive (early levels)
+        return ["tee", "ten", "net", "tin", "rent", "tent", "test", "rest", "sent", "nest", "site", "rise", "tire"];
+    }
+
+    return validWords;
+};
 
 export const fetchQuotes = async (
     count: number = 3, 
     exclude: string[] = [], 
-    tier: string = 'Egg', 
+    levelName: string = 'Egg III', 
     mode: string = 'QUOTES', 
     practiceLevel: number = 0,
     charStats: Record<string, number> = {}
 ): Promise<Quote[]> => {
   
+  // --- PRACTICE MODE LOGIC (LOCAL) ---
   if (mode === 'PRACTICE') {
       const unlockedCount = Math.min(6 + practiceLevel, PRACTICE_ORDER.length);
       const unlockedLetters = PRACTICE_ORDER.slice(0, unlockedCount);
       const newLetter = unlockedLetters[unlockedLetters.length - 1];
+      
+      const unlockedSet = new Set(unlockedLetters);
       
       // Determine weak letters (highest miss count) that are also currently unlocked
       const weakLetters = Object.entries(charStats)
@@ -75,99 +97,84 @@ export const fetchQuotes = async (
         .map(([char]) => char)
         .slice(0, 3); // Top 3 weakest
       
-      // Focus letters = The new letter + weak letters
       const focusLetters = Array.from(new Set([...weakLetters, newLetter]));
 
-      try {
-          // Fetch Real Words from AI
-          const words = await generatePracticeWords(unlockedLetters, focusLetters);
-          
-          // Create a few quotes from these words
-          const quotes: Quote[] = [];
-          
-          // Generate 'count' number of practice strings
-          for(let i=0; i<count; i++) {
-             // Shuffle words to create a "sentence"
-             const shuffledWords = [...words].sort(() => 0.5 - Math.random());
-             const sliceLength = Math.min(10, shuffledWords.length);
-             const sentence = shuffledWords.slice(0, sliceLength).join(" ");
-             
-             quotes.push({
-                 text: sentence,
-                 source: "Smart Practice",
-                 author: `Targeting: ${focusLetters.join(', ').toUpperCase()}`
-             });
-          }
-          return quotes;
+      // Get words strictly from local DB
+      let practiceWords = getLocalPracticeWords(unlockedLetters);
+      
+      // Prioritize words containing focus letters
+      const focusedWords = practiceWords.filter(w => 
+          w.split('').some(c => focusLetters.includes(c))
+      );
+      
+      // Use focused words if we have enough, otherwise mix
+      const wordPool = focusedWords.length > 10 ? focusedWords : practiceWords;
 
-      } catch (err) {
-          // Fallback to old procedural generation if AI fails
-          console.warn("Falling back to procedural practice");
-          return [{
-             text: "tent net rent tenet letter",
-             source: "Offline Practice",
-             author: "Fallback"
-          }];
+      const quotes: Quote[] = [];
+      
+      // Generate 'count' number of practice strings
+      for(let i=0; i<count; i++) {
+         // Shuffle words to create a "sentence"
+         const shuffledWords = [...wordPool].sort(() => 0.5 - Math.random());
+         // Variable length 5-10 words
+         const sliceLength = 5 + Math.floor(Math.random() * 6);
+         const sentence = shuffledWords.slice(0, sliceLength).join(" ");
+         
+         quotes.push({
+             text: sentence,
+             source: "Practice Drills",
+             author: `Level ${practiceLevel + 1}: ${unlockedLetters.join('').toUpperCase()}`
+         });
       }
+      return quotes;
   }
 
-  // 1. Determine which bucket of quotes to use based on user Tier
-  const bucketCount = 7;
+  // --- STANDARD MODE LOGIC (LOCAL BUCKETS) ---
+  
+  // 1. Determine which bucket of quotes to use based on specific Level Name
+  // We split sorted quotes into 20 granular buckets
+  const bucketCount = 20;
   const bucketSize = Math.ceil(SORTED_QUOTES.length / bucketCount);
   
-  let difficultyIndex = TIER_DIFFICULTY_MAP[tier] ?? 0;
+  let difficultyIndex = LEVEL_ORDER.indexOf(levelName);
+  
+  // Fallback if level name not found
+  if (difficultyIndex === -1) difficultyIndex = 0;
   
   // Hardcore mode always uses max difficulty
   if (mode === 'HARDCORE') {
-      difficultyIndex = 6; 
+      difficultyIndex = 19; 
   }
   
   const startIndex = difficultyIndex * bucketSize;
   const endIndex = Math.min(startIndex + bucketSize, SORTED_QUOTES.length);
   
-  // Get the slice of quotes appropriate for this difficulty
+  // Get the slice of quotes appropriate for this specific difficulty level
   let tierQuotes = SORTED_QUOTES.slice(startIndex, endIndex);
 
-  // Fallback: If slice empty, use previous bucket
-  if (tierQuotes.length === 0) {
-      tierQuotes = SORTED_QUOTES.slice(Math.max(0, startIndex - bucketSize), startIndex);
+  // Fallback: If slice is empty or too small (edge case), try to include previous bucket
+  if (tierQuotes.length < 3 && difficultyIndex > 0) {
+      const expandedStart = Math.max(0, startIndex - bucketSize);
+      tierQuotes = SORTED_QUOTES.slice(expandedStart, endIndex);
   }
   
-  const sourcePool = tierQuotes.length > 0 ? tierQuotes : SORTED_QUOTES;
+  // Safety fallback
+  if (tierQuotes.length === 0) tierQuotes = SORTED_QUOTES.slice(0, 20);
+  
+  const sourcePool = tierQuotes;
 
   // 2. Filter out excluded quotes (Strictly exclude previously completed)
-  const excludeSet = new Set(exclude.map(normalizeText)); // Normalize exclude list
-  const available = sourcePool.filter(q => !excludeSet.has(q.normalizedText));
+  const excludeSet = new Set(exclude.map(normalizeText)); 
+  let available = sourcePool.filter(q => !excludeSet.has(q.normalizedText));
   
-  // 3. Logic for Exhausted Pool (Infinite Mode via AI)
+  // 3. Logic for Exhausted Pool (Recycle)
   if (available.length === 0) {
-      // If we have no static quotes left for this tier, generate one via AI
-      // We generate one at a time for the queue.
-      const aiQuotes: Quote[] = [];
-      for(let i=0; i < count; i++) {
-         // Loop to ensure uniqueness against completed quotes even from AI
-         let attempts = 0;
-         let uniqueFound = false;
-         let candidate: Quote | null = null;
-         
-         while(attempts < 3 && !uniqueFound) {
-             candidate = await generateQuoteForTier(tier);
-             if (!excludeSet.has(normalizeText(candidate.text))) {
-                 uniqueFound = true;
-             }
-             attempts++;
-         }
-         
-         if (candidate) {
-             aiQuotes.push(candidate);
-             // Temporarily add to exclude set to prevent dupes within this batch
-             excludeSet.add(normalizeText(candidate.text));
-         }
-      }
-      return aiQuotes;
+      // If we've done all quotes in this specific level bucket, reset availability
+      // This forces players to re-master quotes at this level if they stay here too long
+      available = sourcePool;
   }
 
-  // 4. Shuffle and select from static pool if available
+  // 4. Shuffle and select
   const shuffled = [...available].sort(() => 0.5 - Math.random());
   const selected = shuffled.slice(0, count);
 

@@ -367,8 +367,8 @@ const App: React.FC = () => {
     
     try {
       const level = getCurrentLevel(userXP);
-      // Pass charStats to allow targeted practice generation
-      const newQuotes = await fetchQuotes(5, completedQuotes, level.tier, gameMode, practiceLevel, charStats);
+      // Pass the specific level name (e.g., 'Egg III') to get the correct 1-20 difficulty bucket
+      const newQuotes = await fetchQuotes(5, completedQuotes, level.name, gameMode, practiceLevel, charStats);
       setQuotesQueue(prev => [...prev, ...newQuotes]);
     } catch (error) {
       console.error("Failed to load quotes", error);
@@ -772,144 +772,157 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200">
-      <header className="w-full bg-stone-50/80 backdrop-blur-md border-b border-stone-200 sticky top-0 z-40 px-6 py-4 shadow-sm transition-all">
-        <div className="max-w-[1400px] mx-auto flex flex-col xl:flex-row items-center justify-between gap-4 xl:gap-8">
-          
-          <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 w-full xl:w-auto">
-            <div className="flex flex-col items-center md:items-start flex-shrink-0">
-              <h1 className="text-xl font-black text-frog-green tracking-tight flex items-center gap-2">
-                <span className="text-2xl">🐸</span> Frog Type
-              </h1>
+      {/* 
+         Combined Sticky Header Container 
+         - Top Row: Logo, Modes, Icons
+         - Bottom Row: Progress Bar
+      */}
+      <div className="sticky top-0 z-40 flex flex-col shadow-sm transition-all">
+          {/* Row 1: Main Controls */}
+          <header className="w-full bg-stone-50/95 backdrop-blur-md border-b border-stone-200 px-6 py-3">
+            <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+              
+              {/* LEFT: Logo & Mode Switchers */}
+              <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
+                <div className="flex flex-col items-center md:items-start flex-shrink-0">
+                  <h1 className="text-xl font-black text-frog-green tracking-tight flex items-center gap-2">
+                    <span className="text-2xl">🐸</span> Frog Type
+                  </h1>
+                </div>
+
+                <div className="flex gap-1 p-1 bg-stone-100/80 rounded-lg shadow-inner border border-stone-200/50 overflow-x-auto max-w-full">
+                  <button 
+                      onClick={() => switchMode('QUOTES')}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${gameMode === 'QUOTES' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
+                  >
+                      <BookOpen className="w-3.5 h-3.5" /> Quotes
+                  </button>
+                  <button 
+                      onClick={() => switchMode('PRACTICE')}
+                      disabled={isPracticeLocked}
+                      title={isPracticeLocked ? `Calibrating skill profile... (${testHistory.length}/20)` : "Smart Practice Mode"}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
+                        ${gameMode === 'PRACTICE' && !isMiniGameMenuOpen && !activeMiniGame 
+                            ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' 
+                            : isPracticeLocked 
+                                ? 'opacity-50 cursor-not-allowed text-stone-400 bg-stone-100 border border-stone-200' 
+                                : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
+                  >
+                      {isPracticeLocked ? <Lock className="w-3.5 h-3.5" /> : <Keyboard className="w-3.5 h-3.5" />} 
+                      Practice
+                  </button>
+                  <button 
+                      onClick={() => switchMode('HARDCORE')}
+                      disabled={isHardcoreLocked}
+                      title={isHardcoreLocked ? "Unlocks at Polliwog level" : "High risk, high reward"}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
+                        ${gameMode === 'HARDCORE' && !isMiniGameMenuOpen && !activeMiniGame
+                          ? 'bg-stone-800 text-white shadow-sm ring-1 ring-stone-900' 
+                          : isHardcoreLocked 
+                              ? 'opacity-50 cursor-not-allowed text-stone-400 bg-stone-100' 
+                              : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
+                  >
+                      {isHardcoreLocked ? <Lock className="w-3.5 h-3.5" /> : <Skull className="w-3.5 h-3.5" />} 
+                      Hardcore
+                  </button>
+                  <button 
+                      onClick={() => switchMode('MINIGAMES')}
+                      disabled={isArcadeLocked}
+                      title={isArcadeLocked ? "Unlocks at Froglet level" : "Minigames & Boss Battles"}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
+                        ${gameMode === 'MINIGAMES' || isMiniGameMenuOpen || activeMiniGame 
+                            ? 'bg-purple-100 text-purple-600 shadow-sm ring-1 ring-purple-200' 
+                            : isArcadeLocked 
+                                ? 'opacity-50 cursor-not-allowed text-stone-400 bg-stone-100' 
+                                : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
+                  >
+                      {isArcadeLocked ? <Lock className="w-3.5 h-3.5" /> : <Gamepad2 className="w-3.5 h-3.5" />} 
+                      Arcade
+                  </button>
+                  <button 
+                      onClick={() => switchMode('FIX_MISTAKE')}
+                      disabled={mistakePool.length === 0}
+                      className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
+                        ${gameMode === 'FIX_MISTAKE' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-red-500 text-white shadow-sm ring-1 ring-red-600' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}
+                        ${mistakePool.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                        ${isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE' ? 'ring-2 ring-red-500 bg-red-50 text-red-600 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]' : ''}
+                      `}
+                      title={mistakePool.length === 0 ? "No mistakes recorded yet" : `${mistakePool.length} words to fix`}
+                  >
+                      <Eraser className="w-3.5 h-3.5" /> Fix ({mistakePool.length})
+                  </button>
+                </div>
+              </div>
+
+              {/* RIGHT: Icon Controls (Moved from ProgressBar area) */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                   <button 
+                     onClick={cycleReadAhead}
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 group relative ${raConfig.bg} ${raConfig.color}`}
+                     title={`Read Ahead: ${raConfig.label} (${raConfig.bonus ? raConfig.bonus + ' XP' : 'No Bonus'})`}
+                   >
+                      {settings.readAheadLevel === 'NONE' ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                      {raConfig.bonus && (
+                          <span className="absolute -top-1 -right-1 bg-frog-green text-white text-[8px] px-1 rounded-full font-bold">
+                              {raConfig.bonus.replace('+','')}
+                          </span>
+                      )}
+                   </button>
+
+                   <button 
+                     onClick={toggleAchievements} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isAchievementsOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="Achievements"
+                   >
+                      <Award className="w-5 h-5" />
+                   </button>
+                   <button 
+                     onClick={toggleTheme} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isThemeOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="Themes"
+                   >
+                      <Palette className="w-5 h-5" />
+                   </button>
+                   <button 
+                     onClick={toggleStats} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isStatsOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="Statistics & History"
+                   >
+                      <TrendingUp className="w-5 h-5" />
+                   </button>
+                   <button 
+                     onClick={toggleHelp} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isHelpOpen ? 'bg-stone-100 text-stone-700' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="How to Play"
+                   >
+                      <CircleHelp className="w-5 h-5" />
+                   </button>
+                   <button 
+                     onClick={toggleMusic} 
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
+                     title="Background Music"
+                   >
+                      <Music className="w-5 h-5" />
+                   </button>
+                   <button onClick={toggleSettings} className="p-2 hover:bg-stone-100 rounded-full text-stone-400 hover:text-stone-600 transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2">
+                      <SettingsIcon className="w-5 h-5" />
+                   </button>
+              </div>
+
             </div>
+          </header>
 
-            <div className="flex gap-1 p-1 bg-stone-100/80 rounded-lg shadow-inner border border-stone-200/50">
-              <button 
-                  onClick={() => switchMode('QUOTES')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${gameMode === 'QUOTES' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
-              >
-                  <BookOpen className="w-3.5 h-3.5" /> Quotes
-              </button>
-              <button 
-                  onClick={() => switchMode('PRACTICE')}
-                  disabled={isPracticeLocked}
-                  title={isPracticeLocked ? `Calibrating skill profile... (${testHistory.length}/20)` : "Smart Practice Mode"}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
-                    ${gameMode === 'PRACTICE' && !isMiniGameMenuOpen && !activeMiniGame 
-                        ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' 
-                        : isPracticeLocked 
-                            ? 'opacity-50 cursor-not-allowed text-stone-400 bg-stone-100 border border-stone-200' 
-                            : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
-              >
-                  {isPracticeLocked ? <Lock className="w-3.5 h-3.5" /> : <Keyboard className="w-3.5 h-3.5" />} 
-                  Practice
-              </button>
-              <button 
-                  onClick={() => switchMode('HARDCORE')}
-                  disabled={isHardcoreLocked}
-                  title={isHardcoreLocked ? "Unlocks at Polliwog level" : "High risk, high reward"}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
-                    ${gameMode === 'HARDCORE' && !isMiniGameMenuOpen && !activeMiniGame
-                      ? 'bg-stone-800 text-white shadow-sm ring-1 ring-stone-900' 
-                      : isHardcoreLocked 
-                          ? 'opacity-50 cursor-not-allowed text-stone-400 bg-stone-100' 
-                          : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
-              >
-                  {isHardcoreLocked ? <Lock className="w-3.5 h-3.5" /> : <Skull className="w-3.5 h-3.5" />} 
-                  Hardcore
-              </button>
-              <button 
-                  onClick={() => switchMode('MINIGAMES')}
-                  disabled={isArcadeLocked}
-                  title={isArcadeLocked ? "Unlocks at Froglet level" : "Minigames & Boss Battles"}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
-                    ${gameMode === 'MINIGAMES' || isMiniGameMenuOpen || activeMiniGame 
-                        ? 'bg-purple-100 text-purple-600 shadow-sm ring-1 ring-purple-200' 
-                        : isArcadeLocked 
-                            ? 'opacity-50 cursor-not-allowed text-stone-400 bg-stone-100' 
-                            : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}`}
-              >
-                  {isArcadeLocked ? <Lock className="w-3.5 h-3.5" /> : <Gamepad2 className="w-3.5 h-3.5" />} 
-                  Arcade
-              </button>
-              <button 
-                  onClick={() => switchMode('FIX_MISTAKE')}
-                  disabled={mistakePool.length === 0}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 
-                    ${gameMode === 'FIX_MISTAKE' && !isMiniGameMenuOpen && !activeMiniGame ? 'bg-red-500 text-white shadow-sm ring-1 ring-red-600' : 'text-stone-400 hover:bg-stone-200/50 hover:text-stone-600'}
-                    ${mistakePool.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                    ${isGated && reason === 'MASTERY' && gameMode !== 'FIX_MISTAKE' ? 'ring-2 ring-red-500 bg-red-50 text-red-600 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.4)]' : ''}
-                  `}
-                  title={mistakePool.length === 0 ? "No mistakes recorded yet" : `${mistakePool.length} words to fix`}
-              >
-                  <Eraser className="w-3.5 h-3.5" /> Fix ({mistakePool.length})
-              </button>
-            </div>
+          {/* Row 2: Progress Bar */}
+          <div className="w-full bg-white/95 backdrop-blur-md border-b border-stone-200 px-6 py-2">
+               <div className="max-w-[1400px] mx-auto">
+                   <ProgressBar 
+                     xp={userXP} 
+                     avgWpm={getAverageWPM(wpmHistory)} 
+                     mistakeCount={mistakePool.length} 
+                   />
+               </div>
           </div>
-
-          <div className="w-full xl:w-auto xl:flex-grow xl:max-w-2xl flex items-center gap-4 justify-end">
-             <ProgressBar 
-               xp={userXP} 
-               avgWpm={getAverageWPM(wpmHistory)} 
-               mistakeCount={mistakePool.length} 
-             />
-             
-             <div className="flex items-center gap-1.5 border-l border-stone-200 pl-4 ml-2 shrink-0">
-               <button 
-                 onClick={cycleReadAhead}
-                 className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 group relative ${raConfig.bg} ${raConfig.color}`}
-                 title={`Read Ahead: ${raConfig.label} (${raConfig.bonus ? raConfig.bonus + ' XP' : 'No Bonus'})`}
-               >
-                  {settings.readAheadLevel === 'NONE' ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
-                  {raConfig.bonus && (
-                      <span className="absolute -top-1 -right-1 bg-frog-green text-white text-[8px] px-1 rounded-full font-bold">
-                          {raConfig.bonus.replace('+','')}
-                      </span>
-                  )}
-               </button>
-
-               <button 
-                 onClick={toggleAchievements} 
-                 className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isAchievementsOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
-                 title="Achievements"
-               >
-                  <Award className="w-5 h-5" />
-               </button>
-               <button 
-                 onClick={toggleTheme} 
-                 className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isThemeOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
-                 title="Themes"
-               >
-                  <Palette className="w-5 h-5" />
-               </button>
-               <button 
-                 onClick={toggleStats} 
-                 className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isStatsOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
-                 title="Statistics & History"
-               >
-                  <TrendingUp className="w-5 h-5" />
-               </button>
-               <button 
-                 onClick={toggleHelp} 
-                 className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isHelpOpen ? 'bg-stone-100 text-stone-700' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
-                 title="How to Play"
-               >
-                  <CircleHelp className="w-5 h-5" />
-               </button>
-               <button 
-                 onClick={toggleMusic} 
-                 className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
-                 title="Background Music"
-               >
-                  <Music className="w-5 h-5" />
-               </button>
-               <button onClick={toggleSettings} className="p-2 hover:bg-stone-100 rounded-full text-stone-400 hover:text-stone-600 transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2">
-                  <SettingsIcon className="w-5 h-5" />
-               </button>
-             </div>
-          </div>
-
-        </div>
-      </header>
+      </div>
       
       <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative">
         <div className="w-full flex flex-col items-center justify-center min-h-[60vh]">

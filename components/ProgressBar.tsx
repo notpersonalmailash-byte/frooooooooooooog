@@ -32,7 +32,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ xp, avgWpm, mistakeCount }) =
   const textColor = `text-${currentLevel.color}-${currentLevel.shade}`;
 
   return (
-    <div className="w-full flex flex-col justify-center pt-2">
+    <div className="w-full flex flex-col justify-center">
       {/* Stats Header */}
       <div className="flex justify-between items-end mb-2 px-1">
         <div className="flex items-baseline gap-2">
