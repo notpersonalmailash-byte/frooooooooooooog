@@ -17,7 +17,7 @@ import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel
 import { fetchQuotes, getPracticeLetter } from './services/quoteService';
 import { getCurrentLevel, getNextLevel, getAverageWPM, LEVELS, calculateXP, checkLevelProgress } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw, FileText } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw, FileText, User } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
 import { ACHIEVEMENTS } from './data/achievements';
@@ -760,13 +760,6 @@ const App: React.FC = () => {
             return { ...prev, [key]: 3 }; 
         });
         
-        setNotificationQueue(prev => [...prev, {
-            id: `fail_${Date.now()}`,
-            title: "Quote Failed",
-            description: "Pass this quote 3 times in XQuotes to recover.",
-            icon: <AlertTriangle className="w-5 h-5 text-red-500" />,
-            type: 'INFO'
-        }]);
     } else if (gameMode === 'XQUOTES' && currentQuote) {
         // --- REMEDIATION RESET LOGIC ---
         // If failed during remediation, reset debt to 3 to enforce consecutive success
@@ -781,13 +774,6 @@ const App: React.FC = () => {
             author: `Repeat Required (3 left)`
         });
         
-        setNotificationQueue(prev => [...prev, {
-            id: `fail_remediate_${Date.now()}`,
-            title: "Streak Broken",
-            description: "Remediation reset to 3. Must be consecutive.",
-            icon: <AlertTriangle className="w-5 h-5 text-red-500" />,
-            type: 'INFO'
-        }]);
     }
 
     setStreak(0);
@@ -1080,9 +1066,9 @@ const App: React.FC = () => {
                    <button 
                      onClick={toggleStats} 
                      className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-frog-green focus:ring-offset-2 ${isStatsOpen ? 'bg-stone-100 text-frog-green' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`}
-                     title="Statistics & History"
+                     title="User Details"
                    >
-                      <TrendingUp className="w-5 h-5" />
+                      <User className="w-5 h-5" />
                    </button>
 
                    <button 
@@ -1277,6 +1263,7 @@ const App: React.FC = () => {
         userName={userName}
         setUserName={setUserName}
         completedTestsCount={testHistory.length}
+        userXP={userXP}
       />
 
       <MusicPlayer 
