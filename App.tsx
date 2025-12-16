@@ -13,11 +13,11 @@ import TimeAttackGame from './components/TimeAttackGame';
 import CosmicDefenseGame from './components/CosmicDefenseGame';
 import MiniGameMenu from './components/MiniGameMenu';
 import { MusicPlayer } from './components/MusicPlayer';
-import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel, PracticeWord, AchievementStats } from './types';
+import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel, PracticeWord, AchievementStats, TTSMode } from './types';
 import { fetchQuotes, getPracticeLetter } from './services/quoteService';
 import { getCurrentLevel, getNextLevel, getAverageWPM, LEVELS, calculateXP, checkLevelProgress } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw, FileText, User, Leaf, Sparkles } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw, FileText, User, Leaf, Sparkles, Speech } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
 import { ACHIEVEMENTS } from './data/achievements';
@@ -863,6 +863,14 @@ const App: React.FC = () => {
       soundEngine.playKeypress(); // Feedback
   };
 
+  const cycleTTSMode = () => {
+      const modes: TTSMode[] = ['OFF', 'QUOTE', 'WORD', 'FLOW', 'NEXT', 'SCOUT'];
+      const currentIndex = modes.indexOf(settings.ttsMode);
+      const nextIndex = (currentIndex + 1) % modes.length;
+      setSettings({ ...settings, ttsMode: modes[nextIndex] });
+      soundEngine.playKeypress();
+  };
+
   const switchMode = useCallback((mode: GameMode) => {
     if (mode === 'XWORDS' && mistakePool.length === 0) return;
     if (mode === 'XQUOTES' && Object.keys(failedQuoteRepetitions).length === 0) return;
@@ -908,6 +916,18 @@ const App: React.FC = () => {
       }
   };
   const raConfig = getReadAheadConfig();
+
+  const getTTSConfig = () => {
+      switch(settings.ttsMode) {
+          case 'QUOTE': return { label: 'Quote', color: 'text-orange-600', bg: 'bg-orange-100' };
+          case 'WORD': return { label: 'Word', color: 'text-orange-600', bg: 'bg-orange-100' };
+          case 'FLOW': return { label: 'Flow', color: 'text-orange-600', bg: 'bg-orange-100' };
+          case 'NEXT': return { label: 'Next', color: 'text-orange-600', bg: 'bg-orange-100' };
+          case 'SCOUT': return { label: 'Scout', color: 'text-orange-600', bg: 'bg-orange-100' };
+          default: return { label: 'Off', color: 'text-stone-400', bg: 'hover:bg-stone-100' };
+      }
+  };
+  const ttsConfig = getTTSConfig();
 
   const renderMiniGame = () => {
       if (activeMiniGame === 'SURVIVAL_SWAMP') {
@@ -1067,6 +1087,19 @@ const App: React.FC = () => {
                       {raConfig.bonus && (
                           <span className="absolute -top-1 -right-1 bg-frog-green text-white text-[8px] px-1 rounded-full font-bold">
                               {raConfig.bonus.replace('+','')}
+                          </span>
+                      )}
+                   </button>
+
+                   <button 
+                     onClick={cycleTTSMode}
+                     className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 group relative ${ttsConfig.bg} ${ttsConfig.color}`}
+                     title={`Read Aloud: ${ttsConfig.label}`}
+                   >
+                      <Speech className="w-5 h-5" />
+                      {settings.ttsMode !== 'OFF' && (
+                          <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-[8px] px-1 rounded-full font-bold">
+                              {ttsConfig.label}
                           </span>
                       )}
                    </button>
