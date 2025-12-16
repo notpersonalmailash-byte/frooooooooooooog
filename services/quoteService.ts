@@ -1,6 +1,7 @@
 
 import { Quote, PracticeWord } from '../types';
 import { QUOTES } from '../data/quotes';
+import { COMMON_WORDS } from '../data/commonWords';
 
 // Helper to sanitize text for standard keyboards
 const normalizeText = (text: string): string => {
@@ -44,14 +45,6 @@ const SORTED_QUOTES = [...QUOTES].map(q => ({
     normalizedText: normalizeText(q.quoteText)
 })).sort((a, b) => a.difficulty - b.difficulty);
 
-// Build a dictionary of all words found in quotes
-const WORD_DATABASE = Array.from(new Set(
-    SORTED_QUOTES
-        .map(q => q.normalizedText.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/))
-        .flat()
-        .filter(w => w.length >= 2)
-));
-
 // Legacy Export needed for types? No, but maybe used elsewhere. keeping for safety but not logic.
 export const PRACTICE_ORDER = "enitrlsauoychgmpbkvwjqxz".split('');
 export const getPracticeLetter = (level: number) => {
@@ -60,8 +53,8 @@ export const getPracticeLetter = (level: number) => {
 
 const getDifficultyConfig = (tier: string) => {
     switch(tier) {
-        case 'Egg': return { minLen: 2, maxLen: 4, punctProb: 0, count: 10 };
-        case 'Tadpole': return { minLen: 3, maxLen: 6, punctProb: 0, count: 12 };
+        case 'Egg': return { minLen: 2, maxLen: 4, punctProb: 0, count: 8 };
+        case 'Tadpole': return { minLen: 3, maxLen: 6, punctProb: 0, count: 10 };
         case 'Polliwog': return { minLen: 4, maxLen: 8, punctProb: 0.1, count: 12 };
         case 'Froglet': return { minLen: 4, maxLen: 10, punctProb: 0.3, count: 15 };
         case 'Hopper': return { minLen: 5, maxLen: 12, punctProb: 0.5, count: 15 };
@@ -100,41 +93,52 @@ export const fetchQuotes = async (
       const tier = levelName.split(' ')[0] || 'Egg';
       const config = getDifficultyConfig(tier);
       
-      // Filter words based on complexity
-      let availableWords = WORD_DATABASE.filter(w => w.length >= config.minLen && w.length <= config.maxLen);
+      // Get words from the new COMMON_WORDS database
+      let availableWords = COMMON_WORDS.filter(w => w.length >= config.minLen && w.length <= config.maxLen);
       
       // Fallback if filter is too aggressive
       if (availableWords.length < 50) {
-          availableWords = WORD_DATABASE.filter(w => w.length <= config.maxLen);
+          availableWords = COMMON_WORDS.filter(w => w.length <= config.maxLen);
       }
+
+      // Filter mastery words (Words incorrectly typed that haven't reached 3 successes)
+      const masteryWords = smartPracticeQueue
+          .filter(pw => pw.proficiency < 3)
+          .sort((a,b) => a.lastPracticed - b.lastPracticed); // Oldest practice first
 
       const quotes: Quote[] = [];
       
       for(let i=0; i<count; i++) {
          const sentenceWords: string[] = [];
          
-         // Inject Smart Queue words if available (Mistakes)
-         // Only use 1-2 to avoid frustration
-         const mistakes = smartPracticeQueue.sort((a,b) => a.proficiency - b.proficiency).slice(0, 3);
+         // Select ~30% words from Mastery Queue, rest from Common Pool
+         const masteryCount = Math.min(masteryWords.length, Math.ceil(config.count * 0.3));
+         const commonCount = config.count - masteryCount;
          
-         for(let j=0; j<config.count; j++) {
-             // 10% chance to inject a mistake word regardless of difficulty
-             if (mistakes.length > 0 && Math.random() < 0.1) {
-                 sentenceWords.push(mistakes[Math.floor(Math.random() * mistakes.length)].word);
-             } else {
-                 let word = availableWords[Math.floor(Math.random() * availableWords.length)];
-                 // Apply punctuation logic scaling with level
-                 word = applyPunctuation(word, config.punctProb);
-                 sentenceWords.push(word);
+         // 1. Add Mastery Words (if any)
+         if (masteryCount > 0) {
+             // Shuffle the top 10 oldest mastery words to pick from
+             const candidates = masteryWords.slice(0, 10).sort(() => 0.5 - Math.random());
+             for(let k=0; k<masteryCount; k++) {
+                 if (candidates[k]) sentenceWords.push(candidates[k].word);
              }
          }
 
-         const finalSentence = sentenceWords.join(" ");
+         // 2. Add Common Words
+         for(let j=0; j<commonCount; j++) {
+             let word = availableWords[Math.floor(Math.random() * availableWords.length)];
+             // Apply punctuation logic scaling with level
+             word = applyPunctuation(word, config.punctProb);
+             sentenceWords.push(word);
+         }
+
+         // Shuffle the sentence so mastery words aren't always at start
+         const shuffledSentence = sentenceWords.sort(() => 0.5 - Math.random()).join(" ");
          
          quotes.push({
-             text: finalSentence,
+             text: shuffledSentence,
              source: "Words Mode",
-             author: `Difficulty: ${tier}`
+             author: `Level: ${tier} | Review: ${masteryCount}`
          });
       }
       return quotes;
