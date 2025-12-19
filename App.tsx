@@ -392,10 +392,11 @@ const App: React.FC = () => {
   const queueProgress = totalQueueSize > 0 ? (totalQueueSize - remediationQueue.length) : 0;
 
   // Prepare the "straight line" drill text by repeating the word 30 times
+  // IMPORTANT: Ensure it ends with a space so the final "space to finish" doesn't fail
   const getDrillQuote = () => {
       if (!drillingWord) return null;
-      // Show full 30 repetitions in one "straight line"
-      const repeatedText = (drillingWord + " ").repeat(DRILL_BATCH_SIZE).trim();
+      // Show full 30 repetitions in one "straight line", maintaining space after every word
+      const repeatedText = (drillingWord + " ").repeat(DRILL_BATCH_SIZE);
       return {
           text: repeatedText,
           source: "WORD DRILL",

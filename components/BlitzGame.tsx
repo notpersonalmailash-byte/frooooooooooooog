@@ -67,7 +67,8 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
     const val = e.target.value;
     const targetWord = words[currentIdx];
 
-    // Check for space (Next Word)
+    // 1. Check for SPACE (Next Word Completion)
+    // Priority check to allow spacebar to advance
     if (val.endsWith(' ')) {
         const typed = val.trim();
         if (typed === targetWord) {
@@ -90,15 +91,17 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
                 setWords(prev => [...prev, ...fetchBlitzWords(50, smartQueue)]);
             }
         } else {
-            // Typing space while word is incorrect -> ignore or visual error
+            // Partial word + Space = Error
             setIsError(true);
             soundEngine.playError();
+            // Optional: record mistake here if you want to be extra strict
         }
         return;
     }
 
-    // Incremental Accuracy Check
-    if (!targetWord.startsWith(val)) {
+    // 2. Incremental Accuracy Check
+    // We only update input if the prefix remains valid
+    if (val.length > 0 && !targetWord.startsWith(val)) {
         setIsError(true);
         soundEngine.playError();
         // Record mistake for deep mastery remediation at end of test
@@ -107,12 +110,12 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
             mistakeWordsRef.current = [...mistakeWordsRef.current, targetWord];
             setMistakeWords(mistakeWordsRef.current);
         }
-        setInput('');
-        setIsError(false);
+        // In Blitz, we'll block the bad character instead of wiping the whole word
+        // This is much smoother for users
     } else {
         setIsError(false);
         setInput(val);
-        soundEngine.playKeypress();
+        if (val.length > 0) soundEngine.playKeypress();
     }
   };
 
@@ -222,7 +225,7 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
                     placeholder="Type words..."
                     autoFocus
                 />
-                {isError && <div className="absolute -top-8 left-0 right-0 text-center text-xs font-bold text-red-500 animate-bounce uppercase">Mistake! Word Reset</div>}
+                {isError && <div className="absolute -top-8 left-0 right-0 text-center text-xs font-bold text-red-500 animate-bounce uppercase">Mistake! Keep typing...</div>}
             </div>
         </div>
 
