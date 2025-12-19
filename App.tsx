@@ -24,6 +24,8 @@ import { THEMES } from './data/themes';
 import { ACHIEVEMENTS } from './data/achievements';
 import { RADIO_STATIONS } from './data/radioStations';
 
+const DRILL_BATCH_SIZE = 30;
+
 const App: React.FC = () => {
   // User Stats Persistence
   const [userName, setUserName] = useState<string>(() => localStorage.getItem('frogType_userName') || 'Froggy');
@@ -77,6 +79,7 @@ const App: React.FC = () => {
   const [wordDrillRemaining, setWordDrillRemaining] = useState<number>(0);
   const [remediationQueue, setRemediationQueue] = useState<string[]>([]);
   const [remediationSource, setRemediationSource] = useState<'QUOTE' | 'BLITZ' | null>(null);
+  const [totalQueueSize, setTotalQueueSize] = useState<number>(0);
 
   const [notificationQueue, setNotificationQueue] = useState<NotificationItem[]>([]);
   const [wpmHistory, setWpmHistory] = useState<number[]>(() => {
@@ -285,27 +288,26 @@ const App: React.FC = () => {
     setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: finalXP, mode: gameMode, quoteText: drillingWord || currentQuote?.text || "", mistakes, retryCount }]);
     
     if (isWordDrilling) {
-        const nextDrill = wordDrillRemaining - 1;
-        setWordDrillRemaining(nextDrill);
-        if (nextDrill === 0) {
-            // Check if there are more words in the queue (from Blitz)
-            if (remediationQueue.length > 0) {
-                const nextWord = remediationQueue[0];
-                setRemediationQueue(prev => prev.slice(1));
-                setDrillingWord(nextWord);
-                setWordDrillRemaining(30);
+        // Complete the current word and its full 30 reps
+        setWordDrillRemaining(0);
+        // Check if there are more words in the queue (from Blitz)
+        if (remediationQueue.length > 0) {
+            const nextWord = remediationQueue[0];
+            setRemediationQueue(prev => prev.slice(1));
+            setDrillingWord(nextWord);
+            setWordDrillRemaining(30);
+        } else {
+            // If queue empty, finish
+            if (remediationSource === 'QUOTE') {
+                setRemediationRemaining(3); // Start quote repetitions after word drill
             } else {
-                // If queue empty, finish
-                if (remediationSource === 'QUOTE') {
-                    setRemediationRemaining(3); // Start quote repetitions after word drill
-                } else {
-                    // Blitz source: just end
-                    setGameMode('QUOTES');
-                    setCurrentQuote(null);
-                }
-                setDrillingWord(null);
-                setRemediationSource(null);
+                // Blitz source: just end
+                setGameMode('QUOTES');
+                setCurrentQuote(null);
             }
+            setDrillingWord(null);
+            setRemediationSource(null);
+            setTotalQueueSize(0);
         }
     } else if (isRemediation) {
         const nextRem = remediationRemaining - 1;
@@ -325,14 +327,19 @@ const App: React.FC = () => {
 
   const handleFail = (mistakeWord?: string) => {
       setStreak(0);
+      // Logic for word drill reset: if already in drill, restart current word (wordDrillRemaining remains 30)
+      if (wordDrillRemaining > 0 && drillingWord) {
+          setWordDrillRemaining(30);
+          soundEngine.playError();
+          return;
+      }
+
       if (['QUOTES', 'HARDCORE', 'PRACTICE'].includes(gameMode)) {
-          // If already drilling a word, reset its counter on mistake
-          if (wordDrillRemaining > 0 && drillingWord) {
-              setWordDrillRemaining(30);
-          } else if (mistakeWord) {
+          if (mistakeWord) {
               setRemediationSource('QUOTE');
               setDrillingWord(mistakeWord);
               setWordDrillRemaining(30); // 30x word drill
+              setTotalQueueSize(1);
           } else {
               setRemediationRemaining(3); // fallback if no word detected
           }
@@ -353,6 +360,7 @@ const App: React.FC = () => {
           setRemediationQueue(uniqueMistakes.slice(1)); // All but the first
           setDrillingWord(uniqueMistakes[0]);
           setWordDrillRemaining(30);
+          setTotalQueueSize(uniqueMistakes.length);
       } else {
           setGameMode('QUOTES');
       }
@@ -372,6 +380,7 @@ const App: React.FC = () => {
         setWordDrillRemaining(0);
         setRemediationQueue([]);
         setRemediationSource(null);
+        setTotalQueueSize(0);
     }
   }, []);
 
@@ -379,6 +388,20 @@ const App: React.FC = () => {
   const avgWpmVal = getAverageWPM(wpmHistory);
   const { isGated, reason } = checkLevelProgress(userXP, avgWpmVal, mistakePool.length, remediationCount);
   const isGatedLocked = isGated && (reason === 'MASTERY' || reason === 'REMEDIATION');
+
+  const queueProgress = totalQueueSize > 0 ? (totalQueueSize - remediationQueue.length) : 0;
+
+  // Prepare the "straight line" drill text by repeating the word 30 times
+  const getDrillQuote = () => {
+      if (!drillingWord) return null;
+      // Show full 30 repetitions in one "straight line"
+      const repeatedText = (drillingWord + " ").repeat(DRILL_BATCH_SIZE).trim();
+      return {
+          text: repeatedText,
+          source: "WORD DRILL",
+          author: `Remediation (Word ${queueProgress} of ${totalQueueSize})`
+      };
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200">
@@ -436,7 +459,7 @@ const App: React.FC = () => {
                                    activeMiniGame === 'COSMIC_DEFENSE' ? <CosmicDefenseGame onGameOver={(s, x, w) => handleXPGain(x, avgWpmVal)} onExit={() => setActiveMiniGame(null)} /> :
                                    activeMiniGame === 'TIME_ATTACK' ? <TimeAttackGame onGameOver={(s, x) => handleXPGain(x, avgWpmVal)} onExit={() => setActiveMiniGame(null)} /> : null) :
                  gameMode === 'BLITZ' && !drillingWord ? <BlitzGame smartQueue={smartPracticeQueue} onGameOver={handleBlitzComplete} onWordPerformance={handleWordPerformance} onExit={() => setGameMode('QUOTES')} /> :
-                 drillingWord || currentQuote ? <TypingArea quote={drillingWord ? { text: drillingWord, source: "WORD DRILL", author: `Remediation (${remediationQueue.length} more)` } : currentQuote!} onComplete={handleQuoteComplete} onFail={handleFail} onMistake={() => {}} onWordComplete={handleWordPerformance} onRequestNewQuote={() => { setCurrentQuote(null); setRemediationRemaining(0); setDrillingWord(null); setRemediationQueue([]); }} streak={streak} ghostWpm={avgWpmVal} settings={settings} gameMode={gameMode} autoFocus={shouldAutoFocus} remediationRemaining={remediationRemaining} wordDrillRemaining={wordDrillRemaining} /> :
+                 drillingWord || currentQuote ? <TypingArea quote={drillingWord ? getDrillQuote()! : currentQuote!} onComplete={handleQuoteComplete} onFail={handleFail} onMistake={() => {}} onWordComplete={handleWordPerformance} onRequestNewQuote={() => { setCurrentQuote(null); setRemediationRemaining(0); setDrillingWord(null); setRemediationQueue([]); setTotalQueueSize(0); }} streak={streak} ghostWpm={avgWpmVal} settings={settings} gameMode={gameMode} autoFocus={shouldAutoFocus} remediationRemaining={remediationRemaining} wordDrillRemaining={wordDrillRemaining} /> :
                  <div className="flex flex-col items-center text-stone-400"><Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" /><p className="font-mono text-xs">Hatching wisdom...</p></div>}
             </>
         )}

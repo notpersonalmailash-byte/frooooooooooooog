@@ -594,7 +594,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
   const getFontSizeClass = () => {
     const len = quote.text.length;
-    if (isWordDrilling) return 'text-5xl md:text-7xl font-black text-center py-10';
+    if (isWordDrilling) return 'text-3xl md:text-4xl font-mono leading-relaxed';
     if (len < 100) return 'text-xl md:text-2xl leading-relaxed';
     if (len < 200) return 'text-lg md:text-xl leading-relaxed';
     return 'text-base md:text-lg leading-relaxed';
@@ -604,10 +604,9 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
   const getCompletionContent = () => {
       if (wordDrillRemaining > 0) {
-          return { title: 'Word Focused!', btnLabel: `Repeat Word (${wordDrillRemaining} left)`, Icon: Zap };
+          return { title: 'Word Mastery Clear!', btnLabel: `Finalize Drill`, Icon: Zap };
       }
       if (remediationRemaining > 0) {
-          // Changed RefreshCw to RefreshCcw to fix name error
           return { title: 'Quote Repetition', btnLabel: `Next Pass (${remediationRemaining} left)`, Icon: RefreshCcw };
       }
       switch(gameMode) {
@@ -638,12 +637,29 @@ const TypingArea: React.FC<TypingAreaProps> = ({
       return Math.floor(xpBase);
   };
 
+  // Calculate real-time completed words for the drill counter
+  const getDrillProgress = () => {
+      if (!isWordDrilling) return 0;
+      const typedText = input.trim();
+      if (!typedText) return 0;
+      return typedText.split(/\s+/).length;
+  };
+
+  const currentDrillRep = getDrillProgress();
+
   return (
     <div className="relative w-full max-w-6xl mx-auto min-h-[400px] flex flex-col" ref={containerRef}>
       {(isPerfectMasterPotential || isWordDrilling) && status === GameStatus.PLAYING && remediationRemaining === 0 && (
-        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex items-center gap-1 text-xs font-bold text-frog-green animate-pulse">
-          {isWordDrilling ? <Zap className="w-3 h-3 text-purple-500" /> : <Sparkles className="w-3 h-3" />} 
-          {isWordDrilling ? "DEEP LEARNING DRILL" : "Perfect Master Potential (1.5x Bonus)"}
+        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 text-xs font-bold text-frog-green">
+          <div className="flex items-center gap-1 animate-pulse">
+            {isWordDrilling ? <Zap className="w-3 h-3 text-purple-500" /> : <Sparkles className="w-3 h-3" />} 
+            {isWordDrilling ? "DEEP LEARNING DRILL" : "Perfect Master Potential (1.5x Bonus)"}
+          </div>
+          {isWordDrilling && (
+            <div className="w-48 h-1.5 bg-stone-200 rounded-full overflow-hidden shadow-inner">
+               <div className="h-full bg-purple-500 transition-all duration-300" style={{ width: `${(currentDrillRep / 30) * 100}%` }}></div>
+            </div>
+          )}
         </div>
       )}
 
@@ -723,10 +739,10 @@ const TypingArea: React.FC<TypingAreaProps> = ({
                 </div>
                 <div className="p-3 bg-purple-50 rounded-xl border border-purple-100 text-center w-full">
                     <p className="text-[10px] font-bold text-purple-600 uppercase tracking-widest">Deep Mastery Protocol</p>
-                    <p className="text-xs text-stone-500 mt-1">Practice word 30x, then quote 3x.</p>
+                    <p className="text-xs text-stone-500 mt-1">{isWordDrilling ? "Mistake during drill! Counter reset to zero." : "Practice word 30x, then quote 3x."}</p>
                 </div>
                 <button ref={retryButtonRef} onClick={handleRetry} className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-red-500 text-white hover:bg-red-600 rounded-xl transition shadow-lg shadow-red-200/50 font-bold text-xs tracking-wide uppercase focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform hover:-translate-y-0.5">
-                  <RotateCcw className="w-3.5 h-3.5" /> Start Drill
+                  <RotateCcw className="w-3.5 h-3.5" /> {isWordDrilling ? "Restart Drill (0/30)" : "Start Drill"}
                 </button>
              </div>
           </div>
@@ -744,13 +760,14 @@ const TypingArea: React.FC<TypingAreaProps> = ({
               </div>
             )}
             {isWordDrilling && status !== GameStatus.FAILED && (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white rounded-full text-[10px] font-bold tracking-widest border border-purple-700 shadow-md animate-in slide-in-from-top-4">
-                    <Zap className="w-3 h-3 animate-pulse" /> WORD DRILL: {31 - wordDrillRemaining}/30
+                <div className="flex flex-col items-center gap-1 animate-in slide-in-from-top-4">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-full text-xs font-black tracking-widest border border-purple-700 shadow-lg">
+                      <Zap className="w-4 h-4 animate-pulse" /> WORD PROGRESS: {currentDrillRep}/30
+                  </div>
                 </div>
             )}
             {remediationRemaining > 0 && !isWordDrilling && status !== GameStatus.FAILED && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500 text-white rounded-full text-[10px] font-bold tracking-widest border border-orange-600 shadow-md animate-in slide-in-from-top-4">
-                    {/* Changed RefreshCw to RefreshCcw to fix name error */}
                     <RefreshCcw className="w-3 h-3 animate-spin-slow" /> QUOTE MASTERY: {4 - remediationRemaining}/3
                 </div>
             )}
@@ -797,8 +814,8 @@ const TypingArea: React.FC<TypingAreaProps> = ({
       
       <div className="text-center mt-8 h-4 text-stone-400 text-xs font-medium tracking-wide transition-opacity duration-500 font-sans">
         {status === GameStatus.FAILED ? <span className="text-red-400">{gameMode === 'HARDCORE' ? 'HARDCORE FAIL. 50% XP Penalty.' : 'Mistake made. Mastery Protocol initiated.'}</span> : 
-         status === GameStatus.COMPLETED ? <span className="text-frog-green">Perfect! {isWordDrilling ? 'Repetition locked. Keep going.' : remediationRemaining > 0 ? `Practice more to clear the loop.` : `Streak +1`}</span> :
-         isFocused ? (isWordDrilling ? "DRILL ACTIVE: Type word perfectly 30 times." : remediationRemaining > 0 ? "REMEDIATION ACTIVE: 100% Accuracy required." : "Accuracy is paramount. One mistake restarts the quote.") : ""}
+         status === GameStatus.COMPLETED ? <span className="text-frog-green">Perfect! {isWordDrilling ? 'Set complete. Mastery achieved.' : remediationRemaining > 0 ? `Practice more to clear the loop.` : `Streak +1`}</span> :
+         isFocused ? (isWordDrilling ? "DRILL ACTIVE: Type word perfectly 30 times in a row." : remediationRemaining > 0 ? "REMEDIATION ACTIVE: 100% Accuracy required." : "Accuracy is paramount. One mistake restarts the quote.") : ""}
       </div>
     </div>
   );
