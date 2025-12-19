@@ -45,11 +45,7 @@ const SORTED_QUOTES = [...QUOTES].map(q => ({
     normalizedText: normalizeText(q.quoteText)
 })).sort((a, b) => a.difficulty - b.difficulty);
 
-// Legacy Export needed for types? No, but maybe used elsewhere. keeping for safety but not logic.
 export const PRACTICE_ORDER = "enitrlsauoychgmpbkvwjqxz".split('');
-export const getPracticeLetter = (level: number) => {
-    return ""; // Deprecated logic
-}
 
 const getDifficultyConfig = (tier: string) => {
     switch(tier) {
@@ -77,6 +73,29 @@ const applyPunctuation = (word: string, prob: number) => {
     return word + ';';
 };
 
+export const fetchBlitzWords = (count: number = 100, smartQueue: PracticeWord[] = []): string[] => {
+    // Top 200 words from COMMON_WORDS
+    const top200 = COMMON_WORDS.slice(0, 200);
+    
+    // Pick words from smartQueue that are unmastered
+    const masteryWords = smartQueue
+        .filter(pw => pw.proficiency < 3)
+        .sort((a,b) => a.lastPracticed - b.lastPracticed)
+        .map(pw => pw.word);
+
+    const words: string[] = [];
+    for (let i = 0; i < count; i++) {
+        // 25% chance to inject a word from the mastery queue if available
+        if (masteryWords.length > 0 && Math.random() < 0.25) {
+            const pick = masteryWords[Math.floor(Math.random() * Math.min(masteryWords.length, 10))];
+            words.push(pick);
+        } else {
+            words.push(top200[Math.floor(Math.random() * top200.length)]);
+        }
+    }
+    return words;
+};
+
 export const fetchQuotes = async (
     count: number = 3, 
     exclude: string[] = [], 
@@ -87,109 +106,67 @@ export const fetchQuotes = async (
     smartPracticeQueue: PracticeWord[] = []
 ): Promise<Quote[]> => {
   
-  // --- WORDS MODE LOGIC (Formerly Practice) ---
   if (mode === 'PRACTICE') {
-      // Determine complexity based on Tier name extraction
       const tier = levelName.split(' ')[0] || 'Egg';
       const config = getDifficultyConfig(tier);
       
-      // Get words from the new COMMON_WORDS database
       let availableWords = COMMON_WORDS.filter(w => w.length >= config.minLen && w.length <= config.maxLen);
-      
-      // Fallback if filter is too aggressive
-      if (availableWords.length < 50) {
-          availableWords = COMMON_WORDS.filter(w => w.length <= config.maxLen);
-      }
+      if (availableWords.length < 50) availableWords = COMMON_WORDS.filter(w => w.length <= config.maxLen);
 
-      // Filter mastery words (Words incorrectly typed that haven't reached 3 successes)
       const masteryWords = smartPracticeQueue
           .filter(pw => pw.proficiency < 3)
-          .sort((a,b) => a.lastPracticed - b.lastPracticed); // Oldest practice first
+          .sort((a,b) => a.lastPracticed - b.lastPracticed);
 
       const quotes: Quote[] = [];
-      
       for(let i=0; i<count; i++) {
          const sentenceWords: string[] = [];
          
-         // Select ~30% words from Mastery Queue, rest from Common Pool
-         const masteryCount = Math.min(masteryWords.length, Math.ceil(config.count * 0.3));
+         // Increase mastery injection to 40% for better repetition
+         const masteryCount = Math.min(masteryWords.length, Math.ceil(config.count * 0.4));
          const commonCount = config.count - masteryCount;
          
-         // 1. Add Mastery Words (if any)
          if (masteryCount > 0) {
-             // Shuffle the top 10 oldest mastery words to pick from
-             const candidates = masteryWords.slice(0, 10).sort(() => 0.5 - Math.random());
+             const candidates = masteryWords.slice(0, 15).sort(() => 0.5 - Math.random());
              for(let k=0; k<masteryCount; k++) {
                  if (candidates[k]) sentenceWords.push(candidates[k].word);
              }
          }
 
-         // 2. Add Common Words
          for(let j=0; j<commonCount; j++) {
              let word = availableWords[Math.floor(Math.random() * availableWords.length)];
-             // Apply punctuation logic scaling with level
              word = applyPunctuation(word, config.punctProb);
              sentenceWords.push(word);
          }
 
-         // Shuffle the sentence so mastery words aren't always at start
          const shuffledSentence = sentenceWords.sort(() => 0.5 - Math.random()).join(" ");
-         
          quotes.push({
              text: shuffledSentence,
-             source: "Words Mode",
-             author: `Level: ${tier} | Review: ${masteryCount}`
+             source: "Mastery Loop",
+             author: `Level: ${tier} | Reviewing: ${masteryCount} words`
          });
       }
       return quotes;
   }
 
-  // --- STANDARD MODE LOGIC (LOCAL BUCKETS) ---
-  
-  // 1. Determine which bucket of quotes to use based on specific Level Name
-  // We split sorted quotes into 20 granular buckets
+  // --- STANDARD QUOTES ---
   const bucketCount = 20;
   const bucketSize = Math.ceil(SORTED_QUOTES.length / bucketCount);
-  
   let difficultyIndex = LEVEL_ORDER.indexOf(levelName);
-  
-  // Fallback if level name not found
   if (difficultyIndex === -1) difficultyIndex = 0;
-  
-  // Hardcore mode always uses max difficulty
-  if (mode === 'HARDCORE') {
-      difficultyIndex = 19; 
-  }
+  if (mode === 'HARDCORE') difficultyIndex = 19; 
   
   const startIndex = difficultyIndex * bucketSize;
   const endIndex = Math.min(startIndex + bucketSize, SORTED_QUOTES.length);
-  
-  // Get the slice of quotes appropriate for this specific difficulty level
   let tierQuotes = SORTED_QUOTES.slice(startIndex, endIndex);
-
-  // Fallback: If slice is empty or too small (edge case), try to include previous bucket
   if (tierQuotes.length < 3 && difficultyIndex > 0) {
-      const expandedStart = Math.max(0, startIndex - bucketSize);
-      tierQuotes = SORTED_QUOTES.slice(expandedStart, endIndex);
+      tierQuotes = SORTED_QUOTES.slice(Math.max(0, startIndex - bucketSize), endIndex);
   }
-  
-  // Safety fallback
   if (tierQuotes.length === 0) tierQuotes = SORTED_QUOTES.slice(0, 20);
   
-  const sourcePool = tierQuotes;
-
-  // 2. Filter out excluded quotes (Strictly exclude previously completed)
   const excludeSet = new Set(exclude.map(normalizeText)); 
-  let available = sourcePool.filter(q => !excludeSet.has(q.normalizedText));
-  
-  // 3. Logic for Exhausted Pool (Recycle)
-  if (available.length === 0) {
-      // If we've done all quotes in this specific level bucket, reset availability
-      // This forces players to re-master quotes at this level if they stay here too long
-      available = sourcePool;
-  }
+  let available = tierQuotes.filter(q => !excludeSet.has(q.normalizedText));
+  if (available.length === 0) available = tierQuotes;
 
-  // 4. Shuffle and select
   const shuffled = [...available].sort(() => 0.5 - Math.random());
   const selected = shuffled.slice(0, count);
 

@@ -58,7 +58,7 @@ export interface Settings {
   ttsMode: TTSMode; // Text-to-Speech Mode
 }
 
-export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES';
+export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'BLITZ';
 
 export enum GameStatus {
   IDLE = 'IDLE',
@@ -112,4 +112,10 @@ export interface PracticeWord {
   word: string;
   proficiency: number; // 0 to 3 (3 = Mastered)
   lastPracticed: number;
+}
+
+export interface WordPerformance {
+  word: string;
+  wpm: number;
+  isCorrect: boolean;
 }

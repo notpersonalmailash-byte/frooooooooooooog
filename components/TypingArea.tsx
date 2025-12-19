@@ -1,22 +1,25 @@
 
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
-import { Quote, GameStatus, Settings, GameMode } from '../types';
+import { Quote, GameStatus, Settings, GameMode, WordPerformance } from '../types';
 import { calculateXP } from '../utils/gameLogic';
 import { soundEngine } from '../utils/soundEngine';
-import { Play, RotateCcw, Award, Flame, Ghost, EyeOff, Sparkles, ArrowUp, Lock, XCircle, AlertTriangle, ArrowRight, Eraser, Skull, FileText } from 'lucide-react';
+import { Play, RotateCcw, Award, Flame, Ghost, EyeOff, Sparkles, ArrowUp, Lock, XCircle, AlertTriangle, ArrowRight, Eraser, Skull, FileText, RefreshCcw, Zap } from 'lucide-react';
 
 interface TypingAreaProps {
   quote: Quote;
   onComplete: (xpEarned: number, wpm: number, mistakes: string[], retryCount: number) => void;
-  onFail: () => void;
+  onFail: (mistakeWord?: string) => void;
   onMistake: (word?: string, expectedChar?: string, typedChar?: string) => void;
   onRequestNewQuote: () => void;
+  onWordComplete?: (perf: WordPerformance) => void;
   streak: number;
   ghostWpm: number;
   settings: Settings;
   gameMode: GameMode;
   onInteract?: () => void;
   autoFocus?: boolean;
+  remediationRemaining?: number;
+  wordDrillRemaining?: number;
 }
 
 const TypingArea: React.FC<TypingAreaProps> = ({ 
@@ -24,13 +27,15 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   onComplete, 
   onFail, 
   onMistake,
-  onRequestNewQuote,
+  onWordComplete,
   streak,
   ghostWpm,
   settings,
   gameMode,
   onInteract,
-  autoFocus = false
+  autoFocus = false,
+  remediationRemaining = 0,
+  wordDrillRemaining = 0
 }) => {
   const [input, setInput] = useState('');
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -47,6 +52,10 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   const [sessionMistakeWords, setSessionMistakeWords] = useState<string[]>([]);
   const [retryCount, setRetryCount] = useState(0);
   
+  // Word Timing State
+  const wordStartTimeRef = useRef<number | null>(null);
+  const currentWordIndexRef = useRef<number>(0);
+
   // Enhanced Error Tracking
   const [lastError, setLastError] = useState<{ 
       expectedChar: string, 
@@ -59,18 +68,54 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   // Smooth Caret State
   const [caretPos, setCaretPos] = useState({ left: 0, top: 0, height: 24, opacity: 0 });
 
-  const inputRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);
   const nextButtonRef = useRef<HTMLButtonElement>(null);
   const retryButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Sync Settings with Engine
+  const isWordDrilling = wordDrillRemaining > 0;
+
+  // --- TTS LOGIC ---
+  const speakText = useCallback((text: string) => {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.2; 
+      window.speechSynthesis.speak(utterance);
+  }, []);
+
+  const triggerTTS = useCallback((index: number) => {
+      if (settings.ttsMode === 'OFF') return;
+      
+      const words = quote.text.split(' ');
+      
+      if (settings.ttsMode === 'QUOTE') {
+          if (index === 0) speakText(quote.text);
+          return;
+      }
+
+      let textToSpeak = '';
+      
+      if (settings.ttsMode === 'WORD') {
+          textToSpeak = words[index] || '';
+      } else if (settings.ttsMode === 'FLOW') {
+          const w1 = words[index] || '';
+          const w2 = words[index + 1] || '';
+          textToSpeak = `${w1} ${w2}`;
+      } else if (settings.ttsMode === 'NEXT') {
+          textToSpeak = words[index + 1] || '';
+      } else if (settings.ttsMode === 'SCOUT') {
+          textToSpeak = words[index + 2] || '';
+      }
+      
+      if (textToSpeak.trim()) speakText(textToSpeak);
+  }, [quote.text, settings.ttsMode, speakText]);
+
   useEffect(() => {
     soundEngine.setEnabled(settings.sfxEnabled);
   }, [settings.sfxEnabled]);
 
-  // Reset state when quote changes
+  // Reset state when quote changes OR remediation loop count changes
   useEffect(() => {
     setInput('');
     setStartTime(null);
@@ -82,20 +127,18 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     setSessionMistakeWords([]);
     setRetryCount(0);
     setLastError(null);
+    wordStartTimeRef.current = null;
+    currentWordIndexRef.current = 0;
     
-    // Stop any existing speech when switching quotes
     window.speechSynthesis.cancel();
     
-    // Auto-focus logic: If we are "focused" (e.g. from Next button), ensure the DOM element gets focus
-    // We use a timeout to allow the render cycle to enable the textarea (since status changed to IDLE)
     if (isFocused) {
         setTimeout(() => {
             inputRef.current?.focus();
         }, 10);
     }
-  }, [quote]); // Removed isFocused to prevent reset on blur/focus
+  }, [quote, remediationRemaining, wordDrillRemaining]);
 
-  // Focus management for buttons when game ends
   useEffect(() => {
     if (status === GameStatus.COMPLETED) {
         setTimeout(() => nextButtonRef.current?.focus(), 50);
@@ -104,7 +147,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     }
   }, [status]);
 
-  // Handlers wrapped in useCallback for stable dependencies
   const handleRetry = useCallback(() => {
     setInput('');
     setStartTime(null);
@@ -115,6 +157,8 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     setSessionMistakes(0); 
     setLastError(null);
     setRetryCount(prev => prev + 1);
+    wordStartTimeRef.current = null;
+    currentWordIndexRef.current = 0;
     
     window.speechSynthesis.cancel();
     
@@ -125,12 +169,10 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   const handleNext = useCallback(() => {
     const isPerfectMaster = retryCount === 0 && sessionMistakes === 0;
     const xp = calculateXP(wpm, quote.text.length, streak, isPerfectMaster, settings.readAheadLevel);
-    // Ensure we stay focused for the next quote to avoid the "Click to Start" overlay
     setIsFocused(true);
-    onComplete(xp, wpm, sessionMistakeWords, retryCount);
+    onComplete(Math.floor(xp), wpm, sessionMistakeWords, retryCount);
   }, [onComplete, wpm, quote.text.length, streak, retryCount, sessionMistakes, sessionMistakeWords, settings.readAheadLevel]);
 
-  // Caps Lock & Shift Detection
   useEffect(() => {
     const checkCapsLock = (e: KeyboardEvent | MouseEvent) => {
       if (e.getModifierState) {
@@ -160,7 +202,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     };
   }, []);
 
-  // Global keydown listener
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (status === GameStatus.COMPLETED) {
@@ -193,7 +234,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [isFocused, status, handleNext, handleRetry]);
 
-  // Smooth Caret Calculation
   useLayoutEffect(() => {
     const updateCaret = () => {
         if (!textContainerRef.current) return;
@@ -204,7 +244,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         let height = 0;
 
         if (input.length < quote.text.length) {
-            // Find current char
             targetEl = textContainerRef.current.querySelector(`[data-index="${input.length}"]`);
             if (targetEl) {
                 left = targetEl.offsetLeft;
@@ -212,21 +251,18 @@ const TypingArea: React.FC<TypingAreaProps> = ({
                 height = targetEl.offsetHeight;
             }
         } else {
-            // End of text, position after last char
             targetEl = textContainerRef.current.querySelector(`[data-index="${input.length - 1}"]`);
             if (targetEl) {
                 left = targetEl.offsetLeft + targetEl.offsetWidth;
                 top = targetEl.offsetTop;
                 height = targetEl.offsetHeight;
             } else if (quote.text.length === 0) {
-                 // Empty quote fallback
                  left = 0;
                  top = 0;
                  height = 24; 
             }
         }
         
-        // Handle visual adjustment for empty state or start
         if (input.length === 0 && quote.text.length > 0) {
              const firstEl = textContainerRef.current.querySelector(`[data-index="0"]`) as HTMLElement;
              if (firstEl) {
@@ -239,7 +275,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         setCaretPos({ 
             left, 
             top, 
-            height: height || 32, // Default height fallback
+            height: height || 32, 
             opacity: isFocused && status !== GameStatus.COMPLETED && status !== GameStatus.FAILED ? 1 : 0
         });
     };
@@ -247,7 +283,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     updateCaret();
     window.addEventListener('resize', updateCaret);
     return () => window.removeEventListener('resize', updateCaret);
-  }, [input, quote, isFocused, status, settings.readAheadLevel]); // Recalculate on any change affecting layout
+  }, [input, quote, isFocused, status, settings.readAheadLevel]);
 
   const handleFocus = () => {
     if (status === GameStatus.COMPLETED || status === GameStatus.FAILED) return;
@@ -272,7 +308,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     return { currentWpm };
   }, [endTime, input.length, startTime]);
 
-  // Game Loop (WPM + Ghost)
   useEffect(() => {
     if (status === GameStatus.PLAYING) {
       const interval = setInterval(() => {
@@ -290,69 +325,46 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     }
   }, [status, calculateStats, settings.ghostEnabled, ghostWpm, startTime]);
 
-  // --- TTS LOGIC ---
-  const speakText = (text: string) => {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.2; 
-      window.speechSynthesis.speak(utterance);
-  };
-
-  const triggerTTS = (index: number) => {
-      if (settings.ttsMode === 'OFF') return;
-      
-      const words = quote.text.split(' ');
-      
-      if (settings.ttsMode === 'QUOTE') {
-          if (index === 0) speakText(quote.text);
-          return;
-      }
-
-      let textToSpeak = '';
-      
-      if (settings.ttsMode === 'WORD') {
-          textToSpeak = words[index] || '';
-      } else if (settings.ttsMode === 'FLOW') {
-          // Current + Next
-          const w1 = words[index] || '';
-          const w2 = words[index + 1] || '';
-          textToSpeak = `${w1} ${w2}`;
-      } else if (settings.ttsMode === 'NEXT') {
-          textToSpeak = words[index + 1] || '';
-      } else if (settings.ttsMode === 'SCOUT') {
-          textToSpeak = words[index + 2] || '';
-      }
-      
-      if (textToSpeak.trim()) speakText(textToSpeak);
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (status === GameStatus.COMPLETED || status === GameStatus.FAILED) return;
 
     const val = e.target.value;
     const prevLen = input.length;
+    const now = Date.now();
     
-    // --- Start Game Logic ---
     if (status === GameStatus.IDLE && val.length > 0) {
-      setStartTime(Date.now());
+      setStartTime(now);
       setStatus(GameStatus.PLAYING);
-      
-      // Trigger Initial TTS (Index 0)
-      triggerTTS(0);
+      wordStartTimeRef.current = now;
     }
 
     if (val.length > prevLen) {
         soundEngine.playKeypress();
     }
 
-    // --- TTS Trigger on Space (Word Completion) ---
-    // Detect if we just typed a space, moving to the next word
+    // --- WORD PERFORMANCE TRACKING ---
     if (val.endsWith(' ') && !input.endsWith(' ')) {
+        const words = quote.text.split(' ');
+        const finishedWord = words[currentWordIndexRef.current];
+        if (finishedWord && wordStartTimeRef.current) {
+            const wordDurationSec = (now - wordStartTimeRef.current) / 1000;
+            const wordWpm = Math.round((finishedWord.length / 5) / (wordDurationSec / 60));
+            
+            if (onWordComplete) {
+                onWordComplete({
+                    word: finishedWord.toLowerCase().replace(/[^a-z]/g, ''),
+                    wpm: wordWpm,
+                    isCorrect: true
+                });
+            }
+        }
+        currentWordIndexRef.current += 1;
+        wordStartTimeRef.current = now;
+        
         const nextWordIndex = val.trim().split(' ').length;
         triggerTTS(nextWordIndex);
     }
 
-    // --- Instant Fail Check (All Modes) ---
     if (val.length > 0) {
       if (!quote.text.startsWith(val)) {
         soundEngine.playError();
@@ -361,14 +373,13 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         const expectedChar = quote.text[mistakeIndex];
         const typedChar = val[mistakeIndex];
         
-        // --- Calculate Word Context ---
         const wordStart = quote.text.lastIndexOf(' ', mistakeIndex) + 1;
         let wordEnd = quote.text.indexOf(' ', mistakeIndex);
         if (wordEnd === -1) wordEnd = quote.text.length;
         
         const expectedWord = quote.text.substring(wordStart, wordEnd);
         const typedWordPart = val.substring(wordStart);
-        const cleanWord = expectedWord.replace(/[.,;!?]/g, '');
+        const cleanWord = expectedWord.replace(/[.,;!?]/g, '').toLowerCase();
 
         setLastError({ 
             expectedChar, 
@@ -378,23 +389,23 @@ const TypingArea: React.FC<TypingAreaProps> = ({
             typedWordPart
         });
         
+        // Tracking the mistake for the mastery engine
+        if (onWordComplete) {
+            onWordComplete({
+                word: cleanWord.toLowerCase().replace(/[^a-z]/g, ''),
+                wpm: 0,
+                isCorrect: false
+            });
+        }
+
         onMistake(cleanWord, expectedChar, typedChar);
-        
-        // Track locally for history
         setSessionMistakes(prev => prev + 1);
         if (cleanWord && !sessionMistakeWords.includes(cleanWord)) {
             setSessionMistakeWords(prev => [...prev, cleanWord]);
         }
 
-        // --- XQUOTES FAST RESTART LOGIC ---
-        if (gameMode === 'XQUOTES') {
-            onFail(); // Notify parent to reset streak/debt
-            handleRetry(); // Instantly reset input and state
-            return;
-        }
-
         setStatus(GameStatus.FAILED);
-        onFail();
+        onFail(cleanWord);
         return;
       }
     }
@@ -403,36 +414,33 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
     if (val.length === quote.text.length) {
       const isPerfect = val === quote.text;
-      setEndTime(Date.now());
+      setEndTime(now);
       
       if (isPerfect) {
         soundEngine.playSuccess(); 
         
-        // --- XQUOTES FAST COMPLETE LOGIC ---
-        if (gameMode === 'XQUOTES') {
-            // Trigger completion logic immediately without modal
-            // Parent will decide to reload same quote (if reps > 0) or switch mode
-            const isPerfectMaster = retryCount === 0 && sessionMistakes === 0;
-            const xp = calculateXP(wpm, quote.text.length, streak, isPerfectMaster, settings.readAheadLevel);
-            onComplete(xp, wpm, sessionMistakeWords, retryCount);
-            // We do NOT set status to COMPLETED to avoid showing the modal
-            return;
+        // Handle last word performance
+        const words = quote.text.split(' ');
+        const lastWord = words[words.length - 1];
+        if (lastWord && wordStartTimeRef.current) {
+            const wordDurationSec = (now - wordStartTimeRef.current) / 1000;
+            const wordWpm = Math.round((lastWord.length / 5) / (wordDurationSec / 60));
+            if (onWordComplete) {
+                onWordComplete({
+                    word: lastWord.toLowerCase().replace(/[^a-z]/g, ''),
+                    wpm: wordWpm,
+                    isCorrect: true
+                });
+            }
         }
 
         setStatus(GameStatus.COMPLETED);
-        const finalTime = Date.now();
+        const finalTime = now;
         const durationMins = (finalTime - (startTime || finalTime)) / 60000;
         const finalWpm = Math.round((quote.text.length / 5) / (durationMins || 1));
         setWpm(finalWpm);
       } else {
         soundEngine.playError();
-        
-        if (gameMode === 'XQUOTES') {
-            onFail();
-            handleRetry();
-            return;
-        } 
-        
         setStatus(GameStatus.FAILED);
         onFail();
       }
@@ -451,12 +459,10 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     let currentWordEnd = text.indexOf(' ', caret);
     if (currentWordEnd === -1) currentWordEnd = text.length;
 
-    // --- LEVEL 1: FOCUS ---
     if (index >= currentWordStart && index < currentWordEnd) {
         return { isHidden: true, isHighlighted: false };
     }
 
-    // --- LEVEL 2: ULTRA ---
     if (settings.readAheadLevel === 'ULTRA' || settings.readAheadLevel === 'BLIND') {
         let nextWordStart = currentWordEnd + 1;
         let nextWordEnd = text.indexOf(' ', nextWordStart);
@@ -467,7 +473,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         }
     }
 
-    // --- LEVEL 3: BLIND ---
     if (settings.readAheadLevel === 'BLIND') {
         let nextWordStart = currentWordEnd + 1;
         let nextWordEnd = text.indexOf(' ', nextWordStart);
@@ -482,7 +487,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         }
     }
 
-    // Highlight next visible word
     if (index > currentWordEnd) { 
         let highlightStart = currentWordEnd + 1;
         if (settings.readAheadLevel === 'ULTRA') {
@@ -525,7 +529,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
       if (index < input.length) {
         if (input[index] === char) {
-          // Use frog-green for completed text
           colorClass = 'text-frog-green'; 
         } else {
           colorClass = 'text-red-500 bg-red-100'; 
@@ -575,6 +578,10 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         return 'bg-red-50 border-red-200 shadow-inner';
     }
 
+    if (isWordDrilling) {
+        return 'bg-purple-50 border-purple-200 shadow-[0_0_50px_rgba(168,85,247,0.1)]';
+    }
+
     if (gameMode === 'HARDCORE') {
         return 'bg-neutral-900 border-neutral-800 text-neutral-400 shadow-[0_0_40px_rgba(0,0,0,0.2)]';
     }
@@ -582,14 +589,12 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         return 'bg-red-50 border-red-100';
     }
     
-    // Light gray background for container
     return 'bg-stone-50 border-stone-200 overflow-hidden';
   };
 
-  // Dynamic Text Sizing - Standard/Cozy sizing logic
   const getFontSizeClass = () => {
     const len = quote.text.length;
-    // Standard sizes, scaled down if necessary, never massive
+    if (isWordDrilling) return 'text-5xl md:text-7xl font-black text-center py-10';
     if (len < 100) return 'text-xl md:text-2xl leading-relaxed';
     if (len < 200) return 'text-lg md:text-xl leading-relaxed';
     return 'text-base md:text-lg leading-relaxed';
@@ -597,53 +602,48 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
   const isPerfectMasterPotential = retryCount === 0 && sessionMistakes === 0;
 
-  // Determine Completion Text and Icon
   const getCompletionContent = () => {
+      if (wordDrillRemaining > 0) {
+          return { title: 'Word Focused!', btnLabel: `Repeat Word (${wordDrillRemaining} left)`, Icon: Zap };
+      }
+      if (remediationRemaining > 0) {
+          // Changed RefreshCw to RefreshCcw to fix name error
+          return { title: 'Quote Repetition', btnLabel: `Next Pass (${remediationRemaining} left)`, Icon: RefreshCcw };
+      }
       switch(gameMode) {
           case 'XWORDS':
-              return { 
-                  title: 'Correction Complete!', 
-                  btnLabel: 'Next Batch',
-                  Icon: Eraser 
-              };
+              return { title: 'Correction Complete!', btnLabel: 'Next Batch', Icon: Eraser };
           case 'PRACTICE':
-              return { 
-                  title: 'Words Mastered!', 
-                  btnLabel: 'More Words',
-                  Icon: FileText 
-              };
+              return { title: 'Words Mastered!', btnLabel: 'More Words', Icon: FileText };
           case 'HARDCORE':
-              return { 
-                  title: 'Survival Successful!', 
-                  btnLabel: 'Next Challenge',
-                  Icon: Skull 
-              };
+              return { title: 'Survival Successful!', btnLabel: 'Next Challenge', Icon: Skull };
           case 'XQUOTES':
-              return {
-                  title: 'Redemption!',
-                  btnLabel: 'Continue',
-                  Icon: RotateCcw
-              };
+              return { title: 'Redemption!', btnLabel: 'Continue', Icon: RotateCcw };
           default:
-              return { 
-                  title: 'Quote Complete!', 
-                  btnLabel: 'Next Quote',
-                  Icon: Award 
-              };
+              return { title: 'Quote Complete!', btnLabel: 'Next Quote', Icon: Award };
       }
   };
 
   const { title: completionTitle, btnLabel: completionBtn, Icon: CompletionIcon } = getCompletionContent();
 
+  const getDisplayedXP = () => {
+      const xpBase = calculateXP(wpm, quote.text.length, streak, retryCount === 0 && sessionMistakes === 0, settings.readAheadLevel);
+      if (isWordDrilling || remediationRemaining > 1) {
+          return 5;
+      }
+      if (remediationRemaining === 1) {
+          return Math.floor(xpBase * 0.5);
+      }
+      if (gameMode === 'HARDCORE') return Math.floor(xpBase * 5);
+      return Math.floor(xpBase);
+  };
+
   return (
-    <div 
-      className="relative w-full max-w-6xl mx-auto min-h-[400px] flex flex-col"
-      ref={containerRef}
-    >
-      {/* Perfect Master Indicator */}
-      {isPerfectMasterPotential && status === GameStatus.PLAYING && (
+    <div className="relative w-full max-w-6xl mx-auto min-h-[400px] flex flex-col" ref={containerRef}>
+      {(isPerfectMasterPotential || isWordDrilling) && status === GameStatus.PLAYING && remediationRemaining === 0 && (
         <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex items-center gap-1 text-xs font-bold text-frog-green animate-pulse">
-          <Sparkles className="w-3 h-3" /> Perfect Master Potential (1.5x Bonus)
+          {isWordDrilling ? <Zap className="w-3 h-3 text-purple-500" /> : <Sparkles className="w-3 h-3" />} 
+          {isWordDrilling ? "DEEP LEARNING DRILL" : "Perfect Master Potential (1.5x Bonus)"}
         </div>
       )}
 
@@ -668,73 +668,45 @@ const TypingArea: React.FC<TypingAreaProps> = ({
           </div>
         )}
         
-        {/* SUCCESS MODAL */}
         {status === GameStatus.COMPLETED && (
-          <div 
-            className="absolute inset-0 z-40 flex items-center justify-center bg-stone-900/10 backdrop-blur-sm rounded-[3rem] cursor-pointer"
-            onClick={handleNext}
-          >
-             <div 
-                className="bg-stone-50/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-stone-200 animate-in zoom-in-95 fade-in duration-300 flex flex-col items-center gap-6 min-w-[280px] cursor-default"
-                onClick={(e) => e.stopPropagation()} 
-             >
-                <div className="text-frog-green font-black text-xl tracking-tight flex items-center gap-2">
+          <div className="absolute inset-0 z-40 flex items-center justify-center bg-stone-900/10 backdrop-blur-sm rounded-[3rem] cursor-pointer" onClick={handleNext}>
+             <div className="bg-stone-50/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-stone-200 animate-in zoom-in-95 fade-in duration-300 flex flex-col items-center gap-6 min-w-[280px] cursor-default" onClick={(e) => e.stopPropagation()}>
+                <div className={`${isWordDrilling ? 'text-purple-600' : remediationRemaining > 0 ? 'text-orange-500' : 'text-frog-green'} font-black text-xl tracking-tight flex items-center gap-2`}>
                    <CompletionIcon className="w-6 h-6" /> {completionTitle}
                 </div>
-                
                 <div className="grid grid-cols-2 gap-x-12 gap-y-6 w-full">
                    <div className="flex flex-col items-center">
                       <span className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-1">Time</span>
-                      <span className="font-mono font-bold text-2xl text-stone-700">
-                        {endTime && startTime ? ((endTime - startTime) / 1000).toFixed(1) : '0.0'}s
-                      </span>
+                      <span className="font-mono font-bold text-2xl text-stone-700">{endTime && startTime ? ((endTime - startTime) / 1000).toFixed(1) : '0.0'}s</span>
                    </div>
                    <div className="flex flex-col items-center">
                       <span className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-1">Speed</span>
                       <span className="font-mono font-bold text-2xl text-stone-700">{wpm} <span className="text-xs text-stone-400 font-sans font-medium">WPM</span></span>
                    </div>
-                   <div className="flex flex-col items-center">
-                      <span className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-1">Retries</span>
-                      <span className="font-mono font-bold text-2xl text-stone-700">
-                          {retryCount}
-                      </span>
-                   </div>
+                   {remediationRemaining === 0 && !isWordDrilling && (
+                      <div className="flex flex-col items-center">
+                        <span className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-1">Retries</span>
+                        <span className="font-mono font-bold text-2xl text-stone-700">{retryCount}</span>
+                      </div>
+                   )}
                    <div className="flex flex-col items-center">
                       <span className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-1">XP Earned</span>
-                      <span className="font-mono font-bold text-2xl text-frog-green">
-                        +{calculateXP(wpm, quote.text.length, streak, retryCount === 0 && sessionMistakes === 0, settings.readAheadLevel) * (gameMode === 'HARDCORE' ? 5 : 1)}
-                      </span>
+                      <span className="font-mono font-bold text-2xl text-frog-green">+{getDisplayedXP()}</span>
                    </div>
                 </div>
-                
-                <button 
-                  ref={nextButtonRef}
-                  onClick={handleNext}
-                  className={`flex items-center gap-2 px-8 py-3 rounded-full transition shadow-lg font-bold text-sm tracking-wide uppercase transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 w-full justify-center
-                    bg-frog-green text-white hover:bg-green-500 shadow-green-200/50 focus:ring-frog-green
-                  `}
-                >
+                <button ref={nextButtonRef} onClick={handleNext} className={`flex items-center gap-2 px-8 py-3 rounded-full transition shadow-lg font-bold text-sm tracking-wide uppercase transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 w-full justify-center ${isWordDrilling ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-600' : remediationRemaining > 0 ? 'bg-orange-500 hover:bg-orange-600 focus:ring-orange-500' : 'bg-frog-green text-white hover:bg-green-500 shadow-green-200/50 focus:ring-frog-green'}`}>
                    {completionBtn} <CompletionIcon className="w-4 h-4" />
                 </button>
              </div>
           </div>
         )}
 
-        {/* FAILED MODAL (Retry Screen) */}
         {status === GameStatus.FAILED && (
-          <div 
-            className="absolute inset-0 z-40 flex items-center justify-center bg-stone-900/10 backdrop-blur-sm rounded-[3rem] cursor-pointer"
-            onClick={handleRetry}
-          >
-             <div 
-                className="bg-white p-6 rounded-3xl shadow-2xl border border-stone-100 animate-in zoom-in-95 fade-in duration-300 flex flex-col items-center gap-4 min-w-[260px] cursor-default"
-                onClick={(e) => e.stopPropagation()} 
-             >
+          <div className="absolute inset-0 z-40 flex items-center justify-center bg-stone-900/10 backdrop-blur-sm rounded-[3rem] cursor-pointer" onClick={handleRetry}>
+             <div className="bg-white p-6 rounded-3xl shadow-2xl border border-stone-100 animate-in zoom-in-95 fade-in duration-300 flex flex-col items-center gap-4 min-w-[260px] cursor-default" onClick={(e) => e.stopPropagation()}>
                 <div className="text-red-500 font-black text-xl tracking-tight flex items-center gap-2">
                    <XCircle className="w-6 h-6" /> Run Failed
                 </div>
-                
-                {/* Compact Error Box */}
                 <div className="w-full bg-red-50 p-3 rounded-xl border border-red-100 flex flex-col items-center gap-1">
                     {lastError ? (
                         <>
@@ -749,28 +721,12 @@ const TypingArea: React.FC<TypingAreaProps> = ({
                         <span className="text-stone-400 italic text-xs">Unknown Error</span>
                     )}
                 </div>
-
-                {/* Compact Stats */}
-                <div className="flex w-full justify-between gap-4 px-2">
-                     <div className="flex flex-col items-center">
-                        <span className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">Progress</span>
-                        <span className="font-mono font-bold text-lg text-stone-700">
-                            {Math.floor((input.length / quote.text.length) * 100)}%
-                        </span>
-                     </div>
-                     <div className="w-px bg-stone-100"></div>
-                     <div className="flex flex-col items-center">
-                        <span className="text-[9px] uppercase font-bold text-stone-400 tracking-wider">Speed</span>
-                        <span className="font-mono font-bold text-lg text-stone-700">{wpm}</span>
-                     </div>
+                <div className="p-3 bg-purple-50 rounded-xl border border-purple-100 text-center w-full">
+                    <p className="text-[10px] font-bold text-purple-600 uppercase tracking-widest">Deep Mastery Protocol</p>
+                    <p className="text-xs text-stone-500 mt-1">Practice word 30x, then quote 3x.</p>
                 </div>
-                
-                <button 
-                  ref={retryButtonRef}
-                  onClick={handleRetry}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-red-500 text-white hover:bg-red-600 rounded-xl transition shadow-lg shadow-red-200/50 font-bold text-xs tracking-wide uppercase focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform hover:-translate-y-0.5"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" /> Try Again
+                <button ref={retryButtonRef} onClick={handleRetry} className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-red-500 text-white hover:bg-red-600 rounded-xl transition shadow-lg shadow-red-200/50 font-bold text-xs tracking-wide uppercase focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transform hover:-translate-y-0.5">
+                  <RotateCcw className="w-3.5 h-3.5" /> Start Drill
                 </button>
              </div>
           </div>
@@ -787,56 +743,38 @@ const TypingArea: React.FC<TypingAreaProps> = ({
                 <ArrowUp className="w-3 h-3" /> SHIFT
               </div>
             )}
+            {isWordDrilling && status !== GameStatus.FAILED && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white rounded-full text-[10px] font-bold tracking-widest border border-purple-700 shadow-md animate-in slide-in-from-top-4">
+                    <Zap className="w-3 h-3 animate-pulse" /> WORD DRILL: {31 - wordDrillRemaining}/30
+                </div>
+            )}
+            {remediationRemaining > 0 && !isWordDrilling && status !== GameStatus.FAILED && (
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-500 text-white rounded-full text-[10px] font-bold tracking-widest border border-orange-600 shadow-md animate-in slide-in-from-top-4">
+                    {/* Changed RefreshCw to RefreshCcw to fix name error */}
+                    <RefreshCcw className="w-3 h-3 animate-spin-slow" /> QUOTE MASTERY: {4 - remediationRemaining}/3
+                </div>
+            )}
         </div>
 
         <div className="absolute top-10 left-0 right-0 px-10 md:px-20 flex justify-between text-xs font-bold opacity-80 uppercase tracking-[0.2em] select-none font-sans z-10 text-stone-500">
           <div className="flex gap-4">
              <span>{quote.source}</span>
-             {settings.ghostEnabled && <span className="text-purple-300 flex items-center gap-1"><Ghost className="w-3.5 h-3.5"/> {ghostWpm > 0 ? `${ghostWpm} WPM` : 'Ready'}</span>}
-             {settings.readAheadLevel !== 'NONE' && <span className="text-frog-green flex items-center gap-1"><EyeOff className="w-3.5 h-3.5"/> {settings.readAheadLevel}</span>}
+             {settings.ghostEnabled && !isWordDrilling && <span className="text-purple-300 flex items-center gap-1"><Ghost className="w-3.5 h-3.5"/> {ghostWpm > 0 ? `${ghostWpm} WPM` : 'Ready'}</span>}
+             {settings.readAheadLevel !== 'NONE' && !isWordDrilling && <span className="text-frog-green flex items-center gap-1"><EyeOff className="w-3.5 h-3.5"/> {settings.readAheadLevel}</span>}
           </div>
           <span className="text-right max-w-[200px] truncate">{quote.author}</span>
         </div>
 
-        {/* Text Container with Caret and Dynamic Font */}
-        <div 
-          ref={textContainerRef}
-          className={`font-mono tracking-wide break-words whitespace-pre-wrap mb-12 mt-10 relative z-10 outline-none select-none ${getTextColor()} ${getFontSizeClass()}`}
-          onClick={handleFocus}
-        >
-          {/* Smooth Caret with Frog Green - Animation Disabled */}
-          <div 
-             className="absolute bg-frog-green w-[3px] rounded-full transition-all duration-100 ease-out z-20 pointer-events-none caret-blink shadow-[0_0_10px_rgba(64,214,114,0.5)]"
-             style={{ 
-                 left: caretPos.left - 1, 
-                 top: caretPos.top + 2, 
-                 height: caretPos.height - 4,
-                 opacity: caretPos.opacity
-             }}
+        <div ref={textContainerRef} className={`font-mono tracking-wide break-words whitespace-pre-wrap mb-12 mt-10 relative z-10 outline-none select-none ${getTextColor()} ${getFontSizeClass()}`} onClick={handleFocus}>
+          <div className="absolute bg-frog-green w-[3px] rounded-full transition-all duration-100 ease-out z-20 pointer-events-none caret-blink shadow-[0_0_10px_rgba(64,214,114,0.5)]"
+             style={{ left: caretPos.left - 1, top: caretPos.top + 2, height: caretPos.height - 4, opacity: caretPos.opacity }}
           />
           {renderText()}
         </div>
 
-        <textarea
-          ref={inputRef}
-          value={input}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onFocus={() => {
-              setIsFocused(true);
-              onInteract?.();
-          }}
-          onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                  e.preventDefault();
-              }
-          }}
-          onPaste={(e) => e.preventDefault()}
-          onCopy={(e) => e.preventDefault()}
-          onDrop={(e) => e.preventDefault()}
-          className="absolute opacity-0 top-0 left-0 h-full w-full cursor-default resize-none"
-          autoFocus={isFocused}
-          disabled={status === GameStatus.COMPLETED || status === GameStatus.FAILED}
+        <textarea ref={inputRef} value={input} onChange={handleChange} onBlur={handleBlur} onFocus={() => { setIsFocused(true); onInteract?.(); if (status === GameStatus.IDLE && input.length === 0) triggerTTS(0); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} onPaste={(e) => e.preventDefault()} onCopy={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()}
+          className="absolute opacity-0 top-0 left-0 h-full w-full cursor-default resize-none" autoFocus={isFocused} disabled={status === GameStatus.COMPLETED || status === GameStatus.FAILED}
         />
 
         <div className="absolute bottom-10 left-0 right-0 px-10 md:px-20 flex justify-between items-end select-none z-10">
@@ -845,7 +783,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
                 <span className="text-[10px] uppercase font-bold text-stone-300 mb-0.5 tracking-wider">Speed</span>
                 <span className="font-bold text-xl opacity-80 font-sans">{wpm} <span className="text-[10px] font-normal opacity-50">WPM</span></span>
              </div>
-             {streak > 0 && (
+             {streak > 0 && !isWordDrilling && (
                 <div className={`flex flex-col ${streak > 4 ? 'text-orange-500' : 'text-stone-400'}`}>
                     <span className="text-[10px] uppercase font-bold text-stone-300 mb-0.5 tracking-wider">Streak</span>
                     <span className="font-bold text-xl flex items-center gap-1.5 font-sans">
@@ -858,14 +796,9 @@ const TypingArea: React.FC<TypingAreaProps> = ({
       </div>
       
       <div className="text-center mt-8 h-4 text-stone-400 text-xs font-medium tracking-wide transition-opacity duration-500 font-sans">
-        {status === GameStatus.FAILED ? 
-            <span className="text-red-400">
-                {gameMode === 'HARDCORE' 
-                  ? 'HARDCORE FAIL. 50% XP Penalty.' 
-                  : 'Mistake made. Review your error above.'}
-            </span> : 
-         status === GameStatus.COMPLETED ? <span className="text-frog-green">Perfect! Streak +1 {retryCount === 0 && sessionMistakes === 0 && "(Mastery Bonus!)"}</span> :
-         isFocused ? "Accuracy is paramount. One mistake restarts the quote." : ""}
+        {status === GameStatus.FAILED ? <span className="text-red-400">{gameMode === 'HARDCORE' ? 'HARDCORE FAIL. 50% XP Penalty.' : 'Mistake made. Mastery Protocol initiated.'}</span> : 
+         status === GameStatus.COMPLETED ? <span className="text-frog-green">Perfect! {isWordDrilling ? 'Repetition locked. Keep going.' : remediationRemaining > 0 ? `Practice more to clear the loop.` : `Streak +1`}</span> :
+         isFocused ? (isWordDrilling ? "DRILL ACTIVE: Type word perfectly 30 times." : remediationRemaining > 0 ? "REMEDIATION ACTIVE: 100% Accuracy required." : "Accuracy is paramount. One mistake restarts the quote.") : ""}
       </div>
     </div>
   );
