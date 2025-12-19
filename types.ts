@@ -58,7 +58,7 @@ export interface Settings {
   ttsMode: TTSMode; 
 }
 
-export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'BLITZ' | 'DRILL';
+export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'TEN_FAST' | 'DRILL';
 
 export enum GameStatus {
   IDLE = 'IDLE',

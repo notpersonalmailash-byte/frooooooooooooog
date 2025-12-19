@@ -11,7 +11,7 @@ import AchievementToast from './components/AchievementToast';
 import SurvivalGame from './components/SurvivalGame';
 import TimeAttackGame from './components/TimeAttackGame';
 import CosmicDefenseGame from './components/CosmicDefenseGame';
-import BlitzGame from './components/BlitzGame';
+import TenFastGame from './components/BlitzGame';
 import MiniGameMenu from './components/MiniGameMenu';
 import { MusicPlayer } from './components/MusicPlayer';
 import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel, PracticeWord, AchievementStats, TTSMode, WordPerformance, WeakWord } from './types';
@@ -67,7 +67,6 @@ const App: React.FC = () => {
   });
   const [weakWords, setWeakWords] = useState<WeakWord[]>(() => {
       const saved = localStorage.getItem('frogType_weakWords');
-      // Fix: Changed 'stored' to 'saved' to correctly reference the variable containing the string from localStorage.
       return saved ? JSON.parse(saved) : [];
   });
   const [failedQuoteRepetitions, setFailedQuoteRepetitions] = useState<Record<string, number>>(() => {
@@ -210,7 +209,6 @@ const App: React.FC = () => {
               } else {
                   const newProf = Math.min(3, updated[idx].proficiency + 1);
                   updated[idx] = { ...updated[idx], proficiency: newProf, lastPracticed: Date.now() };
-                  // Remove from mistake pool and weak words if proficient enough
                   if (newProf === 3) {
                       setMistakePool(m => m.filter(word => word !== perf.word));
                       setWeakWords(ww => ww.filter(item => item.word !== perf.word));
@@ -226,7 +224,7 @@ const App: React.FC = () => {
 
   const loadMoreQuotes = useCallback(async () => {
     if (isFetchingRef.current) return;
-    if (gameMode === 'MINIGAMES' || gameMode === 'XWORDS' || gameMode === 'XQUOTES' || gameMode === 'BLITZ') return; 
+    if (gameMode === 'MINIGAMES' || gameMode === 'XWORDS' || gameMode === 'XQUOTES' || gameMode === 'TEN_FAST') return; 
     isFetchingRef.current = true;
     try {
       const level = getCurrentLevel(userXP);
@@ -238,15 +236,15 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const init = async () => {
-      if (!currentQuote && quotesQueue.length === 0 && !['MINIGAMES', 'XWORDS', 'XQUOTES', 'BLITZ'].includes(gameMode)) {
+      if (!currentQuote && quotesQueue.length === 0 && !['MINIGAMES', 'XWORDS', 'XQUOTES', 'TEN_FAST'].includes(gameMode)) {
          setLoading(true); await loadMoreQuotes(); setLoading(false);
-      } else if (quotesQueue.length < 3 && !['MINIGAMES', 'XWORDS', 'XQUOTES', 'BLITZ'].includes(gameMode)) loadMoreQuotes();
+      } else if (quotesQueue.length < 3 && !['MINIGAMES', 'XWORDS', 'XQUOTES', 'TEN_FAST'].includes(gameMode)) loadMoreQuotes();
     };
     init();
   }, [gameMode, currentQuote, quotesQueue.length, loadMoreQuotes]);
 
   useEffect(() => {
-    if (currentQuote || ['MINIGAMES', 'BLITZ'].includes(gameMode)) return;
+    if (currentQuote || ['MINIGAMES', 'TEN_FAST'].includes(gameMode)) return;
     if (gameMode === 'XWORDS') {
       if (mistakePool.length > 0) {
           const selected = mistakePool.sort(() => 0.5 - Math.random()).slice(0, 12).join(' ');
@@ -268,8 +266,8 @@ const App: React.FC = () => {
     let potentialXp = userXP + amount;
     const nextLevelObj = getNextLevel(currentLevel);
     if (nextLevelObj && potentialXp >= nextLevelObj.minXP) {
-        const remediationCount = Object.keys(failedQuoteRepetitions).length;
-        if (mistakePool.length > 0 || currentAvgWpm < nextLevelObj.requiredWpm || (currentLevel.tier !== nextLevelObj.tier && remediationCount > 0)) {
+        const remCount = Object.keys(failedQuoteRepetitions).length;
+        if (mistakePool.length > 0 || currentAvgWpm < nextLevelObj.requiredWpm || (currentLevel.tier !== nextLevelObj.tier && remCount > 0)) {
             potentialXp = nextLevelObj.minXP - 1;
         }
     }
@@ -288,17 +286,22 @@ const App: React.FC = () => {
     handleXPGain(xpCalc, getAverageWPM(wpmHistory));
     setWpmHistory(prev => [...prev, wpm].slice(-10));
     setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xpCalc, mode: gameMode, quoteText: currentQuote?.text || "", mistakes, retryCount }]);
-    if (currentQuote && !['XWORDS', 'XQUOTES', 'BLITZ'].includes(gameMode)) setCompletedQuotes(prev => [...prev, currentQuote.text]);
+    if (currentQuote && !['XWORDS', 'XQUOTES', 'TEN_FAST'].includes(gameMode)) setCompletedQuotes(prev => [...prev, currentQuote.text]);
     setLastWpm(wpm);
     setCurrentQuote(null);
     setShouldAutoFocus(true);
   };
 
-  const handleBlitzComplete = (wpm: number, xp: number, mistakes: string[]) => {
+  const handleTenFastComplete = (wpm: number, xp: number, mistakes: string[]) => {
       handleXPGain(xp, getAverageWPM(wpmHistory));
       setWpmHistory(prev => [...prev, wpm].slice(-10));
-      setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xp, mode: 'BLITZ', quoteText: "Blitz Run", mistakes, retryCount: 0 }]);
+      setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xp, mode: 'TEN_FAST', quoteText: "10-Fast Sprint", mistakes, retryCount: 0 }]);
       setLastWpm(wpm);
+  };
+
+  const handleArcadeComplete = (score: number, xp: number, arcadeWave: number = 0, variant: string = 'Arcade') => {
+      handleXPGain(xp, getAverageWPM(wpmHistory));
+      setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm: score, xpEarned: xp, mode: 'MINIGAMES', quoteText: `${variant} - Wave ${arcadeWave}`, mistakes: [], retryCount: 0 }]);
   };
 
   const switchMode = useCallback((mode: GameMode) => {
@@ -331,8 +334,8 @@ const App: React.FC = () => {
                   <button onClick={() => switchMode('QUOTES')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${gameMode === 'QUOTES' && !isMiniGameMenuOpen ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' : 'text-stone-400 hover:bg-stone-200/50'}`}>
                       <BookOpen className="w-3.5 h-3.5" /> Quotes
                   </button>
-                  <button onClick={() => switchMode('BLITZ')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${gameMode === 'BLITZ' && !isMiniGameMenuOpen ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' : 'text-stone-400 hover:bg-stone-200/50'}`}>
-                      <Zap className="w-3.5 h-3.5" /> Blitz
+                  <button onClick={() => switchMode('TEN_FAST')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${gameMode === 'TEN_FAST' && !isMiniGameMenuOpen ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' : 'text-stone-400 hover:bg-stone-200/50'}`}>
+                      <Zap className="w-3.5 h-3.5" /> 10 Fast
                   </button>
                   <button onClick={() => switchMode('PRACTICE')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${gameMode === 'PRACTICE' && !isMiniGameMenuOpen ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' : 'text-stone-400 hover:bg-stone-200/50'}`}>
                       <FileText className="w-3.5 h-3.5" /> Words
@@ -369,8 +372,13 @@ const App: React.FC = () => {
         ) : (
             <>
                 {isMiniGameMenuOpen ? <MiniGameMenu onSelect={(id) => { setActiveMiniGame(id); setIsMiniGameMenuOpen(false); }} onBack={() => setIsMiniGameMenuOpen(false)} /> :
-                 activeMiniGame ? (activeMiniGame === 'SURVIVAL_SWAMP' ? <SurvivalGame variant="SWAMP" onGameOver={handleXPGain} onExit={() => setActiveMiniGame(null)} /> : null) :
-                 gameMode === 'BLITZ' ? <BlitzGame smartQueue={smartPracticeQueue} onGameOver={handleBlitzComplete} onWordPerformance={handleWordPerformance} onExit={() => setGameMode('QUOTES')} /> :
+                 activeMiniGame ? (
+                   activeMiniGame === 'SURVIVAL_SWAMP' ? <SurvivalGame variant="SWAMP" onGameOver={(score, xp) => handleArcadeComplete(score, xp, 0, 'Swamp Survival')} onExit={() => setActiveMiniGame(null)} /> : 
+                   activeMiniGame === 'SURVIVAL_ZOMBIE' ? <SurvivalGame variant="ZOMBIE" onGameOver={(score, xp) => handleArcadeComplete(score, xp, 0, 'Outbreak Z')} onExit={() => setActiveMiniGame(null)} /> : 
+                   activeMiniGame === 'COSMIC_DEFENSE' ? <CosmicDefenseGame onGameOver={(score, xp, wave) => handleArcadeComplete(score, xp, wave, 'Cosmic Defense')} onExit={() => setActiveMiniGame(null)} /> :
+                   activeMiniGame === 'TIME_ATTACK' ? <TimeAttackGame onGameOver={(score, xp) => handleArcadeComplete(score, xp, 0, 'Speed Rush')} onExit={() => setActiveMiniGame(null)} /> : null
+                 ) :
+                 gameMode === 'TEN_FAST' ? <TenFastGame smartQueue={smartPracticeQueue} onGameOver={handleTenFastComplete} onWordPerformance={handleWordPerformance} onExit={() => setGameMode('QUOTES')} /> :
                  currentQuote ? <TypingArea quote={currentQuote} onComplete={handleQuoteComplete} onFail={() => setStreak(0)} onMistake={() => {}} onWordComplete={handleWordPerformance} onRequestNewQuote={() => setCurrentQuote(null)} streak={streak} ghostWpm={avgWpmVal} settings={settings} gameMode={gameMode} autoFocus={shouldAutoFocus} /> :
                  <div className="flex flex-col items-center text-stone-400"><Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" /><p className="font-mono text-xs">Hatching wisdom...</p></div>}
             </>

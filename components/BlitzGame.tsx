@@ -2,17 +2,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { soundEngine } from '../utils/soundEngine';
 import { Timer, Zap, RotateCcw, X, LogOut, ArrowRight, Sparkles, Brain, Target, ShieldAlert, CheckCircle2 } from 'lucide-react';
-import { fetchBlitzWords } from '../services/quoteService';
+import { fetchTenFastWords } from '../services/quoteService';
 import { PracticeWord, WordPerformance } from '../types';
 
-interface BlitzGameProps {
+interface TenFastGameProps {
   smartQueue: PracticeWord[];
   onGameOver: (wpm: number, xp: number, mistakes: string[]) => void;
   onWordPerformance: (perf: WordPerformance) => void;
   onExit: () => void;
 }
 
-const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPerformance, onExit }) => {
+const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWordPerformance, onExit }) => {
   const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER' | 'DRILL_PENALTY'>('START');
   const [timeLeft, setTimeLeft] = useState(60);
   const [words, setWords] = useState<string[]>([]);
@@ -32,7 +32,7 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
   const timerRef = useRef<number | undefined>(undefined);
 
   const initGame = useCallback(() => {
-    const wordList = fetchBlitzWords(150, smartQueue);
+    const wordList = fetchTenFastWords(150, smartQueue);
     setWords(wordList);
     setCurrentIdx(0);
     setInput('');
@@ -52,7 +52,7 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
       timerRef.current = window.setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
-            endGame();
+            handleFinalize();
             return 0;
           }
           return prev - 1;
@@ -62,9 +62,15 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
     return () => clearInterval(timerRef.current);
   }, [gameState]);
 
-  const endGame = () => {
+  const handleFinalize = () => {
     setGameState('GAMEOVER');
     clearInterval(timerRef.current);
+    
+    // Calculate final stats for history
+    const totalChars = words.slice(0, currentIdx).reduce((acc, w) => acc + w.length + 1, 0);
+    const finalWpm = Math.round((totalChars / 5));
+    const xp = Math.max(5, Math.floor(finalWpm * (correctCount / 10)));
+    onGameOver(finalWpm, xp, mistakeWords);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,7 +98,7 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
             soundEngine.playKeypress();
             wordStartTimeRef.current = now;
             if (currentIdx > words.length - 20) {
-                setWords(prev => [...prev, ...fetchBlitzWords(50, smartQueue)]);
+                setWords(prev => [...prev, ...fetchTenFastWords(50, smartQueue)]);
             }
         } else {
             triggerFail(targetWord);
@@ -133,7 +139,7 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
             setInput('');
             if (nextCount >= DRILL_REQUIRED) {
                 soundEngine.playSuccess();
-                setGameState('GAMEOVER'); // After drill, Blitz run is over
+                handleFinalize();
             }
         } else {
             soundEngine.playError();
@@ -163,12 +169,12 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
                   <div className="w-20 h-20 bg-frog-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-frog-400 shadow-lg">
                       <Zap className="w-10 h-10 text-frog-600" />
                   </div>
-                  <h2 className="text-4xl font-black text-stone-800 tracking-tight">BLITZ 200</h2>
-                  <p className="text-stone-500 text-lg max-w-md mx-auto">Master the 200 most common English words. 60 seconds on the clock. **One mistake fails and forces a 17x repetition drill.**</p>
+                  <h2 className="text-4xl font-black text-stone-800 tracking-tight">10 FAST</h2>
+                  <p className="text-stone-500 text-lg max-w-md mx-auto">Master the most common English words. 60 seconds on the clock. **One mistake fails and forces a 17x repetition drill.**</p>
                   
                   <div className="flex gap-4 justify-center">
                       <button onClick={onExit} className="px-6 py-3 text-stone-400 font-bold hover:text-stone-600">Back</button>
-                      <button onClick={initGame} className="px-10 py-4 bg-frog-green hover:bg-green-500 text-white font-black text-xl rounded-full shadow-lg shadow-frog-100 transition-transform hover:scale-105">START BLITZ</button>
+                      <button onClick={initGame} className="px-10 py-4 bg-frog-green hover:bg-green-500 text-white font-black text-xl rounded-full shadow-lg shadow-frog-100 transition-transform hover:scale-105">START RUN</button>
                   </div>
               </div>
           </div>
@@ -301,4 +307,4 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
   );
 };
 
-export default BlitzGame;
+export default TenFastGame;

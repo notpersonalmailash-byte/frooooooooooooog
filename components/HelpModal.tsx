@@ -180,6 +180,17 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, currentLevel, co
                                   Balanced risk/reward. The default way to play.
                               </p>
                           </div>
+
+                          {/* 10 Fast Mode */}
+                          <div className="group relative bg-white p-4 rounded-xl border border-stone-200 shadow-sm hover:border-frog-green/30 transition-colors">
+                              <div className="flex justify-between items-center mb-1">
+                                  <span className="font-bold text-stone-800 text-sm flex items-center gap-2"><Zap className="w-3.5 h-3.5 text-frog-green"/> 10 Fast</span>
+                                  <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded font-bold">Sprint</span>
+                              </div>
+                              <p className="text-xs text-stone-500">
+                                  High-pressure common word sprint. One mistake resets the run and forces repetition.
+                              </p>
+                          </div>
                           
                           {/* Hardcore Mode */}
                           <div className={`group relative p-4 rounded-xl border shadow-sm transition-colors ${isHardcoreLocked ? 'bg-stone-50 border-stone-200 opacity-60' : 'bg-white border-stone-200 hover:border-stone-800'}`}>

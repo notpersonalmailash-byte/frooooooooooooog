@@ -73,7 +73,7 @@ const applyPunctuation = (word: string, prob: number) => {
     return word + ';';
 };
 
-export const fetchBlitzWords = (count: number = 100, smartQueue: PracticeWord[] = []): string[] => {
+export const fetchTenFastWords = (count: number = 100, smartQueue: PracticeWord[] = []): string[] => {
     // Top 200 words from COMMON_WORDS
     const top200 = COMMON_WORDS.slice(0, 200);
     
