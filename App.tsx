@@ -267,13 +267,7 @@ const App: React.FC = () => {
 
   const handleXPGain = (amount: number, currentAvgWpm: number) => {
     let potentialXp = userXP + amount;
-    const nextLevelObj = getNextLevel(currentLevel);
-    if (nextLevelObj && potentialXp >= nextLevelObj.minXP) {
-        const remCount = Object.keys(failedQuoteRepetitions).length;
-        if (mistakePool.length > 0 || currentAvgWpm < nextLevelObj.requiredWpm || (currentLevel.tier !== nextLevelObj.tier && remCount > 0)) {
-            potentialXp = nextLevelObj.minXP - 1;
-        }
-    }
+    // Gating Fix: Removing the potentialXp cap logic.
     const newLevel = getCurrentLevel(potentialXp);
     if (newLevel.tier !== currentLevel.tier && potentialXp >= newLevel.minXP) {
           setTimeout(() => {
@@ -322,8 +316,6 @@ const App: React.FC = () => {
 
   const remediationCount = Object.keys(failedQuoteRepetitions).length;
   const avgWpmVal = getAverageWPM(wpmHistory);
-  const { isGated, reason } = checkLevelProgress(userXP, avgWpmVal, mistakePool.length, remediationCount);
-  const isGatedLocked = isGated && (reason === 'MASTERY' || reason === 'REMEDIATION');
 
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200">
@@ -378,16 +370,6 @@ const App: React.FC = () => {
                     </p>
                 </div>
             </div>
-        ) : isGatedLocked && gameMode !== 'XWORDS' && gameMode !== 'XQUOTES' ? (
-              <div className="mb-8 w-full max-w-2xl bg-white/80 backdrop-blur-xl border-4 border-frog-100 p-10 rounded-[2.5rem] shadow-2xl flex flex-col items-center text-center gap-6 z-50">
-                  <div className="p-5 bg-white rounded-full text-frog-500 shadow-lg ring-4 ring-frog-50"><Lock className="w-8 h-8" /></div>
-                  <h3 className="text-3xl font-black text-frog-800 tracking-tight">Mastery Required</h3>
-                  <p className="text-stone-500 font-medium text-lg max-w-md">Drill your mistakes before advancing.</p>
-                  <div className="flex gap-4 w-full">
-                      <button onClick={() => switchMode('XWORDS')} className="flex-1 px-6 py-4 bg-frog-green text-white font-black rounded-2xl flex items-center justify-center gap-2"><Eraser className="w-5 h-5" /> Drill Words</button>
-                      <button onClick={() => switchMode('XQUOTES')} className="flex-1 px-6 py-4 bg-stone-600 text-white font-black rounded-2xl flex items-center justify-center gap-2"><RefreshCcw className="w-5 h-5" /> Retry Quotes</button>
-                  </div>
-              </div>
         ) : (
             <>
                 {isMiniGameMenuOpen ? <MiniGameMenu onSelect={(id) => { setActiveMiniGame(id); setIsMiniGameMenuOpen(false); }} onBack={() => setIsMiniGameMenuOpen(false)} /> :
