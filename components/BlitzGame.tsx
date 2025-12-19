@@ -10,10 +10,13 @@ interface TenFastGameProps {
   onGameOver: (wpm: number, xp: number, mistakes: string[]) => void;
   onWordPerformance: (perf: WordPerformance) => void;
   onExit: () => void;
+  initialDrillWord?: string | null;
 }
 
-const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWordPerformance, onExit }) => {
-  const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER' | 'DRILL_PENALTY'>('START');
+const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWordPerformance, onExit, initialDrillWord }) => {
+  const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER' | 'DRILL_PENALTY'>(
+    initialDrillWord ? 'DRILL_PENALTY' : 'START'
+  );
   const [timeLeft, setTimeLeft] = useState(60);
   const [words, setWords] = useState<string[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -23,7 +26,7 @@ const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWor
   const [mistakeWords, setMistakeWords] = useState<string[]>([]);
   
   // Drill State
-  const [drillTarget, setDrillTarget] = useState<string | null>(null);
+  const [drillTarget, setDrillTarget] = useState<string | null>(initialDrillWord || null);
   const [drillCount, setDrillCount] = useState(0);
   const DRILL_REQUIRED = 17;
 
@@ -71,6 +74,7 @@ const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWor
     const finalWpm = Math.round((totalChars / 5));
     const xp = Math.max(5, Math.floor(finalWpm * (correctCount / 10)));
     onGameOver(finalWpm, xp, mistakeWords);
+    localStorage.removeItem('frogType_pendingDrill');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,6 +129,8 @@ const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWor
     setGameState('DRILL_PENALTY');
     setInput('');
     clearInterval(timerRef.current);
+    // Persist the drill state
+    localStorage.setItem('frogType_pendingDrill', word);
   };
 
   const handleDrillInput = (val: string) => {
@@ -139,6 +145,7 @@ const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWor
             setInput('');
             if (nextCount >= DRILL_REQUIRED) {
                 soundEngine.playSuccess();
+                localStorage.removeItem('frogType_pendingDrill');
                 handleFinalize();
             }
         } else {

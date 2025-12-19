@@ -74,6 +74,9 @@ const App: React.FC = () => {
       return saved ? JSON.parse(saved) : {};
   });
 
+  // Forced Drill State for 10 Fast mistakes (Persistent across reloads)
+  const [pendingTenFastDrill, setPendingTenFastDrill] = useState<string | null>(() => localStorage.getItem('frogType_pendingDrill'));
+
   const [notificationQueue, setNotificationQueue] = useState<NotificationItem[]>([]);
   const [wpmHistory, setWpmHistory] = useState<number[]>(() => {
     const saved = localStorage.getItem('frogType_wpmHistory');
@@ -295,8 +298,9 @@ const App: React.FC = () => {
   const handleTenFastComplete = (wpm: number, xp: number, mistakes: string[]) => {
       handleXPGain(xp, getAverageWPM(wpmHistory));
       setWpmHistory(prev => [...prev, wpm].slice(-10));
-      setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xp, mode: 'TEN_FAST', quoteText: "10-Fast Sprint", mistakes, retryCount: 0 }]);
+      setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xp, mode: 'TEN_FAST', quoteText: "10-Fast Run", mistakes, retryCount: 0 }]);
       setLastWpm(wpm);
+      setPendingTenFastDrill(null); // Clear local state lock
   };
 
   const handleArcadeComplete = (score: number, xp: number, arcadeWave: number = 0, variant: string = 'Arcade') => {
@@ -324,7 +328,7 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200">
       <div className="sticky top-0 z-40 flex flex-col shadow-sm transition-all">
-          <header className="w-full bg-stone-50/95 backdrop-blur-md border-b border-stone-200 px-6 py-3">
+          <header className={`w-full bg-stone-50/95 backdrop-blur-md border-b border-stone-200 px-6 py-3 transition-opacity ${pendingTenFastDrill ? 'opacity-30 pointer-events-none grayscale' : 'opacity-100'}`}>
             <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
                 <h1 className="text-xl font-black text-frog-green tracking-tight flex items-center gap-2 flex-shrink-0">
@@ -359,7 +363,22 @@ const App: React.FC = () => {
       </div>
       
       <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative pb-32">
-        {isGatedLocked && gameMode !== 'XWORDS' && gameMode !== 'XQUOTES' ? (
+        {pendingTenFastDrill ? (
+            <div className="w-full animate-in zoom-in-95 duration-500">
+                <TenFastGame 
+                    smartQueue={smartPracticeQueue} 
+                    onGameOver={handleTenFastComplete} 
+                    onWordPerformance={handleWordPerformance} 
+                    onExit={() => {}} // Exit is locked
+                    initialDrillWord={pendingTenFastDrill} 
+                />
+                <div className="mt-8 text-center bg-red-500/10 p-4 rounded-2xl border border-red-500/20 max-w-lg mx-auto">
+                    <p className="text-red-600 font-bold text-sm flex items-center justify-center gap-2">
+                        <Lock className="w-4 h-4" /> Navigation Locked. Complete Cognitive Reinforcement to continue.
+                    </p>
+                </div>
+            </div>
+        ) : isGatedLocked && gameMode !== 'XWORDS' && gameMode !== 'XQUOTES' ? (
               <div className="mb-8 w-full max-w-2xl bg-white/80 backdrop-blur-xl border-4 border-frog-100 p-10 rounded-[2.5rem] shadow-2xl flex flex-col items-center text-center gap-6 z-50">
                   <div className="p-5 bg-white rounded-full text-frog-500 shadow-lg ring-4 ring-frog-50"><Lock className="w-8 h-8" /></div>
                   <h3 className="text-3xl font-black text-frog-800 tracking-tight">Mastery Required</h3>
@@ -385,7 +404,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--bg-body)] border-t border-stone-200/50 px-6 py-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+      <div className={`fixed bottom-0 left-0 right-0 z-50 bg-[var(--bg-body)] border-t border-stone-200/50 px-6 py-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-opacity ${pendingTenFastDrill ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}`}>
            <div className="max-w-[1400px] mx-auto"><ProgressBar xp={userXP} avgWpm={avgWpmVal} mistakeCount={mistakePool.length} remediationCount={remediationCount} /></div>
       </div>
 
