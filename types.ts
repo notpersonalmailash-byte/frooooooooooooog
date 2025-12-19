@@ -27,9 +27,9 @@ export interface TestResult {
   wpm: number;
   xpEarned: number;
   mode: GameMode;
-  quoteText: string;      // New: Store the text typed
-  mistakes: string[];     // New: Store specific words missed
-  retryCount: number;     // New: Store attempts needed
+  quoteText: string;      
+  mistakes: string[];     
+  retryCount: number;     
 }
 
 export type MusicSource = 'NONE' | 'YOUTUBE' | 'SPOTIFY' | 'GENERATED' | 'SUNO';
@@ -47,34 +47,35 @@ export type TTSMode = 'OFF' | 'QUOTE' | 'WORD' | 'FLOW' | 'NEXT' | 'SCOUT';
 
 export interface Settings {
   ghostEnabled: boolean;
-  readAheadLevel: ReadAheadLevel; // Changed from boolean
+  readAheadLevel: ReadAheadLevel; 
   sfxEnabled: boolean;
-  mechanicalSoundEnabled: boolean; // Toggle for typing sounds
-  mechanicalSoundPreset: MechanicalSoundPreset; // Sound profile
-  ambientVolume: number; // Volume for GENERATED sources (Brown Noise, Piano, etc.)
+  mechanicalSoundEnabled: boolean; 
+  mechanicalSoundPreset: MechanicalSoundPreset; 
+  ambientVolume: number; 
   musicConfig: MusicConfig;
-  themeId: string; // New: Selected Theme ID
-  autoStartMusic: boolean; // Control whether music starts automatically on load
-  ttsMode: TTSMode; // Text-to-Speech Mode
+  themeId: string; 
+  autoStartMusic: boolean; 
+  ttsMode: TTSMode; 
 }
 
-export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'BLITZ';
+export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'BLITZ' | 'DRILL';
 
 export enum GameStatus {
   IDLE = 'IDLE',
   PLAYING = 'PLAYING',
-  COMPLETED = 'COMPLETED', // Successfully typed with 100% accuracy
-  FAILED = 'FAILED', // Typed but mistakes were present at the end
+  COMPLETED = 'COMPLETED', 
+  FAILED = 'FAILED', 
+  DRILLING = 'DRILLING'
 }
 
 export interface Theme {
   id: string;
   name: string;
   description: string;
-  minTier: string; // Tier required to unlock (e.g. 'Tadpole')
+  minTier: string; 
   colors: {
-    frog: Record<number, string>; // 50-900
-    stone: Record<number, string>; // 50-900 (Used for neutrals)
+    frog: Record<number, string>; 
+    stone: Record<number, string>; 
     background: string;
   };
 }
@@ -82,11 +83,11 @@ export interface Theme {
 export interface AchievementStats {
   wpm: number;
   totalQuotes: number;
-  maxStreak: number; // Session streak
+  maxStreak: number; 
   currentStreak: number;
   dailyStreak: number;
   mode: GameMode;
-  totalTime: number; // Seconds
+  totalTime: number; 
   arcadeScore?: number;
   arcadeWave?: number;
 }
@@ -112,6 +113,12 @@ export interface PracticeWord {
   word: string;
   proficiency: number; // 0 to 3 (3 = Mastered)
   lastPracticed: number;
+}
+
+export interface WeakWord {
+  word: string;
+  mistakeCount: number;
+  lastMistake: number;
 }
 
 export interface WordPerformance {

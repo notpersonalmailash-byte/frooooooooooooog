@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { soundEngine } from '../utils/soundEngine';
-import { Timer, Zap, RotateCcw, X, LogOut, ArrowRight, Sparkles } from 'lucide-react';
+import { Timer, Zap, RotateCcw, X, LogOut, ArrowRight, Sparkles, Brain, Target, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { fetchBlitzWords } from '../services/quoteService';
 import { PracticeWord, WordPerformance } from '../types';
 
@@ -13,7 +13,7 @@ interface BlitzGameProps {
 }
 
 const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPerformance, onExit }) => {
-  const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER'>('START');
+  const [gameState, setGameState] = useState<'START' | 'PLAYING' | 'GAMEOVER' | 'DRILL_PENALTY'>('START');
   const [timeLeft, setTimeLeft] = useState(60);
   const [words, setWords] = useState<string[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -22,10 +22,14 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
   const [correctCount, setCorrectCount] = useState(0);
   const [mistakeWords, setMistakeWords] = useState<string[]>([]);
   
+  // Drill State
+  const [drillTarget, setDrillTarget] = useState<string | null>(null);
+  const [drillCount, setDrillCount] = useState(0);
+  const DRILL_REQUIRED = 17;
+
   const wordStartTimeRef = useRef<number>(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const timerRef = useRef<number | undefined>(undefined);
-  const mistakeWordsRef = useRef<string[]>([]); // Ref to avoid stale closure issues if needed
 
   const initGame = useCallback(() => {
     const wordList = fetchBlitzWords(150, smartQueue);
@@ -36,7 +40,8 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
     setTimeLeft(60);
     setCorrectCount(0);
     setMistakeWords([]);
-    mistakeWordsRef.current = [];
+    setDrillTarget(null);
+    setDrillCount(0);
     setGameState('PLAYING');
     wordStartTimeRef.current = performance.now();
     setTimeout(() => inputRef.current?.focus(), 50);
@@ -63,69 +68,93 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (gameState === 'DRILL_PENALTY') {
+        handleDrillInput(e.target.value);
+        return;
+    }
+    
     if (gameState !== 'PLAYING') return;
     const val = e.target.value;
     const targetWord = words[currentIdx];
 
-    // 1. Check for SPACE (Next Word Completion)
-    // Priority check to allow spacebar to advance
+    // Check for space (Next Word)
     if (val.endsWith(' ')) {
         const typed = val.trim();
         if (typed === targetWord) {
-            // Success
             const now = performance.now();
             const duration = (now - wordStartTimeRef.current) / 1000;
             const wordWpm = Math.round((targetWord.length / 5) / (duration / 60));
-            
             onWordPerformance({ word: targetWord, wpm: wordWpm, isCorrect: true });
-            
             setCorrectCount(prev => prev + 1);
             setCurrentIdx(prev => prev + 1);
             setInput('');
             setIsError(false);
             soundEngine.playKeypress();
             wordStartTimeRef.current = now;
-            
-            // Check if we need more words
             if (currentIdx > words.length - 20) {
                 setWords(prev => [...prev, ...fetchBlitzWords(50, smartQueue)]);
             }
         } else {
-            // Partial word + Space = Error
-            setIsError(true);
-            soundEngine.playError();
-            // Optional: record mistake here if you want to be extra strict
+            triggerFail(targetWord);
         }
         return;
     }
 
-    // 2. Incremental Accuracy Check
-    // We only update input if the prefix remains valid
-    if (val.length > 0 && !targetWord.startsWith(val)) {
-        setIsError(true);
-        soundEngine.playError();
-        // Record mistake for deep mastery remediation at end of test
-        onWordPerformance({ word: targetWord, wpm: 0, isCorrect: false });
-        if (!mistakeWordsRef.current.includes(targetWord)) {
-            mistakeWordsRef.current = [...mistakeWordsRef.current, targetWord];
-            setMistakeWords(mistakeWordsRef.current);
-        }
-        // In Blitz, we'll block the bad character instead of wiping the whole word
-        // This is much smoother for users
+    // Incremental Accuracy Check
+    if (!targetWord.startsWith(val)) {
+        triggerFail(targetWord);
     } else {
         setIsError(false);
         setInput(val);
-        if (val.length > 0) soundEngine.playKeypress();
+        soundEngine.playKeypress();
+    }
+  };
+
+  const triggerFail = (word: string) => {
+    soundEngine.playError();
+    onWordPerformance({ word, wpm: 0, isCorrect: false });
+    setMistakeWords(prev => [...prev, word]);
+    setDrillTarget(word);
+    setDrillCount(0);
+    setGameState('DRILL_PENALTY');
+    setInput('');
+    clearInterval(timerRef.current);
+  };
+
+  const handleDrillInput = (val: string) => {
+    if (!drillTarget) return;
+
+    if (val.endsWith(' ')) {
+        const typed = val.trim();
+        if (typed === drillTarget) {
+            soundEngine.playKeypress();
+            const nextCount = drillCount + 1;
+            setDrillCount(nextCount);
+            setInput('');
+            if (nextCount >= DRILL_REQUIRED) {
+                soundEngine.playSuccess();
+                setGameState('GAMEOVER'); // After drill, Blitz run is over
+            }
+        } else {
+            soundEngine.playError();
+            setDrillCount(0);
+            setInput('');
+        }
+        return;
+    }
+
+    if (!drillTarget.startsWith(val)) {
+        soundEngine.playError();
+        setDrillCount(0);
+        setInput('');
+    } else {
+        setInput(val);
+        soundEngine.playKeypress();
     }
   };
 
   const totalChars = words.slice(0, currentIdx).reduce((acc, w) => acc + w.length + 1, 0);
   const realWpm = Math.round((totalChars / 5));
-
-  const handleFinish = () => {
-      // Pass the mistakes collected via ref/state back to parent
-      onGameOver(realWpm, Math.floor(correctCount * 1.5), mistakeWordsRef.current);
-  };
 
   if (gameState === 'START') {
       return (
@@ -135,13 +164,55 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
                       <Zap className="w-10 h-10 text-frog-600" />
                   </div>
                   <h2 className="text-4xl font-black text-stone-800 tracking-tight">BLITZ 200</h2>
-                  <p className="text-stone-500 text-lg max-w-md mx-auto">Master common words. 60 seconds on the clock. **Mistakes trigger mandatory remediation.**</p>
+                  <p className="text-stone-500 text-lg max-w-md mx-auto">Master the 200 most common English words. 60 seconds on the clock. **One mistake fails and forces a 17x repetition drill.**</p>
                   
                   <div className="flex gap-4 justify-center">
                       <button onClick={onExit} className="px-6 py-3 text-stone-400 font-bold hover:text-stone-600">Back</button>
                       <button onClick={initGame} className="px-10 py-4 bg-frog-green hover:bg-green-500 text-white font-black text-xl rounded-full shadow-lg shadow-frog-100 transition-transform hover:scale-105">START BLITZ</button>
                   </div>
               </div>
+          </div>
+      );
+  }
+
+  if (gameState === 'DRILL_PENALTY') {
+      return (
+          <div className="w-full max-w-4xl mx-auto h-[450px] bg-red-50 rounded-[3rem] border-4 border-red-200 flex flex-col items-center justify-center shadow-2xl p-10 animate-in fade-in zoom-in-95 duration-500">
+              <div className="flex items-center gap-3 mb-8">
+                  <Brain className="w-8 h-8 text-red-500 animate-pulse" />
+                  <h3 className="text-3xl font-black text-red-700 tracking-tight uppercase">Cognitive Reinforcement</h3>
+              </div>
+              
+              <p className="text-red-500 font-bold text-sm mb-12 flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4" /> Repeat the failed word <span className="underline font-black">{DRILL_REQUIRED} times</span> perfectly to clear.
+              </p>
+
+              <div className="relative group mb-8">
+                  <div className="text-7xl font-black text-red-200/50 tracking-widest select-none text-center">
+                      {drillTarget}
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center text-7xl font-black tracking-widest text-red-600">
+                      {input}
+                  </div>
+              </div>
+
+              <div className="w-full max-w-md h-4 bg-red-100 rounded-full overflow-hidden border border-red-200 mb-4">
+                  <div 
+                    className="h-full bg-red-500 transition-all duration-300 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+                    style={{ width: `${(drillCount / DRILL_REQUIRED) * 100}%` }}
+                  ></div>
+              </div>
+              <div className="text-red-600 font-black text-2xl font-mono">
+                  {drillCount} <span className="text-sm opacity-50">/</span> {DRILL_REQUIRED}
+              </div>
+
+              <input 
+                ref={inputRef}
+                value={input}
+                onChange={handleInputChange}
+                className="opacity-0 absolute inset-0 cursor-default"
+                autoFocus
+              />
           </div>
       );
   }
@@ -155,21 +226,19 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
                   
                   <div className="grid grid-cols-2 gap-8 mt-4">
                       <div className="text-center">
-                          <div className="text-xs text-stone-500 uppercase font-bold">Accuracy</div>
-                          <div className="text-xl font-mono">{mistakeWords.length === 0 ? '100%' : 'Mastery Req.'}</div>
+                          <div className="text-xs text-stone-500 uppercase font-bold">Status</div>
+                          <div className="text-xl font-mono text-frog-green flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Learned</div>
                       </div>
                       <div className="text-center">
-                          <div className="text-xs text-stone-500 uppercase font-bold">Mistakes</div>
-                          <div className={`text-xl font-mono ${mistakeWords.length > 0 ? 'text-red-400' : 'text-green-400'}`}>{mistakeWords.length}</div>
+                          <div className="text-xs text-stone-500 uppercase font-bold">Total Words</div>
+                          <div className="text-xl font-mono">{correctCount}</div>
                       </div>
                   </div>
 
                   <div className="flex gap-4 justify-center mt-12">
-                      <button onClick={handleFinish} className={`px-8 py-4 rounded-full font-black text-xl flex items-center gap-2 transition-all transform hover:scale-105 ${mistakeWords.length > 0 ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-900/50' : 'bg-frog-green hover:bg-green-500 shadow-green-900/50'}`}>
-                          {mistakeWords.length > 0 ? 'START REMEDIATION' : 'FINISH RUN'} <ArrowRight className="w-6 h-6" />
-                      </button>
+                      <button onClick={onExit} className="px-6 py-3 bg-stone-800 hover:bg-stone-700 rounded-xl font-bold flex items-center gap-2"><LogOut className="w-4 h-4" /> Exit</button>
+                      <button onClick={initGame} className="px-6 py-3 bg-frog-green hover:bg-green-500 text-white rounded-xl font-bold flex items-center gap-2"><RotateCcw className="w-4 h-4" /> New Run</button>
                   </div>
-                  {mistakeWords.length > 0 && <p className="text-[10px] text-stone-500 uppercase tracking-widest mt-4">Mandatory: 30 reps per mistake.</p>}
               </div>
           </div>
       );
@@ -177,7 +246,6 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
 
   return (
     <div className="w-full max-w-4xl mx-auto h-[450px] bg-white rounded-[3rem] border border-stone-200 shadow-xl flex flex-col relative overflow-hidden">
-        {/* HUD */}
         <div className="flex justify-between items-center p-8 border-b border-stone-100">
             <div className="flex items-center gap-6">
                 <div className="flex flex-col">
@@ -199,7 +267,6 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
             <button onClick={onExit} className="p-2 hover:bg-stone-100 rounded-full text-stone-300 transition-colors"><X className="w-6 h-6" /></button>
         </div>
 
-        {/* Word Display */}
         <div className="flex-1 p-10 flex flex-col items-center justify-center relative">
             <div className="w-full flex flex-wrap gap-x-6 gap-y-4 justify-center items-center text-3xl font-mono font-medium max-h-[160px] overflow-hidden opacity-90">
                 {words.slice(currentIdx, currentIdx + 12).map((w, i) => {
@@ -215,7 +282,6 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
                 })}
             </div>
             
-            {/* Real Input */}
             <div className="mt-12 relative w-full max-w-sm">
                 <input 
                     ref={inputRef}
@@ -225,7 +291,6 @@ const BlitzGame: React.FC<BlitzGameProps> = ({ smartQueue, onGameOver, onWordPer
                     placeholder="Type words..."
                     autoFocus
                 />
-                {isError && <div className="absolute -top-8 left-0 right-0 text-center text-xs font-bold text-red-500 animate-bounce uppercase">Mistake! Keep typing...</div>}
             </div>
         </div>
 
