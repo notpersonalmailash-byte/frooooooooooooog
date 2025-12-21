@@ -3,105 +3,51 @@ import React, { useState, useEffect, useCallback, useLayoutEffect, useRef } from
 import ProgressBar from './components/ProgressBar';
 import TypingArea from './components/TypingArea';
 import SettingsModal from './components/SettingsModal';
-import HelpModal from './components/HelpModal';
 import StatsModal from './components/StatsModal';
 import ThemeModal from './components/ThemeModal';
-import AchievementsModal from './components/AchievementsModal';
-import AchievementToast from './components/AchievementToast';
-import SurvivalGame from './components/SurvivalGame';
-import TimeAttackGame from './components/TimeAttackGame';
-import CosmicDefenseGame from './components/CosmicDefenseGame';
-import TenFastGame from './components/BlitzGame';
 import MiniGameMenu from './components/MiniGameMenu';
+import TenFastGame from './components/BlitzGame'; // Import the sprint component
 import { MusicPlayer } from './components/MusicPlayer';
-import { Quote, Settings, GameMode, TestResult, NotificationItem, ReadAheadLevel, PracticeWord, AchievementStats, TTSMode, WordPerformance, WeakWord } from './types';
+import { Quote, Settings, GameMode, TestResult, NotificationItem, StrictRemediation, WordDrill, WordPerformance, WeakWord } from './types';
 import { fetchQuotes } from './services/quoteService';
-import { getCurrentLevel, getNextLevel, getAverageWPM, LEVELS, calculateXP, checkLevelProgress } from './utils/gameLogic';
+import { getCurrentLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, CircleHelp, Skull, BookOpen, Eraser, TrendingUp, Palette, Award, Radio, Lock, Eye, EyeOff, Flame, AlertTriangle, ArrowRight, Keyboard, ArrowUpCircle, Gamepad2, Brain, RefreshCcw, FileText, User, Leaf, Sparkles, Speech, Zap } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, Skull, BookOpen, Eraser, Palette, Gamepad2, Brain, Zap, Lock, RotateCcw, ShieldAlert, User, CheckCircle2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
-import { ACHIEVEMENTS } from './data/achievements';
-import { RADIO_STATIONS } from './data/radioStations';
 
 const App: React.FC = () => {
   const [userName, setUserName] = useState<string>(() => localStorage.getItem('frogType_userName') || 'Froggy');
-  const [joinDate, setJoinDate] = useState<string>(() => {
-      const stored = localStorage.getItem('frogType_joinDate');
-      if (stored) return stored;
-      const now = new Date().toISOString();
-      localStorage.setItem('frogType_joinDate', now);
-      return now;
-  });
-  const [totalTimePlayed, setTotalTimePlayed] = useState<number>(() => {
-      const stored = localStorage.getItem('frogType_totalTime');
-      return stored ? parseInt(stored, 10) : 0;
-  });
-  const [userXP, setUserXP] = useState<number>(() => {
-    const saved = localStorage.getItem('frogXP');
-    return saved ? parseInt(saved, 10) : 0;
-  });
+  const [joinDate, setJoinDate] = useState<string>(() => localStorage.getItem('frogType_joinDate') || new Date().toISOString());
+  const [userXP, setUserXP] = useState<number>(() => parseInt(localStorage.getItem('frogXP') || '0', 10));
   
-  const currentLevel = getCurrentLevel(userXP);
-  const [unlockedTiers, setUnlockedTiers] = useState<string[]>(() => {
-    const saved = localStorage.getItem('frogType_unlockedTiers');
+  const [masteredQuotes, setMasteredQuotes] = useState<string[]>(() => {
+    const saved = localStorage.getItem('frogType_masteredQuotes');
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [streak, setStreak] = useState<number>(() => {
-    const saved = localStorage.getItem('frogType_streak');
-    return saved ? parseInt(saved, 10) : 0;
-  });
-  const [dailyStreak, setDailyStreak] = useState<number>(() => {
-     const saved = localStorage.getItem('frogType_dailyStreak');
-     return saved ? parseInt(saved, 10) : 0;
-  });
-  const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>(() => {
-    const saved = localStorage.getItem('frogType_achievements');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [practiceLevel, setPracticeLevel] = useState<number>(() => parseInt(localStorage.getItem('frogType_practiceLevel') || '0', 10));
-  const [smartPracticeQueue, setSmartPracticeQueue] = useState<PracticeWord[]>(() => {
-      const saved = localStorage.getItem('frogType_smartQueue');
-      return saved ? JSON.parse(saved) : [];
-  });
-  const [weakWords, setWeakWords] = useState<WeakWord[]>(() => {
-      const saved = localStorage.getItem('frogType_weakWords');
-      return saved ? JSON.parse(saved) : [];
-  });
-  const [failedQuoteRepetitions, setFailedQuoteRepetitions] = useState<Record<string, number>>(() => {
-      const saved = localStorage.getItem('frogType_remediations');
-      return saved ? JSON.parse(saved) : {};
+  const [strictRemediation, setStrictRemediation] = useState<StrictRemediation | null>(() => {
+    const saved = localStorage.getItem('frogType_strictRemediation');
+    return saved ? JSON.parse(saved) : null;
   });
 
-  // Forced Drill State for 10 Fast mistakes (Persistent across reloads)
-  const [pendingTenFastDrill, setPendingTenFastDrill] = useState<string | null>(() => localStorage.getItem('frogType_pendingDrill'));
+  const [pendingWordDrill, setPendingWordDrill] = useState<WordDrill | null>(() => {
+    const saved = localStorage.getItem('frogType_pendingWordDrill');
+    return saved ? JSON.parse(saved) : null;
+  });
 
-  const [notificationQueue, setNotificationQueue] = useState<NotificationItem[]>([]);
-  const [wpmHistory, setWpmHistory] = useState<number[]>(() => {
-    const saved = localStorage.getItem('frogType_wpmHistory');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [testHistory, setTestHistory] = useState<TestResult[]>(() => {
-    const saved = localStorage.getItem('frogType_history');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [lastWpm, setLastWpm] = useState<number>(() => parseInt(localStorage.getItem('frogType_lastWpm') || '0', 10));
-  const [mistakePool, setMistakePool] = useState<string[]>(() => {
-    const saved = localStorage.getItem('frogType_mistakes');
-    return saved ? JSON.parse(saved) : [];
-  });
-  const [charStats, setCharStats] = useState<Record<string, number>>(() => {
-    const saved = localStorage.getItem('frogType_charStats');
-    return saved ? JSON.parse(saved) : {};
-  });
+  const [streak, setStreak] = useState<number>(() => parseInt(localStorage.getItem('frogType_streak') || '0', 10));
+  const [wpmHistory, setWpmHistory] = useState<number[]>(() => JSON.parse(localStorage.getItem('frogType_wpmHistory') || '[]'));
+  const [testHistory, setTestHistory] = useState<TestResult[]>(() => JSON.parse(localStorage.getItem('frogType_history') || '[]'));
+  const [mistakePool, setMistakePool] = useState<string[]>(() => JSON.parse(localStorage.getItem('frogType_mistakes') || '[]'));
+  const [gameMode, setGameMode] = useState<GameMode>(() => (localStorage.getItem('frogType_gameMode') as GameMode) || 'QUOTES');
   
   const [settings, setSettings] = useState<Settings>(() => {
     const saved = localStorage.getItem('frogType_settings');
     const parsed = saved ? JSON.parse(saved) : {};
-    const mergedSettings: Settings = {
+    return {
       ghostEnabled: false, 
-      readAheadLevel: parsed.readAheadLevel || 'NONE', 
+      readAheadLevel: 'NONE', 
       sfxEnabled: true,
       mechanicalSoundEnabled: false,
       mechanicalSoundPreset: 'THOCK',
@@ -109,66 +55,29 @@ const App: React.FC = () => {
       musicConfig: { source: 'NONE', presetId: '' },
       themeId: 'CLASSIC',
       autoStartMusic: true,
-      ttsMode: parsed.ttsMode || 'OFF',
+      ttsMode: 'OFF',
       ...parsed
     };
-    if (mergedSettings.autoStartMusic && mergedSettings.musicConfig.source === 'NONE') {
-        mergedSettings.musicConfig = { source: 'GENERATED', presetId: 'PIANO_SATIE' };
-    }
-    return mergedSettings;
   });
 
-  const [gameMode, setGameMode] = useState<GameMode>(() => (localStorage.getItem('frogType_gameMode') as GameMode) || 'QUOTES');
-  const [isMiniGameMenuOpen, setIsMiniGameMenuOpen] = useState(false);
-  const [activeMiniGame, setActiveMiniGame] = useState<string | null>(null);
-  const [completedQuotes, setCompletedQuotes] = useState<string[]>(() => {
-    const saved = localStorage.getItem('frogType_completedQuotes');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [currentQuote, setCurrentQuote] = useState<Quote | null>(null);
   const [quotesQueue, setQuotesQueue] = useState<Quote[]>([]);
-  const [currentQuote, setCurrentQuote] = useState<Quote | null>(() => {
-    const saved = localStorage.getItem('frogType_currentQuote');
-    return saved ? JSON.parse(saved) : null;
-  });
   const [loading, setLoading] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isMusicOpen, setIsMusicOpen] = useState(false);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [isAchievementsOpen, setIsAchievementsOpen] = useState(false);
-  const [shouldAutoFocus, setShouldAutoFocus] = useState(false);
-  const [quoteStartTime, setQuoteStartTime] = useState<number | null>(null);
-  const isFetchingRef = useRef(false);
 
   useEffect(() => { localStorage.setItem('frogXP', userXP.toString()); }, [userXP]);
-  useEffect(() => { localStorage.setItem('frogType_unlockedTiers', JSON.stringify(unlockedTiers)); }, [unlockedTiers]);
-  useEffect(() => { localStorage.setItem('frogType_streak', streak.toString()); }, [streak]);
-  useEffect(() => { localStorage.setItem('frogType_dailyStreak', dailyStreak.toString()); }, [dailyStreak]);
-  useEffect(() => { localStorage.setItem('frogType_lastWpm', lastWpm.toString()); }, [lastWpm]);
-  useEffect(() => { localStorage.setItem('frogType_wpmHistory', JSON.stringify(wpmHistory)); }, [wpmHistory]);
+  useEffect(() => { localStorage.setItem('frogType_masteredQuotes', JSON.stringify(masteredQuotes)); }, [masteredQuotes]);
+  useEffect(() => { localStorage.setItem('frogType_strictRemediation', JSON.stringify(strictRemediation)); }, [strictRemediation]);
+  useEffect(() => { localStorage.setItem('frogType_pendingWordDrill', JSON.stringify(pendingWordDrill)); }, [pendingWordDrill]);
   useEffect(() => { localStorage.setItem('frogType_history', JSON.stringify(testHistory)); }, [testHistory]);
   useEffect(() => { localStorage.setItem('frogType_settings', JSON.stringify(settings)); }, [settings]);
   useEffect(() => { localStorage.setItem('frogType_mistakes', JSON.stringify(mistakePool)); }, [mistakePool]);
-  useEffect(() => { localStorage.setItem('frogType_smartQueue', JSON.stringify(smartPracticeQueue)); }, [smartPracticeQueue]);
-  useEffect(() => { localStorage.setItem('frogType_weakWords', JSON.stringify(weakWords)); }, [weakWords]);
-  useEffect(() => { localStorage.setItem('frogType_charStats', JSON.stringify(charStats)); }, [charStats]);
-  useEffect(() => { localStorage.setItem('frogType_userName', userName); }, [userName]);
-  useEffect(() => { localStorage.setItem('frogType_totalTime', totalTimePlayed.toString()); }, [totalTimePlayed]);
-  useEffect(() => { localStorage.setItem('frogType_practiceLevel', practiceLevel.toString()); }, [practiceLevel]);
-  useEffect(() => { localStorage.setItem('frogType_remediations', JSON.stringify(failedQuoteRepetitions)); }, [failedQuoteRepetitions]);
+  useEffect(() => { localStorage.setItem('frogType_streak', streak.toString()); }, [streak]);
+  useEffect(() => { localStorage.setItem('frogType_wpmHistory', JSON.stringify(wpmHistory)); }, [wpmHistory]);
   useEffect(() => { localStorage.setItem('frogType_gameMode', gameMode); }, [gameMode]);
-  useEffect(() => { localStorage.setItem('frogType_completedQuotes', JSON.stringify(completedQuotes)); }, [completedQuotes]);
-  useEffect(() => { localStorage.setItem('frogType_achievements', JSON.stringify(unlockedAchievements)); }, [unlockedAchievements]);
-  
-  useEffect(() => {
-    soundEngine.setEnabled(settings.sfxEnabled);
-    soundEngine.setMechanicalEnabled(settings.mechanicalSoundEnabled);
-    soundEngine.setMechanicalPreset(settings.mechanicalSoundPreset);
-    soundEngine.setAmbientVolume(settings.ambientVolume);
-    if (settings.musicConfig.source === 'GENERATED') soundEngine.setAmbientMusic(settings.musicConfig.presetId);
-    else soundEngine.stopAmbientMusic();
-  }, [settings.sfxEnabled, settings.mechanicalSoundEnabled, settings.mechanicalSoundPreset, settings.ambientVolume, settings.musicConfig]);
 
   useLayoutEffect(() => {
     const theme = THEMES.find(t => t.id === settings.themeId) || THEMES[0];
@@ -179,220 +88,208 @@ const App: React.FC = () => {
     root.style.setProperty('--text-body', theme.colors.stone[800]);
   }, [settings.themeId]);
 
-  useEffect(() => {
-    if (currentQuote) {
-      localStorage.setItem('frogType_currentQuote', JSON.stringify(currentQuote)); 
-      setQuoteStartTime(Date.now());
-    } else localStorage.removeItem('frogType_currentQuote');
-  }, [currentQuote]);
-
-  const handleWordPerformance = useCallback((perf: WordPerformance) => {
-      const avgWpm = getAverageWPM(wpmHistory) || 40;
-      const slowThreshold = avgWpm * 0.7; 
-      
-      if (!perf.isCorrect) {
-          setWeakWords(prev => {
-              const existing = prev.find(w => w.word === perf.word);
-              if (existing) {
-                  return prev.map(w => w.word === perf.word ? { ...w, mistakeCount: w.mistakeCount + 1, lastMistake: Date.now() } : w);
-              }
-              return [...prev, { word: perf.word, mistakeCount: 1, lastMistake: Date.now() }];
-          });
-          setMistakePool(prev => [...new Set([...prev, perf.word])]);
-      }
-
-      setSmartPracticeQueue(prev => {
-          const idx = prev.findIndex(p => p.word === perf.word);
-          const isActuallyCorrect = perf.isCorrect && perf.wpm > slowThreshold;
-          
-          if (idx !== -1) {
-              const updated = [...prev];
-              if (!isActuallyCorrect) {
-                  updated[idx] = { ...updated[idx], proficiency: 0, lastPracticed: Date.now() };
-              } else {
-                  const newProf = Math.min(3, updated[idx].proficiency + 1);
-                  updated[idx] = { ...updated[idx], proficiency: newProf, lastPracticed: Date.now() };
-                  if (newProf === 3) {
-                      setMistakePool(m => m.filter(word => word !== perf.word));
-                      setWeakWords(ww => ww.filter(item => item.word !== perf.word));
-                  }
-              }
-              return updated;
-          } else if (!isActuallyCorrect) {
-              return [...prev, { word: perf.word, proficiency: 0, lastPracticed: Date.now() }];
-          }
-          return prev;
-      });
-  }, [wpmHistory]);
-
   const loadMoreQuotes = useCallback(async () => {
-    if (isFetchingRef.current) return;
-    if (gameMode === 'MINIGAMES' || gameMode === 'XWORDS' || gameMode === 'XQUOTES' || gameMode === 'TEN_FAST') return; 
-    isFetchingRef.current = true;
+    if (loading || strictRemediation || gameMode !== 'QUOTES') return;
+    setLoading(true);
     try {
-      const level = getCurrentLevel(userXP);
-      const newQuotes = await fetchQuotes(5, completedQuotes, level.name, gameMode, practiceLevel, charStats, smartPracticeQueue);
+      const newQuotes = await fetchQuotes(5, masteredQuotes);
       setQuotesQueue(prev => [...prev, ...newQuotes]);
-    } catch (error) { console.error("Failed to load quotes", error); } 
-    finally { isFetchingRef.current = false; }
-  }, [completedQuotes, userXP, gameMode, practiceLevel, charStats, smartPracticeQueue]);
+    } catch (e) { console.error(e); } 
+    finally { setLoading(false); }
+  }, [masteredQuotes, strictRemediation, loading, gameMode]);
 
   useEffect(() => {
-    const init = async () => {
-      if (!currentQuote && quotesQueue.length === 0 && !['MINIGAMES', 'XWORDS', 'XQUOTES', 'TEN_FAST'].includes(gameMode)) {
-         setLoading(true); await loadMoreQuotes(); setLoading(false);
-      } else if (quotesQueue.length < 3 && !['MINIGAMES', 'XWORDS', 'XQUOTES', 'TEN_FAST'].includes(gameMode)) loadMoreQuotes();
-    };
-    init();
-  }, [gameMode, currentQuote, quotesQueue.length, loadMoreQuotes]);
+    if (gameMode === 'QUOTES' && !currentQuote && !strictRemediation && !pendingWordDrill && quotesQueue.length === 0) {
+        loadMoreQuotes();
+    }
+  }, [currentQuote, strictRemediation, pendingWordDrill, quotesQueue.length, loadMoreQuotes, gameMode]);
 
   useEffect(() => {
-    if (currentQuote || ['MINIGAMES', 'TEN_FAST'].includes(gameMode)) return;
-    if (gameMode === 'XWORDS') {
-      if (mistakePool.length > 0) {
-          const selected = mistakePool.sort(() => 0.5 - Math.random()).slice(0, 12).join(' ');
-          setCurrentQuote({ text: selected, source: "Mastery", author: "Drilling Mistakes" });
-      } else setGameMode('QUOTES');
-    } else if (gameMode === 'XQUOTES') {
-      const keys = Object.keys(failedQuoteRepetitions);
-      if (keys.length > 0) {
-          const q = keys[0];
-          setCurrentQuote({ text: q, source: "Remediation", author: `Retry Required (${failedQuoteRepetitions[q]} left)` });
-      } else setGameMode('QUOTES');
-    } else if (quotesQueue.length > 0) {
-        setCurrentQuote(quotesQueue[0]);
-        setQuotesQueue(prev => prev.slice(1));
+    if (gameMode === 'QUOTES' && !currentQuote && !pendingWordDrill) {
+        if (strictRemediation) {
+            setCurrentQuote({ text: strictRemediation.quoteText, source: strictRemediation.source, author: `Repetition ${strictRemediation.currentCount + 1}/${strictRemediation.requiredCount}` });
+        } else if (quotesQueue.length > 0) {
+            setCurrentQuote(quotesQueue[0]);
+            setQuotesQueue(prev => prev.slice(1));
+        }
     }
-  }, [currentQuote, quotesQueue, gameMode, failedQuoteRepetitions, mistakePool]);
+  }, [currentQuote, quotesQueue, strictRemediation, pendingWordDrill, gameMode]);
 
-  const handleXPGain = (amount: number, currentAvgWpm: number) => {
-    let potentialXp = userXP + amount;
-    // Gating Fix: Removing the potentialXp cap logic.
-    const newLevel = getCurrentLevel(potentialXp);
-    if (newLevel.tier !== currentLevel.tier && potentialXp >= newLevel.minXP) {
-          setTimeout(() => {
-              confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 }, colors: ['#40D672', '#22c55e', '#fbbf24', '#f59e0b'] });
-              soundEngine.playLevelUp(); 
-          }, 300);
-    }
-    setUserXP(potentialXp);
-    setStreak(prev => prev + 1);
-  };
-
-  const handleQuoteComplete = (xpCalc: number, wpm: number, mistakes: string[], retryCount: number) => {
-    handleXPGain(xpCalc, getAverageWPM(wpmHistory));
-    setWpmHistory(prev => [...prev, wpm].slice(-10));
-    setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xpCalc, mode: gameMode, quoteText: currentQuote?.text || "", mistakes, retryCount }]);
-    if (currentQuote && !['XWORDS', 'XQUOTES', 'TEN_FAST'].includes(gameMode)) setCompletedQuotes(prev => [...prev, currentQuote.text]);
-    setLastWpm(wpm);
-    setCurrentQuote(null);
-    setShouldAutoFocus(true);
-  };
-
-  const handleTenFastComplete = (wpm: number, xp: number, mistakes: string[]) => {
-      handleXPGain(xp, getAverageWPM(wpmHistory));
-      setWpmHistory(prev => [...prev, wpm].slice(-10));
-      setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xp, mode: 'TEN_FAST', quoteText: "10-Fast Run", mistakes, retryCount: 0 }]);
-      setLastWpm(wpm);
-      setPendingTenFastDrill(null); // Clear local state lock
-  };
-
-  const handleArcadeComplete = (score: number, xp: number, arcadeWave: number = 0, variant: string = 'Arcade') => {
-      handleXPGain(xp, getAverageWPM(wpmHistory));
-      setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm: score, xpEarned: xp, mode: 'MINIGAMES', quoteText: `${variant} - Wave ${arcadeWave}`, mistakes: [], retryCount: 0 }]);
-  };
-
-  const switchMode = useCallback((mode: GameMode) => {
-    setShouldAutoFocus(false);
-    if (mode === 'MINIGAMES') setIsMiniGameMenuOpen(true);
-    else {
-        setIsMiniGameMenuOpen(false);
-        setActiveMiniGame(null);
-        setGameMode(mode);
-        setQuotesQueue([]); 
-        setCurrentQuote(null); 
+  const handleMistake = useCallback((word?: string) => {
+    if (word) {
+        const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
+        if (cleanWord.length > 0) {
+          setPendingWordDrill({ word: cleanWord, requiredCount: 15, currentCount: 0 });
+          soundEngine.playError();
+        }
     }
   }, []);
 
-  const remediationCount = Object.keys(failedQuoteRepetitions).length;
+  const handleQuoteComplete = (xp: number, wpm: number, mistakes: string[], retryCount: number) => {
+    const isPerfect = mistakes.length === 0 && retryCount === 0;
+
+    if (strictRemediation) {
+        const nextCount = strictRemediation.currentCount + 1;
+        if (nextCount >= strictRemediation.requiredCount) {
+            setStrictRemediation(null);
+            soundEngine.playLevelUp();
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        } else {
+            setStrictRemediation({ ...strictRemediation, currentCount: nextCount });
+        }
+        setCurrentQuote(null);
+    } else {
+        if (isPerfect) {
+            setMasteredQuotes(prev => [...prev, currentQuote?.text || ""]);
+            setUserXP(prev => prev + xp);
+            setStreak(prev => prev + 1);
+            soundEngine.playSuccess();
+        } else {
+            setStrictRemediation({
+                quoteText: currentQuote?.text || "",
+                author: currentQuote?.author || "",
+                source: "Strict Mastery Required",
+                requiredCount: 3,
+                currentCount: 0
+            });
+            setStreak(0);
+        }
+        setWpmHistory(prev => [...prev, wpm].slice(-10));
+        setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xp, mode: gameMode, quoteText: currentQuote?.text || "", mistakes, retryCount }]);
+        setCurrentQuote(null);
+    }
+  };
+
+  const handleDrillInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!pendingWordDrill) return;
+    const val = e.target.value;
+    const target = pendingWordDrill.word;
+
+    if (val.endsWith(' ')) {
+        const typed = val.trim().toLowerCase();
+        if (typed === target) {
+            const nextCount = pendingWordDrill.currentCount + 1;
+            if (nextCount >= pendingWordDrill.requiredCount) {
+                setPendingWordDrill(null);
+                soundEngine.playSuccess();
+            } else {
+                setPendingWordDrill({ ...pendingWordDrill, currentCount: nextCount });
+                soundEngine.playKeypress();
+            }
+        } else {
+            setPendingWordDrill({ ...pendingWordDrill, currentCount: 0 });
+            soundEngine.playError();
+        }
+        e.target.value = '';
+    } else if (!target.startsWith(val.toLowerCase())) {
+        setPendingWordDrill({ ...pendingWordDrill, currentCount: 0 });
+        soundEngine.playError();
+        e.target.value = '';
+    } else {
+        soundEngine.playKeypress();
+    }
+  };
+
+  const isLocked = !!pendingWordDrill || !!strictRemediation;
   const avgWpmVal = getAverageWPM(wpmHistory);
 
   return (
-    <div className="min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200">
-      <div className="sticky top-0 z-40 flex flex-col shadow-sm transition-all">
-          <header className={`w-full bg-stone-50/95 backdrop-blur-md border-b border-stone-200 px-6 py-3 transition-opacity ${pendingTenFastDrill ? 'opacity-30 pointer-events-none grayscale' : 'opacity-100'}`}>
-            <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
-                <h1 className="text-xl font-black text-frog-green tracking-tight flex items-center gap-2 flex-shrink-0">
-                  <span className="text-2xl">🐸</span> Frog Type
-                </h1>
-                <div className="flex gap-1 p-1 bg-stone-100/80 rounded-lg shadow-inner border border-stone-200/50 overflow-x-auto max-w-full">
-                  <button onClick={() => switchMode('QUOTES')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${gameMode === 'QUOTES' && !isMiniGameMenuOpen ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' : 'text-stone-400 hover:bg-stone-200/50'}`}>
-                      <BookOpen className="w-3.5 h-3.5" /> Quotes
-                  </button>
-                  <button onClick={() => switchMode('TEN_FAST')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${gameMode === 'TEN_FAST' && !isMiniGameMenuOpen ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' : 'text-stone-400 hover:bg-stone-200/50'}`}>
-                      <Zap className="w-3.5 h-3.5" /> 10 Fast
-                  </button>
-                  <button onClick={() => switchMode('PRACTICE')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${gameMode === 'PRACTICE' && !isMiniGameMenuOpen ? 'bg-white text-frog-green shadow-sm ring-1 ring-stone-200' : 'text-stone-400 hover:bg-stone-200/50'}`}>
-                      <FileText className="w-3.5 h-3.5" /> Words
-                  </button>
-                  <button onClick={() => switchMode('HARDCORE')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${gameMode === 'HARDCORE' && !isMiniGameMenuOpen ? 'bg-stone-800 text-white' : 'text-stone-400 hover:bg-stone-200/50'}`}>
-                      <Skull className="w-3.5 h-3.5" /> Hardcore
-                  </button>
-                  <button onClick={() => switchMode('MINIGAMES')} className={`px-3 py-1.5 rounded-md text-xs font-bold flex items-center gap-1.5 transition-all ${isMiniGameMenuOpen ? 'bg-purple-100 text-purple-600' : 'text-stone-400 hover:bg-stone-200/50'}`}>
-                      <Gamepad2 className="w-3.5 h-3.5" /> Arcade
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                   <button onClick={() => setIsMusicOpen(!isMusicOpen)} className={`p-2 rounded-full transition-colors ${settings.musicConfig.source !== 'NONE' ? 'text-frog-green' : 'text-stone-400'}`}><Music className="w-5 h-5" /></button>
-                   <button onClick={() => setIsStatsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600"><User className="w-5 h-5" /></button>
-                   <button onClick={() => setIsThemeOpen(true)} className="p-2 text-stone-400 hover:text-stone-600"><Palette className="w-5 h-5" /></button>
-                   <button onClick={() => setIsSettingsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600"><SettingsIcon className="w-5 h-5" /></button>
-              </div>
-            </div>
-          </header>
-      </div>
-      
-      <main className="flex-grow flex flex-col items-center justify-center p-6 md:p-12 w-full relative pb-32">
-        {pendingTenFastDrill ? (
-            <div className="w-full animate-in zoom-in-95 duration-500">
-                <TenFastGame 
-                    smartQueue={smartPracticeQueue} 
-                    onGameOver={handleTenFastComplete} 
-                    onWordPerformance={handleWordPerformance} 
-                    onExit={() => {}} // Exit is locked
-                    initialDrillWord={pendingTenFastDrill} 
-                />
-                <div className="mt-8 text-center bg-red-500/10 p-4 rounded-2xl border border-red-500/20 max-w-lg mx-auto">
-                    <p className="text-red-600 font-bold text-sm flex items-center justify-center gap-2">
-                        <Lock className="w-4 h-4" /> Navigation Locked. Complete Cognitive Reinforcement to continue.
-                    </p>
+    <div className={`min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200 ${isLocked ? 'bg-amber-50/20' : ''}`}>
+      <header className={`sticky top-0 z-40 bg-stone-50/95 backdrop-blur-md border-b border-stone-200 px-6 py-3 transition-all ${isLocked ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
+          <h1 className="text-xl font-black text-frog-green tracking-tight flex items-center gap-2">
+            <span className="text-2xl">🐸</span> Frog Type
+          </h1>
+          <div className="flex gap-2">
+             <button onClick={() => setGameMode('QUOTES')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-white text-frog-green shadow-sm' : 'text-stone-400 hover:bg-stone-200'}`}><BookOpen className="w-4 h-4" /></button>
+             <button onClick={() => setGameMode('TEN_FAST')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-white text-frog-green shadow-sm' : 'text-stone-400 hover:bg-stone-200'}`}><Zap className="w-4 h-4" /></button>
+             <button onClick={() => setIsStatsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600"><User className="w-5 h-5" /></button>
+             <button onClick={() => setIsThemeOpen(true)} className="p-2 text-stone-400 hover:text-stone-600"><Palette className="w-5 h-5" /></button>
+             <button onClick={() => setIsSettingsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600"><SettingsIcon className="w-5 h-5" /></button>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-grow flex flex-col items-center justify-center p-6 relative">
+        {pendingWordDrill ? (
+            <div className="w-full max-w-2xl bg-red-50 p-12 rounded-[3rem] border-4 border-red-100 shadow-2xl text-center animate-in zoom-in-95 duration-300">
+                <div className="flex flex-col items-center gap-6">
+                    <Brain className="w-16 h-16 text-red-500 animate-pulse" />
+                    <h2 className="text-4xl font-black text-red-700 tracking-tight">STRICT DISCIPLINE</h2>
+                    <p className="text-red-500 font-bold">Repeat the word <span className="underline font-black text-2xl">{pendingWordDrill.word}</span> 15 times to continue.</p>
+                    
+                    <div className="relative mt-8 group">
+                        <div className="text-7xl font-black text-red-200/40 tracking-widest uppercase">{pendingWordDrill.word}</div>
+                        <input 
+                            autoFocus 
+                            className="absolute inset-0 bg-transparent text-center text-7xl font-black tracking-widest text-red-600 outline-none uppercase" 
+                            onChange={handleDrillInput} 
+                        />
+                    </div>
+                    
+                    <div className="mt-8 flex flex-col items-center">
+                        <div className="text-red-400 font-black text-3xl font-mono">{pendingWordDrill.currentCount} / {pendingWordDrill.requiredCount}</div>
+                        <div className="w-64 h-3 bg-red-100 rounded-full mt-2 overflow-hidden border border-red-200">
+                            <div className="h-full bg-red-500 transition-all" style={{ width: `${(pendingWordDrill.currentCount/15)*100}%` }}></div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        ) : gameMode === 'TEN_FAST' ? (
+            <TenFastGame 
+                smartQueue={[]} 
+                onGameOver={(wpm, xp) => {
+                    setUserXP(prev => prev + xp);
+                    setWpmHistory(prev => [...prev, wpm].slice(-10));
+                    soundEngine.playSuccess();
+                }}
+                onWordPerformance={() => {}}
+                onExit={() => setGameMode('QUOTES')}
+                onMistake={handleMistake}
+            />
         ) : (
             <>
-                {isMiniGameMenuOpen ? <MiniGameMenu onSelect={(id) => { setActiveMiniGame(id); setIsMiniGameMenuOpen(false); }} onBack={() => setIsMiniGameMenuOpen(false)} /> :
-                 activeMiniGame ? (
-                   activeMiniGame === 'SURVIVAL_SWAMP' ? <SurvivalGame variant="SWAMP" onGameOver={(score, xp) => handleArcadeComplete(score, xp, 0, 'Swamp Survival')} onExit={() => setActiveMiniGame(null)} /> : 
-                   activeMiniGame === 'SURVIVAL_ZOMBIE' ? <SurvivalGame variant="ZOMBIE" onGameOver={(score, xp) => handleArcadeComplete(score, xp, 0, 'Outbreak Z')} onExit={() => setActiveMiniGame(null)} /> : 
-                   activeMiniGame === 'COSMIC_DEFENSE' ? <CosmicDefenseGame onGameOver={(score, xp, wave) => handleArcadeComplete(score, xp, wave, 'Cosmic Defense')} onExit={() => setActiveMiniGame(null)} /> :
-                   activeMiniGame === 'TIME_ATTACK' ? <TimeAttackGame onGameOver={(score, xp) => handleArcadeComplete(score, xp, 0, 'Speed Rush')} onExit={() => setActiveMiniGame(null)} /> : null
-                 ) :
-                 gameMode === 'TEN_FAST' ? <TenFastGame smartQueue={smartPracticeQueue} onGameOver={handleTenFastComplete} onWordPerformance={handleWordPerformance} onExit={() => setGameMode('QUOTES')} /> :
-                 currentQuote ? <TypingArea quote={currentQuote} onComplete={handleQuoteComplete} onFail={() => setStreak(0)} onMistake={() => {}} onWordComplete={handleWordPerformance} onRequestNewQuote={() => setCurrentQuote(null)} streak={streak} ghostWpm={avgWpmVal} settings={settings} gameMode={gameMode} autoFocus={shouldAutoFocus} /> :
-                 <div className="flex flex-col items-center text-stone-400"><Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" /><p className="font-mono text-xs">Hatching wisdom...</p></div>}
+                {strictRemediation && (
+                    <div className="mb-8 flex items-center gap-3 bg-amber-100 text-amber-800 px-6 py-3 rounded-full border border-amber-200 animate-bounce">
+                        <ShieldAlert className="w-5 h-5" />
+                        <span className="font-black tracking-tight uppercase text-sm">Strict Mastery Required: Complete 3x perfectly to unlock.</span>
+                    </div>
+                )}
+                {currentQuote ? (
+                    <TypingArea 
+                        quote={currentQuote} 
+                        onComplete={handleQuoteComplete} 
+                        onFail={() => { setStreak(0); if (!strictRemediation) setStrictRemediation({ quoteText: currentQuote.text, author: currentQuote.author, source: "Mistake Penalty", requiredCount: 3, currentCount: 0 }); }}
+                        onMistake={handleMistake} 
+                        onRequestNewQuote={() => setCurrentQuote(null)}
+                        streak={streak} 
+                        ghostWpm={avgWpmVal} 
+                        settings={settings} 
+                        gameMode={gameMode} 
+                    />
+                ) : (
+                    <div className="flex flex-col items-center text-stone-400">
+                        <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" />
+                        <p className="font-mono text-xs italic">Seeking wisdom...</p>
+                    </div>
+                )}
             </>
         )}
       </main>
 
-      <div className={`fixed bottom-0 left-0 right-0 z-50 bg-[var(--bg-body)] border-t border-stone-200/50 px-6 py-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-opacity ${pendingTenFastDrill ? 'opacity-30 grayscale pointer-events-none' : 'opacity-100'}`}>
-           <div className="max-w-[1400px] mx-auto"><ProgressBar xp={userXP} avgWpm={avgWpmVal} mistakeCount={mistakePool.length} remediationCount={remediationCount} /></div>
-      </div>
+      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-stone-200">
+           <div className="max-w-[1400px] mx-auto flex items-center justify-between">
+                <ProgressBar xp={userXP} avgWpm={avgWpmVal} mistakeCount={mistakePool.length} />
+                <div className="flex gap-8 ml-8 shrink-0">
+                    <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase">Mastered</span><span className="font-bold text-frog-green">{masteredQuotes.length}</span></div>
+                    <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase">Streak</span><span className="font-bold text-orange-500">{streak}</span></div>
+                </div>
+           </div>
+      </footer>
 
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} settings={settings} setSettings={setSettings} />
-      <ThemeModal isOpen={isThemeOpen} onClose={() => setIsThemeOpen(false)} currentThemeId={settings.themeId} setThemeId={(id) => setSettings({ ...settings, themeId: id })} currentLevel={currentLevel} allLevels={LEVELS} />
-      <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} avgWpm={avgWpmVal} history={testHistory} onPractice={(mistakes) => { setMistakePool(m => [...new Set([...m, ...mistakes])]); switchMode('XWORDS'); }} totalTime={totalTimePlayed} joinDate={joinDate} streak={dailyStreak} userName={userName} setUserName={setUserName} completedTestsCount={testHistory.length} userXP={userXP} />
+      <ThemeModal isOpen={isThemeOpen} onClose={() => setIsThemeOpen(false)} currentThemeId={settings.themeId} setThemeId={(id) => setSettings({ ...settings, themeId: id })} currentLevel={getCurrentLevel(userXP)} allLevels={LEVELS} />
+      <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} avgWpm={avgWpmVal} history={testHistory} onPractice={() => {}} totalTime={0} joinDate={joinDate} streak={streak} userName={userName} setUserName={setUserName} completedTestsCount={testHistory.length} userXP={userXP} />
       <MusicPlayer isOpen={isMusicOpen} onClose={() => setIsMusicOpen(false)} settings={settings} setSettings={setSettings} userXP={userXP} />
     </div>
   );

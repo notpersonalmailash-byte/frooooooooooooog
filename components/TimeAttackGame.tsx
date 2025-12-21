@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { soundEngine } from '../utils/soundEngine';
 import { Timer, Trophy, RotateCcw, X, Zap, Clock, LogOut } from 'lucide-react';
@@ -29,7 +30,8 @@ const TimeAttackGame: React.FC<TimeAttackGameProps> = ({ onGameOver, onExit }) =
   const startGame = async () => {
     setIsLoading(true);
     // Generate pool
-    const quotes = await fetchQuotes(30, [], 'Tadpole', 'QUOTES'); 
+    /* Fixed fetchQuotes arguments to match definition (count, masteredQuoteTexts) */
+    const quotes = await fetchQuotes(30, []); 
     // Flatten quotes into words for speed typing, remove punctuation
     const allWords = quotes
         .map(q => q.text.split(' '))

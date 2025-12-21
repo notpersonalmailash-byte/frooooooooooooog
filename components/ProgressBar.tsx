@@ -31,31 +31,31 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ xp, avgWpm, mistakeCount, rem
 
   return (
     <div className="w-full flex flex-col justify-center">
-      <div className="flex justify-between items-end mb-2 px-1">
+      <div className="flex justify-between items-end mb-1 px-1">
         <div className="flex items-baseline gap-2">
-          <span className={`text-sm font-bold transition-colors duration-500 ${textColor}`}>
+          <span className={`text-xs font-bold transition-colors duration-500 ${textColor}`}>
              {currentLevel.name}
           </span>
-          <span className="text-[10px] text-stone-400 font-mono">{xp.toLocaleString()} XP</span>
+          <span className="text-[9px] text-stone-400 font-mono">{xp.toLocaleString()} / 1,000 XP</span>
         </div>
         
         <div className="text-right flex items-center gap-2">
            {nextLevel ? (
              <>
-               <span className="text-[10px] text-stone-300">Next:</span>
-               <span className="text-xs font-semibold text-stone-500">{nextLevel.name}</span>
-               <span className="flex items-center gap-0.5 text-[10px] text-stone-300 ml-1" title={`Target Speed: ${nextLevel.requiredWpm} WPM`}>
-                  <Gauge className="w-3 h-3" /> {nextLevel.requiredWpm}
+               <span className="text-[9px] text-stone-300">Next:</span>
+               <span className="text-[10px] font-semibold text-stone-500">{nextLevel.name}</span>
+               <span className="flex items-center gap-0.5 text-[9px] text-stone-300 ml-1" title={`Target Speed: ${nextLevel.requiredWpm} WPM`}>
+                  <Gauge className="w-2.5 h-2.5" /> {nextLevel.requiredWpm}
                </span>
              </>
            ) : (
-               <span className="text-xs font-semibold text-frog-600">Frog Sage Mastery</span>
+               <span className="text-[10px] font-semibold text-frog-600">Max Rank Achieved</span>
            )}
         </div>
       </div>
       
-      <div className="relative w-full h-8">
-          <div className="absolute bottom-0 left-0 right-0 h-3 flex rounded-full overflow-hidden shadow-sm ring-1 ring-stone-200/50 bg-stone-100">
+      <div className="relative w-full h-5">
+          <div className="absolute bottom-0 left-0 right-0 h-1.5 flex rounded-full overflow-hidden shadow-sm ring-1 ring-stone-200/50 bg-stone-100">
              {LEVELS.map((level, idx) => {
                  const isPassed = idx < currentLevelIndex;
                  const isCurrent = idx === currentLevelIndex;
@@ -80,11 +80,11 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ xp, avgWpm, mistakeCount, rem
             }}
           >
              <div className="relative mb-0.5">
-                 <span className="text-xl block filter drop-shadow-sm animate-pulse">
+                 <span className="text-base block filter drop-shadow-sm animate-pulse">
                     🐸
                  </span>
              </div>
-             <div className="w-0.5 h-1.5 bg-stone-800/20 rounded-full mb-1"></div>
+             <div className="w-0.5 h-1 bg-stone-800/20 rounded-full mb-0.5"></div>
           </div>
       </div>
     </div>

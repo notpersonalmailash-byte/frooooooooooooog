@@ -9,11 +9,25 @@ export interface Quote {
 
 export interface Level {
   name: string;
-  tier: string; // The major rank group (e.g. 'Egg', 'Tadpole')
+  tier: string; 
   minXP: number;
   color: string;
   shade: string;
   requiredWpm: number;
+}
+
+export interface StrictRemediation {
+  quoteText: string;
+  author: string;
+  source: string;
+  requiredCount: number;
+  currentCount: number;
+}
+
+export interface WordDrill {
+  word: string;
+  requiredCount: number;
+  currentCount: number;
 }
 
 export interface GameState {
@@ -111,7 +125,7 @@ export interface NotificationItem {
 
 export interface PracticeWord {
   word: string;
-  proficiency: number; // 0 to 3 (3 = Mastered)
+  proficiency: number; 
   lastPracticed: number;
 }
 
