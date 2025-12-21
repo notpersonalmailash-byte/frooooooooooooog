@@ -5,14 +5,14 @@ import TypingArea from './components/TypingArea';
 import SettingsModal from './components/SettingsModal';
 import StatsModal from './components/StatsModal';
 import ThemeModal from './components/ThemeModal';
-import MiniGameMenu from './components/MiniGameMenu';
+import BookMode from './components/BookMode';
 import TenFastGame from './components/BlitzGame';
 import { MusicPlayer } from './components/MusicPlayer';
-import { Quote, Settings, GameMode, TestResult, StrictRemediation, WordDrill, WordPerformance } from './types';
+import { Quote, Settings, GameMode, TestResult, StrictRemediation, WordDrill, WordPerformance, BookSection } from './types';
 import { fetchQuotes } from './services/quoteService';
 import { getCurrentLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, Skull, BookOpen, Eraser, Palette, Brain, Zap, Lock, RotateCcw, ShieldAlert, User } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, Library, BookOpen, Eraser, Palette, Brain, Zap, Lock, RotateCcw, ShieldAlert, User } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
 
@@ -42,6 +42,11 @@ const App: React.FC = () => {
   const [mistakePool, setMistakePool] = useState<string[]>(() => JSON.parse(localStorage.getItem('frogType_mistakes') || '[]'));
   const [gameMode, setGameMode] = useState<GameMode>(() => (localStorage.getItem('frogType_gameMode') as GameMode) || 'QUOTES');
   
+  // Book Mode State
+  const [bookContent, setBookContent] = useState<string | null>(() => localStorage.getItem('frogType_bookContent'));
+  const [bookProgress, setBookProgress] = useState<number>(() => parseInt(localStorage.getItem('frogType_bookProgress') || '0', 10));
+  const [bookStructure, setBookStructure] = useState<BookSection[] | null>(() => JSON.parse(localStorage.getItem('frogType_bookStructure') || 'null'));
+
   const [settings, setSettings] = useState<Settings>(() => {
     const saved = localStorage.getItem('frogType_settings');
     const parsed = saved ? JSON.parse(saved) : {};
@@ -79,6 +84,20 @@ const App: React.FC = () => {
   useEffect(() => { localStorage.setItem('frogType_streak', streak.toString()); }, [streak]);
   useEffect(() => { localStorage.setItem('frogType_wpmHistory', JSON.stringify(wpmHistory)); }, [wpmHistory]);
   useEffect(() => { localStorage.setItem('frogType_gameMode', gameMode); }, [gameMode]);
+  
+  useEffect(() => { 
+    if (bookContent) localStorage.setItem('frogType_bookContent', bookContent);
+    else localStorage.removeItem('frogType_bookContent');
+  }, [bookContent]);
+  
+  useEffect(() => { 
+    localStorage.setItem('frogType_bookProgress', bookProgress.toString());
+  }, [bookProgress]);
+  
+  useEffect(() => {
+    if (bookStructure) localStorage.setItem('frogType_bookStructure', JSON.stringify(bookStructure));
+    else localStorage.removeItem('frogType_bookStructure');
+  }, [bookStructure]);
 
   useLayoutEffect(() => {
     const theme = THEMES.find(t => t.id === settings.themeId) || THEMES[0];
@@ -209,6 +228,61 @@ const App: React.FC = () => {
   const isLocked = !!pendingWordDrill || !!strictRemediation;
   const avgWpmVal = getAverageWPM(wpmHistory);
 
+  const renderGameMode = () => {
+    switch(gameMode) {
+      case 'TEN_FAST':
+        return <TenFastGame 
+            smartQueue={[]} 
+            onGameOver={(wpm, xp) => {
+                setUserXP(prev => prev + xp);
+                setWpmHistory(prev => [...prev, wpm].slice(-10));
+                soundEngine.playSuccess();
+            }}
+            onWordPerformance={() => {}}
+            onExit={() => setGameMode('QUOTES')}
+            onMistake={handleMistake}
+        />;
+      case 'BOOK':
+        return <BookMode
+          bookContent={bookContent}
+          setBookContent={setBookContent}
+          bookProgress={bookProgress}
+          setBookProgress={setBookProgress}
+          bookStructure={bookStructure}
+          setBookStructure={setBookStructure}
+          onXpEarned={(xp) => setUserXP(prev => prev + xp)}
+        />
+      case 'QUOTES':
+      default:
+        return <>
+            {strictRemediation && (
+                <div className="mb-8 flex items-center gap-3 bg-amber-100 text-amber-800 px-6 py-3 rounded-full border border-amber-200 animate-bounce">
+                    <ShieldAlert className="w-5 h-5" />
+                    <span className="font-black tracking-tight uppercase text-sm">Strict Mastery Required: Complete 3x perfectly to unlock.</span>
+                </div>
+            )}
+            {currentQuote ? (
+                <TypingArea 
+                    quote={currentQuote} 
+                    onComplete={handleQuoteComplete} 
+                    onFail={() => { setStreak(0); if (!strictRemediation) setStrictRemediation({ quoteText: currentQuote.text, author: currentQuote.author, source: "Mistake Penalty", requiredCount: 3, currentCount: 0 }); }}
+                    onMistake={handleMistake} 
+                    onRequestNewQuote={() => setCurrentQuote(null)}
+                    streak={streak} 
+                    ghostWpm={avgWpmVal} 
+                    settings={settings} 
+                    gameMode={gameMode} 
+                />
+            ) : (
+                <div className="flex flex-col items-center text-stone-400">
+                    <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-500" />
+                    <p className="font-mono text-xs italic opacity-60">Seeking wisdom...</p>
+                </div>
+            )}
+        </>;
+    }
+  };
+
   return (
     <div className={`min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200 transition-colors duration-1000 ${isLocked ? 'bg-stone-100' : ''}`}>
       <header className={`sticky top-0 z-40 bg-stone-50/90 backdrop-blur-md border-b border-stone-200/50 px-6 py-3 transition-all ${isLocked ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
@@ -219,6 +293,7 @@ const App: React.FC = () => {
           <div className="flex gap-2">
              <button onClick={() => setGameMode('QUOTES')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Quotes Mode"><BookOpen className="w-4 h-4" /></button>
              <button onClick={() => setGameMode('TEN_FAST')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="10 Fast Sprint"><Zap className="w-4 h-4" /></button>
+             <button onClick={() => setGameMode('BOOK')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'BOOK' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Book Mode"><Library className="w-4 h-4" /></button>
              <button onClick={() => setIsMusicOpen(true)} className={`p-2 transition-all rounded-xl ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'text-frog-500 bg-frog-50 shadow-sm ring-1 ring-frog-100' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`} title="Music Player"><Music className="w-5 h-5" /></button>
              <button onClick={() => setIsStatsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="User Stats"><User className="w-5 h-5" /></button>
              <button onClick={() => setIsThemeOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="Themes"><Palette className="w-5 h-5" /></button>
@@ -246,46 +321,7 @@ const App: React.FC = () => {
                     </div>
                 </div>
             </div>
-        ) : gameMode === 'TEN_FAST' ? (
-            <TenFastGame 
-                smartQueue={[]} 
-                onGameOver={(wpm, xp) => {
-                    setUserXP(prev => prev + xp);
-                    setWpmHistory(prev => [...prev, wpm].slice(-10));
-                    soundEngine.playSuccess();
-                }}
-                onWordPerformance={() => {}}
-                onExit={() => setGameMode('QUOTES')}
-                onMistake={handleMistake}
-            />
-        ) : (
-            <>
-                {strictRemediation && (
-                    <div className="mb-8 flex items-center gap-3 bg-amber-100 text-amber-800 px-6 py-3 rounded-full border border-amber-200 animate-bounce">
-                        <ShieldAlert className="w-5 h-5" />
-                        <span className="font-black tracking-tight uppercase text-sm">Strict Mastery Required: Complete 3x perfectly to unlock.</span>
-                    </div>
-                )}
-                {currentQuote ? (
-                    <TypingArea 
-                        quote={currentQuote} 
-                        onComplete={handleQuoteComplete} 
-                        onFail={() => { setStreak(0); if (!strictRemediation) setStrictRemediation({ quoteText: currentQuote.text, author: currentQuote.author, source: "Mistake Penalty", requiredCount: 3, currentCount: 0 }); }}
-                        onMistake={handleMistake} 
-                        onRequestNewQuote={() => setCurrentQuote(null)}
-                        streak={streak} 
-                        ghostWpm={avgWpmVal} 
-                        settings={settings} 
-                        gameMode={gameMode} 
-                    />
-                ) : (
-                    <div className="flex flex-col items-center text-stone-400">
-                        <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-500" />
-                        <p className="font-mono text-xs italic opacity-60">Seeking wisdom...</p>
-                    </div>
-                )}
-            </>
-        )}
+        ) : renderGameMode()}
       </main>
 
       <footer className="fixed bottom-0 left-0 right-0 p-6 bg-stone-50/80 backdrop-blur-md border-t border-stone-200/50">
