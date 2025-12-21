@@ -61,7 +61,7 @@ class SoundEngine {
     }
     if (!this.masterGain) {
         this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.value = 1.0;
+        this.masterGain.gain.value = this.masterVolume;
 
         // "Warmth" Filter - Softens high frequencies for a cozy lo-fi feel
         this.warmthFilter = this.ctx.createBiquadFilter();
@@ -71,6 +71,13 @@ class SoundEngine {
 
         this.masterGain.connect(this.warmthFilter);
         this.warmthFilter.connect(this.ctx.destination);
+    }
+  }
+
+  public setMasterVolume(volume: number) {
+    this.masterVolume = volume;
+    if (this.masterGain && this.ctx) {
+        this.masterGain.gain.setTargetAtTime(volume, this.ctx.currentTime, 0.05);
     }
   }
 
@@ -571,7 +578,7 @@ class SoundEngine {
      osc.frequency.setValueAtTime((300 + Math.random()*50) * pf, t);
      osc.frequency.exponentialRampToValueAtTime(50, t + 0.08);
      const g = this.ctx!.createGain();
-     g.gain.setValueAtTime(0.4, t);
+     g.gain.setValueAtTime(0.3, t);
      g.gain.exponentialRampToValueAtTime(0.01, t + 0.08);
      osc.connect(g);
      g.connect(this.masterGain!);
@@ -587,7 +594,7 @@ class SoundEngine {
       osc.frequency.setValueAtTime(1500 * pf, t);
       osc.frequency.exponentialRampToValueAtTime(500, t + 0.03);
       const g = this.ctx!.createGain();
-      g.gain.setValueAtTime(0.08, t);
+      g.gain.setValueAtTime(0.06, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
       osc.connect(g);
       g.connect(this.masterGain!);
@@ -603,7 +610,7 @@ class SoundEngine {
       osc.frequency.setValueAtTime((600 + Math.random()*100) * pf, t);
       osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
       const g = this.ctx!.createGain();
-      g.gain.setValueAtTime(0.3, t);
+      g.gain.setValueAtTime(0.25, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
       osc.connect(g);
       g.connect(this.masterGain!);
@@ -617,7 +624,7 @@ class SoundEngine {
       osc.type = 'sine';
       osc.frequency.setValueAtTime(2000 * pf, t);
       const g = this.ctx!.createGain();
-      g.gain.setValueAtTime(0.05, t);
+      g.gain.setValueAtTime(0.04, t);
       g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
       osc.connect(g);
       g.connect(this.masterGain!);
@@ -652,7 +659,7 @@ class SoundEngine {
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(100, t);
     osc.frequency.exponentialRampToValueAtTime(40, t + 0.15);
-    g.gain.setValueAtTime(0.2, t);
+    g.gain.setValueAtTime(0.15, t);
     g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
     osc.connect(g);
     g.connect(this.masterGain!);
@@ -661,11 +668,11 @@ class SoundEngine {
     
     // Tiny bubble pop overlay
     const pop = this.ctx.createOscillator();
+    const popG = this.ctx.createGain();
     pop.type = 'sine';
     pop.frequency.setValueAtTime(800, t);
     pop.frequency.exponentialRampToValueAtTime(100, t + 0.05);
-    const popG = this.ctx.createGain();
-    popG.gain.setValueAtTime(0.1, t);
+    popG.gain.setValueAtTime(0.08, t);
     popG.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
     pop.connect(popG);
     popG.connect(this.masterGain!);
@@ -682,12 +689,24 @@ class SoundEngine {
         const g = this.ctx!.createGain();
         osc.type = 'sine';
         osc.frequency.value = freq;
-        g.gain.setValueAtTime(0.03, t + (i*0.05));
+        g.gain.setValueAtTime(0.04, t + (i*0.05));
         g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
         osc.connect(g);
         g.connect(this.masterGain!);
         osc.start(t + (i*0.05));
         osc.stop(t + 0.5);
+
+        // Add harmonic overtone for a richer chime
+        const osc2 = this.ctx!.createOscillator();
+        const g2 = this.ctx!.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.value = freq * 2; // Octave higher
+        g2.gain.setValueAtTime(0.02, t + (i*0.05)); // Half volume
+        g2.gain.exponentialRampToValueAtTime(0.0005, t + 0.45);
+        osc2.connect(g2);
+        g2.connect(this.masterGain!);
+        osc2.start(t + (i*0.05));
+        osc2.stop(t + 0.5);
     });
   }
 

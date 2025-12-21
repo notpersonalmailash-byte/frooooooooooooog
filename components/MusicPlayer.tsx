@@ -63,6 +63,10 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
       musicConfig: { source: 'NONE', presetId: '' }
     });
   };
+  
+  const handleMasterVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSettings({ ...settings, masterVolume: parseFloat(e.target.value) });
+  };
 
   const handleAmbientVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSettings({ ...settings, ambientVolume: parseFloat(e.target.value) });
@@ -177,6 +181,23 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
         {/* Content */}
         <div className="p-4 bg-stone-50/50">
           
+          {/* Master Volume */}
+          <div className="mb-4 px-3 py-3 bg-white rounded-xl border border-stone-100 shadow-sm">
+             <div className="flex justify-between text-[10px] text-stone-400 font-bold mb-2 uppercase tracking-wide">
+                <span className="flex items-center gap-1.5 text-stone-500"><Volume2 className="w-3.5 h-3.5"/> Master Volume</span>
+                <span>{Math.round(settings.masterVolume * 100)}%</span>
+             </div>
+             <input 
+               type="range" 
+               min="0" 
+               max="1" 
+               step="0.01" 
+               value={settings.masterVolume}
+               onChange={handleMasterVolumeChange}
+               className="w-full h-1.5 bg-stone-100 rounded-lg appearance-none cursor-pointer accent-frog-green"
+             />
+          </div>
+
           {/* Active Player Area */}
           <div className={`transition-all duration-300 ${musicConfig.source === 'NONE' ? 'h-0 overflow-hidden opacity-0' : 'h-auto min-h-[100px] mb-4 opacity-100'}`}>
              {renderEmbed()}
@@ -213,7 +234,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
           {activeTab === 'BACKGROUND' && (
             <div className="mb-4 px-3 py-3 bg-white rounded-xl border border-stone-100 shadow-sm animate-in slide-in-from-top-2 fade-in duration-300">
                <div className="flex justify-between text-[10px] text-stone-400 font-bold mb-2 uppercase tracking-wide">
-                  <span className="flex items-center gap-1.5 text-stone-500"><Volume2 className="w-3.5 h-3.5"/> Music Volume</span>
+                  <span className="flex items-center gap-1.5 text-stone-500"><Music className="w-3.5 h-3.5"/> Ambient Volume</span>
                   <span>{Math.round(settings.ambientVolume * 100)}%</span>
                </div>
                <input 

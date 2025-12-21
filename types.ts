@@ -65,6 +65,7 @@ export interface Settings {
   sfxEnabled: boolean;
   mechanicalSoundEnabled: boolean; 
   mechanicalSoundPreset: MechanicalSoundPreset; 
+  masterVolume: number;
   ambientVolume: number; 
   musicConfig: MusicConfig;
   themeId: string; 

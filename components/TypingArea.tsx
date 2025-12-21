@@ -107,12 +107,6 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   }, [quote.text, settings.ttsMode, speakText]);
 
   useEffect(() => {
-    soundEngine.setEnabled(settings.sfxEnabled);
-    soundEngine.setMechanicalEnabled(settings.mechanicalSoundEnabled);
-    soundEngine.setMechanicalPreset(settings.mechanicalSoundPreset);
-  }, [settings.sfxEnabled, settings.mechanicalSoundEnabled, settings.mechanicalSoundPreset]);
-
-  useEffect(() => {
     setInput('');
     setStartTime(null);
     setEndTime(null);

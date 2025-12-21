@@ -51,6 +51,7 @@ const App: React.FC = () => {
       sfxEnabled: true,
       mechanicalSoundEnabled: false,
       mechanicalSoundPreset: 'THOCK',
+      masterVolume: 1.0,
       ambientVolume: 0.02, 
       musicConfig: { source: 'NONE', presetId: '' },
       themeId: 'CLASSIC',
@@ -87,6 +88,21 @@ const App: React.FC = () => {
     Object.entries(theme.colors.stone).forEach(([key, value]) => root.style.setProperty(`--stone-${key}`, value));
     root.style.setProperty('--text-body', theme.colors.stone[800]);
   }, [settings.themeId]);
+  
+  // Centralized Sound Engine Controller
+  useEffect(() => {
+    soundEngine.setMasterVolume(settings.masterVolume);
+    soundEngine.setEnabled(settings.sfxEnabled);
+    soundEngine.setMechanicalEnabled(settings.mechanicalSoundEnabled);
+    soundEngine.setMechanicalPreset(settings.mechanicalSoundPreset);
+    soundEngine.setAmbientVolume(settings.ambientVolume);
+    
+    if (settings.musicConfig.source === 'GENERATED') {
+        soundEngine.setAmbientMusic(settings.musicConfig.presetId);
+    } else {
+        soundEngine.stopAmbientMusic();
+    }
+  }, [settings]);
 
   const loadMoreQuotes = useCallback(async () => {
     if (loading || strictRemediation || gameMode !== 'QUOTES') return;
