@@ -108,7 +108,9 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
   useEffect(() => {
     soundEngine.setEnabled(settings.sfxEnabled);
-  }, [settings.sfxEnabled]);
+    soundEngine.setMechanicalEnabled(settings.mechanicalSoundEnabled);
+    soundEngine.setMechanicalPreset(settings.mechanicalSoundPreset);
+  }, [settings.sfxEnabled, settings.mechanicalSoundEnabled, settings.mechanicalSoundPreset]);
 
   useEffect(() => {
     setInput('');

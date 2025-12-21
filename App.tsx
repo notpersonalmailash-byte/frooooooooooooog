@@ -201,11 +201,12 @@ const App: React.FC = () => {
             <span className="text-2xl">🐸</span> Frog Type
           </h1>
           <div className="flex gap-2">
-             <button onClick={() => setGameMode('QUOTES')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-white text-frog-green shadow-sm' : 'text-stone-400 hover:bg-stone-200'}`}><BookOpen className="w-4 h-4" /></button>
-             <button onClick={() => setGameMode('TEN_FAST')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-white text-frog-green shadow-sm' : 'text-stone-400 hover:bg-stone-200'}`}><Zap className="w-4 h-4" /></button>
-             <button onClick={() => setIsStatsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600"><User className="w-5 h-5" /></button>
-             <button onClick={() => setIsThemeOpen(true)} className="p-2 text-stone-400 hover:text-stone-600"><Palette className="w-5 h-5" /></button>
-             <button onClick={() => setIsSettingsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600"><SettingsIcon className="w-5 h-5" /></button>
+             <button onClick={() => setGameMode('QUOTES')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-white text-frog-green shadow-sm' : 'text-stone-400 hover:bg-stone-200'}`} title="Quotes Mode"><BookOpen className="w-4 h-4" /></button>
+             <button onClick={() => setGameMode('TEN_FAST')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-white text-frog-green shadow-sm' : 'text-stone-400 hover:bg-stone-200'}`} title="10 Fast Sprint"><Zap className="w-4 h-4" /></button>
+             <button onClick={() => setIsMusicOpen(true)} className={`p-2 transition-all rounded-lg ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'text-frog-green bg-frog-50' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`} title="Music Player"><Music className="w-5 h-5" /></button>
+             <button onClick={() => setIsStatsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-all" title="User Stats"><User className="w-5 h-5" /></button>
+             <button onClick={() => setIsThemeOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-all" title="Themes"><Palette className="w-5 h-5" /></button>
+             <button onClick={() => setIsSettingsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-all" title="Settings"><SettingsIcon className="w-5 h-5" /></button>
           </div>
         </div>
       </header>

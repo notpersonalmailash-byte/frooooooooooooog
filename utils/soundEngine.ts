@@ -5,7 +5,7 @@ class SoundEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private enabled: boolean = true;
-  private mechanicalEnabled: boolean = true;
+  private mechanicalEnabled: boolean = false; // Changed default to false
   private mechanicalPreset: MechanicalSoundPreset = 'THOCK';
   private masterVolume: number = 1.0;
   
