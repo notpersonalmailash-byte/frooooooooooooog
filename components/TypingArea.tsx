@@ -18,6 +18,7 @@ interface TypingAreaProps {
   gameMode: GameMode;
   onInteract?: () => void;
   autoFocus?: boolean;
+  updateWordProficiency: (word: string, isCorrect: boolean) => void;
 }
 
 const TypingArea: React.FC<TypingAreaProps> = ({ 
@@ -32,7 +33,8 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   settings,
   gameMode,
   onInteract,
-  autoFocus = false
+  autoFocus = false,
+  updateWordProficiency
 }) => {
   const [input, setInput] = useState('');
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -159,9 +161,13 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   const handleNext = useCallback(() => {
     const isPerfectMaster = retryCount === 0 && sessionMistakes === 0;
     const xp = calculateXP(wpm, quote.text.length, streak, isPerfectMaster, settings.readAheadLevel);
+    
+    // All words are correct on completion
+    quote.text.split(/\s+/).filter(Boolean).forEach(word => updateWordProficiency(word, true));
+
     setIsFocused(true);
     onComplete(xp, wpm, sessionMistakeWords, retryCount);
-  }, [onComplete, wpm, quote.text.length, streak, retryCount, sessionMistakes, sessionMistakeWords, settings.readAheadLevel]);
+  }, [onComplete, wpm, quote.text, streak, retryCount, sessionMistakes, sessionMistakeWords, settings.readAheadLevel, updateWordProficiency]);
 
   useEffect(() => {
     const checkCapsLock = (e: KeyboardEvent | MouseEvent) => {
@@ -370,6 +376,8 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         const expectedWord = quote.text.substring(wordStart, wordEnd);
         const typedWordPart = val.substring(wordStart);
         const cleanWord = expectedWord.replace(/[.,;!?]/g, '');
+
+        updateWordProficiency(cleanWord, false);
 
         setLastError({ 
             expectedChar, 

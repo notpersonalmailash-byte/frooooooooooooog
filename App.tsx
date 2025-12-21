@@ -7,8 +7,9 @@ import StatsModal from './components/StatsModal';
 import ThemeModal from './components/ThemeModal';
 import BookMode from './components/BookMode';
 import TenFastGame from './components/BlitzGame';
+import DrillMode from './components/DrillMode';
 import { MusicPlayer } from './components/MusicPlayer';
-import { Quote, Settings, GameMode, TestResult, StrictRemediation, WordDrill, WordPerformance, BookSection } from './types';
+import { Quote, Settings, GameMode, TestResult, StrictRemediation, WordDrill, WordPerformance, BookSection, WordProficiency } from './types';
 import { fetchQuotes } from './services/quoteService';
 import { getCurrentLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
@@ -46,6 +47,9 @@ const App: React.FC = () => {
   const [bookContent, setBookContent] = useState<string | null>(() => localStorage.getItem('frogType_bookContent'));
   const [bookProgress, setBookProgress] = useState<number>(() => parseInt(localStorage.getItem('frogType_bookProgress') || '0', 10));
   const [bookStructure, setBookStructure] = useState<BookSection[] | null>(() => JSON.parse(localStorage.getItem('frogType_bookStructure') || 'null'));
+  
+  // Word Proficiency State
+  const [wordProficiency, setWordProficiency] = useState<Record<string, WordProficiency>>(() => JSON.parse(localStorage.getItem('frogType_wordProficiency') || '{}'));
 
   const [settings, setSettings] = useState<Settings>(() => {
     const saved = localStorage.getItem('frogType_settings');
@@ -98,6 +102,25 @@ const App: React.FC = () => {
     if (bookStructure) localStorage.setItem('frogType_bookStructure', JSON.stringify(bookStructure));
     else localStorage.removeItem('frogType_bookStructure');
   }, [bookStructure]);
+  
+  useEffect(() => {
+    localStorage.setItem('frogType_wordProficiency', JSON.stringify(wordProficiency));
+  }, [wordProficiency]);
+
+  const updateWordProficiency = useCallback((word: string, isCorrect: boolean) => {
+    const cleanWord = word.toLowerCase().replace(/[^a-z'-]/g, '');
+    if (cleanWord.length < 2 || !isNaN(Number(cleanWord))) return;
+
+    setWordProficiency(prev => {
+        const current = prev[cleanWord] || { correct: 0, mistakes: 0 };
+        if (isCorrect) {
+            current.correct += 1;
+        } else {
+            current.mistakes += 1;
+        }
+        return { ...prev, [cleanWord]: current };
+    });
+  }, []);
 
   useLayoutEffect(() => {
     const theme = THEMES.find(t => t.id === settings.themeId) || THEMES[0];
@@ -251,7 +274,14 @@ const App: React.FC = () => {
           bookStructure={bookStructure}
           setBookStructure={setBookStructure}
           onXpEarned={(xp) => setUserXP(prev => prev + xp)}
-        />
+          updateWordProficiency={updateWordProficiency}
+        />;
+      case 'DRILL':
+        return <DrillMode
+          wordProficiency={wordProficiency}
+          updateWordProficiency={updateWordProficiency}
+          onExit={() => setGameMode('QUOTES')}
+        />;
       case 'QUOTES':
       default:
         return <>
@@ -272,6 +302,7 @@ const App: React.FC = () => {
                     ghostWpm={avgWpmVal} 
                     settings={settings} 
                     gameMode={gameMode} 
+                    updateWordProficiency={updateWordProficiency}
                 />
             ) : (
                 <div className="flex flex-col items-center text-stone-400">
@@ -294,6 +325,7 @@ const App: React.FC = () => {
              <button onClick={() => setGameMode('QUOTES')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Quotes Mode"><BookOpen className="w-4 h-4" /></button>
              <button onClick={() => setGameMode('TEN_FAST')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="10 Fast Sprint"><Zap className="w-4 h-4" /></button>
              <button onClick={() => setGameMode('BOOK')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'BOOK' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Book Mode"><Library className="w-4 h-4" /></button>
+             <button onClick={() => setGameMode('DRILL')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'DRILL' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Drill Mistakes"><Brain className="w-4 h-4" /></button>
              <button onClick={() => setIsMusicOpen(true)} className={`p-2 transition-all rounded-xl ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'text-frog-500 bg-frog-50 shadow-sm ring-1 ring-frog-100' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`} title="Music Player"><Music className="w-5 h-5" /></button>
              <button onClick={() => setIsStatsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="User Stats"><User className="w-5 h-5" /></button>
              <button onClick={() => setIsThemeOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="Themes"><Palette className="w-5 h-5" /></button>

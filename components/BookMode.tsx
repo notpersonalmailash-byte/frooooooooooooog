@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { UploadCloud, BookOpen, RotateCcw, Trash2, Settings, Check, X, Loader2 } from 'lucide-react';
+import { UploadCloud, BookOpen, RotateCcw, Trash2, Settings, Check, X, Loader2, Feather } from 'lucide-react';
 import { soundEngine } from '../utils/soundEngine';
-import { BookSection } from '../types';
+import { BookSection, WordProficiency } from '../types';
 import ePub from 'epubjs';
 import * as pdfjsLib from 'pdfjs-dist';
 
@@ -84,15 +84,17 @@ interface BookModeProps {
   bookStructure: BookSection[] | null;
   setBookStructure: (structure: BookSection[] | null) => void;
   onXpEarned: (xp: number) => void;
+  updateWordProficiency: (word: string, isCorrect: boolean) => void;
 }
 
-const BookMode: React.FC<BookModeProps> = ({ bookContent, setBookContent, bookProgress, setBookProgress, bookStructure, setBookStructure, onXpEarned }) => {
+const BookMode: React.FC<BookModeProps> = ({ bookContent, setBookContent, bookProgress, setBookProgress, bookStructure, setBookStructure, onXpEarned, updateWordProficiency }) => {
   const [userInput, setUserInput] = useState('');
   const [isFocused, setIsFocused] = useState(true);
   const [lastXpAwardedAt, setLastXpAwardedAt] = useState(bookProgress);
   const [isLoading, setIsLoading] = useState(false);
   const [isChapterModalOpen, setIsChapterModalOpen] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const customTextRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     // Award XP based on progress
@@ -112,6 +114,22 @@ const BookMode: React.FC<BookModeProps> = ({ bookContent, setBookContent, bookPr
           .map(s => s.content)
           .join('\n\n');
       setBookContent(newContent);
+  };
+
+  const handleCustomText = (text: string) => {
+    if (!text.trim()) return;
+    const sections = text.split(/\n\s*\n+/);
+    const structure: BookSection[] = sections.map((content, i) => ({
+      id: i,
+      title: `Pasted Section ${i + 1}`,
+      content: content.trim(),
+      included: true,
+    }));
+    setBookStructure(structure);
+    rebuildContentFromStructure(structure);
+    setBookProgress(0);
+    setUserInput('');
+    setLastXpAwardedAt(0);
   };
 
   const handleFileChange = async (file: File | null) => {
@@ -220,15 +238,32 @@ const BookMode: React.FC<BookModeProps> = ({ bookContent, setBookContent, bookPr
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (!currentPageText) return;
     const val = e.target.value;
+    const prevVal = userInput;
     setUserInput(val);
-    if (val.length > userInput.length) {
+    
+    if (val.length > prevVal.length) {
         soundEngine.playKeypress();
+    }
+    
+    const lastChar = val.slice(-1);
+    if (lastChar === ' ' && prevVal.slice(-1) !== ' ') {
+        const typedWords = val.trim().split(/\s+/);
+        const sourceWords = currentPageText.split(/\s+/);
+        const wordIndex = typedWords.length - 1;
+
+        if (wordIndex < sourceWords.length) {
+            const sourceWord = sourceWords[wordIndex];
+            const typedWord = typedWords[wordIndex];
+            const isCorrect = sourceWord === typedWord;
+            updateWordProficiency(sourceWord, isCorrect);
+        }
     }
     
     // Page complete
     if (val === currentPageText) {
       soundEngine.playSuccess();
-      setBookProgress(prev => Math.min(prev + currentPageText.length, bookContent?.length || 0));
+      // FIX: Use direct value update for setBookProgress as its prop type doesn't support a function updater.
+      setBookProgress(Math.min(bookProgress + currentPageText.length, bookContent?.length || 0));
       setUserInput('');
     }
   };
@@ -254,14 +289,24 @@ const BookMode: React.FC<BookModeProps> = ({ bookContent, setBookContent, bookPr
 
   if (!bookContent) {
     return (
-      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center p-8 bg-stone-50 rounded-3xl border border-stone-200 shadow-sm" onDragOver={handleDragOver} onDrop={handleDrop}>
-        <UploadCloud className="w-16 h-16 text-stone-300 mb-4" />
-        <h2 className="text-2xl font-bold text-stone-700">Upload Your Book</h2>
-        <p className="text-stone-500 mt-2 mb-6">Drag & drop or select a <code className="bg-stone-200 text-stone-700 px-1 py-0.5 rounded">.txt, .epub, or .pdf</code> file.</p>
-        <input type="file" accept=".txt,.epub,.pdf" onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)} className="hidden" id="book-upload" />
-        <label htmlFor="book-upload" className="px-6 py-3 bg-frog-green text-white font-bold rounded-lg cursor-pointer hover:bg-green-500 transition-colors">Select File</label>
-        <div className="text-xs text-stone-400 mt-6 text-center max-w-md">
-            <strong>Note:</strong> Kindle files (.azw) are not supported. For best results with PDF and EPUB, use files with selectable text.
+      <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center p-8" onDragOver={handleDragOver} onDrop={handleDrop}>
+        <div className="w-full p-8 bg-stone-50 rounded-3xl border border-stone-200 shadow-sm text-center">
+            <UploadCloud className="w-16 h-16 text-stone-300 mb-4 mx-auto" />
+            <h2 className="text-2xl font-bold text-stone-700">Upload a File</h2>
+            <p className="text-stone-500 mt-2 mb-6">Drag & drop or select a <code className="bg-stone-200 text-stone-700 px-1 py-0.5 rounded">.txt, .epub, or .pdf</code> file.</p>
+            <input type="file" accept=".txt,.epub,.pdf" onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)} className="hidden" id="book-upload" />
+            <label htmlFor="book-upload" className="px-6 py-3 bg-frog-green text-white font-bold rounded-lg cursor-pointer hover:bg-green-500 transition-colors">Select File</label>
+        </div>
+        <div className="text-center my-6 text-stone-400 font-bold text-sm">OR</div>
+        <div className="w-full p-8 bg-stone-50 rounded-3xl border border-stone-200 shadow-sm text-center">
+            <Feather className="w-12 h-12 text-stone-300 mb-4 mx-auto" />
+            <h2 className="text-2xl font-bold text-stone-700">Paste Your Own Text</h2>
+            <textarea
+                ref={customTextRef}
+                placeholder="Paste any text you want to practice here..."
+                className="w-full h-32 p-4 mt-4 bg-stone-100 border-2 border-dashed border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-frog-green"
+            />
+            <button onClick={() => handleCustomText(customTextRef.current?.value || '')} className="mt-4 px-6 py-3 bg-stone-700 text-white font-bold rounded-lg hover:bg-stone-800 transition-colors">Practice This Text</button>
         </div>
       </div>
     );

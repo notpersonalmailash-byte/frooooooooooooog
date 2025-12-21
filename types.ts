@@ -148,3 +148,8 @@ export interface BookSection {
   content: string;
   included: boolean;
 }
+
+export interface WordProficiency {
+  correct: number;
+  mistakes: number;
+}
