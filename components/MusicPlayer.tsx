@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MusicConfig, MusicSource, Settings } from '../types';
 import { getCurrentLevel } from '../utils/gameLogic';
 import { RADIO_STATIONS } from '../data/radioStations';
-import { X, Music, Disc, Youtube, Radio, Sparkles, Wind, Waves, Guitar, Drum, Rocket, Volume2, Power, AudioWaveform, Lock } from 'lucide-react';
+import { X, Music, Disc, Youtube, Radio, Sparkles, Wind, Waves, Guitar, Drum, Rocket, Volume2, Power, AudioWaveform, Lock, CloudRain, Trees } from 'lucide-react';
 
 interface MusicPlayerProps {
   isOpen: boolean;
@@ -16,14 +16,16 @@ interface MusicPlayerProps {
 const TIER_ORDER = ['Egg', 'Tadpole', 'Polliwog', 'Froglet', 'Hopper', 'Tree Frog', 'Bullfrog', 'Frog Sage'];
 
 const BACKGROUND_PRESETS = [
-    { id: 'PIANO_BEETHOVEN', name: 'Moonlight Piano', icon: <Music className="w-4 h-4 text-purple-500" /> },
+    { id: 'RAIN', name: 'Rainy Pond', icon: <CloudRain className="w-4 h-4 text-blue-400" /> },
+    { id: 'FOREST', name: 'Morning Forest', icon: <Trees className="w-4 h-4 text-emerald-500" /> },
     { id: 'PIANO_SATIE', name: 'Satie (Gymnopédie)', icon: <Music className="w-4 h-4 text-purple-400" /> },
-    { id: 'PIANO_JAZZ', name: 'Jazz Lounge', icon: <Music className="w-4 h-4 text-orange-400" /> },
-    { id: 'GUITAR', name: 'Acoustic Guitar', icon: <Guitar className="w-4 h-4 text-amber-500" /> },
     { id: 'ZEN', name: 'Zen Bells', icon: <Wind className="w-4 h-4 text-teal-500" /> },
+    { id: 'PIANO_JAZZ', name: 'Jazz Lounge', icon: <Music className="w-4 h-4 text-orange-400" /> },
+    { id: 'PIANO_BEETHOVEN', name: 'Moonlight Piano', icon: <Music className="w-4 h-4 text-purple-500" /> },
+    { id: 'GUITAR', name: 'Acoustic Guitar', icon: <Guitar className="w-4 h-4 text-amber-500" /> },
     { id: 'BROWN_NOISE', name: 'Brown Noise', icon: <Waves className="w-4 h-4 text-stone-500" /> },
+    { id: 'SYNTH_COSMIC', name: 'Cosmic Synth', icon: <Rocket className="w-4 h-4 text-indigo-500" /> },
     { id: 'DRUMS_HARDCORE', name: 'Hardcore Breakbeat', icon: <Drum className="w-4 h-4 text-red-600" /> },
-    { id: 'SYNTH_COSMIC', name: 'Cosmic Synth', icon: <Rocket className="w-4 h-4 text-indigo-500" /> }
 ];
 
 export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, settings, setSettings, userXP }) => {
