@@ -543,20 +543,20 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
       if (index < input.length) {
         if (input[index] === char) {
-          colorClass = 'text-frog-green'; 
+          colorClass = 'text-frog-500'; // Changed from frog-green to frog-500 for theming
         } else {
           colorClass = 'text-red-500 bg-red-100'; 
         }
       } else {
           if (isHighlighted) {
-              colorClass = 'text-frog-green font-bold';
-              bgClass = 'bg-green-100/50';
+              colorClass = 'text-frog-500 font-bold'; // Changed for theming
+              bgClass = 'bg-frog-200/20'; // Use themed highlight
           }
       }
 
       if (gameMode === 'XWORDS' || gameMode === 'XQUOTES') {
           if (index >= input.length) {
-              colorClass = 'text-red-300';
+              colorClass = 'text-stone-300';
           }
       }
 
@@ -593,7 +593,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
     }
 
     if (gameMode === 'HARDCORE') {
-        return 'bg-neutral-900 border-neutral-800 text-neutral-400 shadow-[0_0_40px_rgba(0,0,0,0.2)]';
+        return 'bg-stone-900 border-stone-800 text-stone-400 shadow-[0_0_40px_rgba(0,0,0,0.2)]';
     }
     if (gameMode === 'XWORDS' || gameMode === 'XQUOTES') {
         return 'bg-red-50 border-red-100';
@@ -631,7 +631,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   return (
     <div className="relative w-full max-w-6xl mx-auto min-h-[400px] flex flex-col" ref={containerRef}>
       {isPerfectMasterPotential && status === GameStatus.PLAYING && (
-        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex items-center gap-1 text-xs font-bold text-frog-green animate-pulse">
+        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 flex items-center gap-1 text-xs font-bold text-frog-500 animate-pulse">
           <Sparkles className="w-3 h-3" /> Perfect Master Potential (1.5x Bonus)
         </div>
       )}
@@ -639,18 +639,18 @@ const TypingArea: React.FC<TypingAreaProps> = ({
       <div className={`
         relative flex-grow flex flex-col justify-center p-8 md:p-16 rounded-[3rem] transition-all duration-300 border
         ${getContainerStyle()}
-        ${isFocused && status !== GameStatus.FAILED && status !== GameStatus.COMPLETED ? 'ring-2 ring-frog-green/50 ring-offset-2 ring-offset-bg-body' : ''}
+        ${isFocused && status !== GameStatus.FAILED && status !== GameStatus.COMPLETED ? 'ring-2 ring-frog-500/50 ring-offset-2 ring-offset-bg-body' : ''}
         ${status === GameStatus.FAILED ? 'ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : ''}
-        ${status === GameStatus.COMPLETED ? 'ring-2 ring-frog-green/20 bg-green-50/20' : ''}
+        ${status === GameStatus.COMPLETED ? 'ring-2 ring-frog-500/20 bg-frog-50/20' : ''}
         ${streak > 2 && status === GameStatus.PLAYING ? 'shadow-[0_0_30px_rgba(251,146,60,0.15)] ring-1 ring-orange-100' : ''}
       `}>
         
         {!isFocused && status !== GameStatus.COMPLETED && status !== GameStatus.FAILED && (
           <div 
             onClick={handleFocus}
-            className="absolute inset-0 z-50 flex items-center justify-center bg-stone-900/5 backdrop-blur-sm cursor-pointer rounded-[3rem] border-2 border-dashed border-frog-green/50 hover:border-frog-green transition-all"
+            className="absolute inset-0 z-50 flex items-center justify-center bg-stone-900/5 backdrop-blur-sm cursor-pointer rounded-[3rem] border-2 border-dashed border-frog-500/50 hover:border-frog-500 transition-all"
           >
-            <div className="text-center animate-bounce text-frog-green">
+            <div className="text-center animate-bounce text-frog-500">
               <Play className="w-10 h-10 mx-auto mb-2 opacity-80" fill="currentColor" />
               <span className="font-bold text-base tracking-wide uppercase font-sans">Click or Type to Start</span>
             </div>
@@ -660,7 +660,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         {status === GameStatus.COMPLETED && (
           <div className="absolute inset-0 z-40 flex items-center justify-center bg-stone-900/10 backdrop-blur-sm rounded-[3rem] cursor-pointer" onClick={handleNext}>
              <div className="bg-stone-50/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-stone-200 animate-in zoom-in-95 fade-in duration-300 flex flex-col items-center gap-6 min-w-[280px] cursor-default" onClick={(e) => e.stopPropagation()}>
-                <div className="text-frog-green font-black text-xl tracking-tight flex items-center gap-2">
+                <div className="text-frog-500 font-black text-xl tracking-tight flex items-center gap-2">
                    <CompletionIcon className="w-6 h-6" /> {completionTitle}
                 </div>
                 <div className="grid grid-cols-2 gap-x-12 gap-y-6 w-full">
@@ -678,10 +678,10 @@ const TypingArea: React.FC<TypingAreaProps> = ({
                    </div>
                    <div className="flex flex-col items-center">
                       <span className="text-[10px] uppercase font-bold text-stone-400 tracking-widest mb-1">XP Earned</span>
-                      <span className="font-mono font-bold text-2xl text-frog-green">+{calculateXP(wpm, quote.text.length, streak, retryCount === 0 && sessionMistakes === 0, settings.readAheadLevel) * (gameMode === 'HARDCORE' ? 5 : 1)}</span>
+                      <span className="font-mono font-bold text-2xl text-frog-500">+{calculateXP(wpm, quote.text.length, streak, retryCount === 0 && sessionMistakes === 0, settings.readAheadLevel) * (gameMode === 'HARDCORE' ? 5 : 1)}</span>
                    </div>
                 </div>
-                <button ref={nextButtonRef} onClick={handleNext} className="flex items-center gap-2 px-8 py-3 rounded-full transition shadow-lg font-bold text-sm tracking-wide uppercase transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 w-full justify-center bg-frog-green text-white hover:bg-green-500 shadow-green-200/50 focus:ring-frog-green">
+                <button ref={nextButtonRef} onClick={handleNext} className="flex items-center gap-2 px-8 py-3 rounded-full transition shadow-lg font-bold text-sm tracking-wide uppercase transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 w-full justify-center bg-frog-500 text-white hover:opacity-90 shadow-frog-200/50 focus:ring-frog-500">
                    {completionBtn} <CompletionIcon className="w-4 h-4" />
                 </button>
              </div>
@@ -701,7 +701,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
                             <div className="flex items-center gap-3 font-mono text-base">
                                  <span className="text-red-500 font-medium" title="You Typed">{lastError.typedWordPart}</span>
                                  <ArrowRight className="w-3.5 h-3.5 text-stone-300" />
-                                 <span className="text-frog-green font-bold" title="Expected">{lastError.expectedWord}</span>
+                                 <span className="text-frog-500 font-bold" title="Expected">{lastError.expectedWord}</span>
                             </div>
                         </>
                     ) : (
@@ -743,13 +743,13 @@ const TypingArea: React.FC<TypingAreaProps> = ({
           <div className="flex gap-4">
              <span>{quote.source}</span>
              {settings.ghostEnabled && <span className="text-purple-300 flex items-center gap-1"><Ghost className="w-3.5 h-3.5"/> {ghostWpm > 0 ? `${ghostWpm} WPM` : 'Ready'}</span>}
-             {settings.readAheadLevel !== 'NONE' && <span className="text-frog-green flex items-center gap-1"><EyeOff className="w-3.5 h-3.5"/> {settings.readAheadLevel}</span>}
+             {settings.readAheadLevel !== 'NONE' && <span className="text-frog-500 flex items-center gap-1"><EyeOff className="w-3.5 h-3.5"/> {settings.readAheadLevel}</span>}
           </div>
           <span className="text-right max-w-[200px] truncate">{quote.author}</span>
         </div>
 
         <div ref={textContainerRef} className={`font-mono tracking-wide break-words whitespace-pre-wrap mb-12 mt-10 relative z-10 outline-none select-none ${getTextColor()} ${getFontSizeClass()}`} onClick={handleFocus}>
-          <div className="absolute bg-frog-green w-[3px] rounded-full transition-all duration-100 ease-out z-20 pointer-events-none caret-blink shadow-[0_0_10px_rgba(64,214,114,0.5)]"
+          <div className="absolute bg-frog-500 w-[3px] rounded-full transition-all duration-100 ease-out z-20 pointer-events-none caret-blink shadow-[0_0_10px_rgba(64,214,114,0.5)]"
              style={{ left: caretPos.left - 1, top: caretPos.top + 2, height: caretPos.height - 4, opacity: caretPos.opacity }}
           />
           {renderText()}
@@ -780,7 +780,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
       
       <div className="text-center mt-8 h-4 text-stone-400 text-xs font-medium tracking-wide transition-opacity duration-500 font-sans">
         {status === GameStatus.FAILED ? <span className="text-red-400">{gameMode === 'HARDCORE' ? 'HARDCORE FAIL. 50% XP Penalty.' : 'Mistake made. Review your error above.'}</span> : 
-         status === GameStatus.COMPLETED ? <span className="text-frog-green">Perfect! Streak +1 {retryCount === 0 && sessionMistakes === 0 && "(Mastery Bonus!)"}</span> :
+         status === GameStatus.COMPLETED ? <span className="text-frog-500">Perfect! Streak +1 {retryCount === 0 && sessionMistakes === 0 && "(Mastery Bonus!)"}</span> :
          isFocused ? "Accuracy is paramount. One mistake restarts the quote." : ""}
       </div>
     </div>

@@ -6,13 +6,13 @@ import SettingsModal from './components/SettingsModal';
 import StatsModal from './components/StatsModal';
 import ThemeModal from './components/ThemeModal';
 import MiniGameMenu from './components/MiniGameMenu';
-import TenFastGame from './components/BlitzGame'; // Import the sprint component
+import TenFastGame from './components/BlitzGame';
 import { MusicPlayer } from './components/MusicPlayer';
-import { Quote, Settings, GameMode, TestResult, NotificationItem, StrictRemediation, WordDrill, WordPerformance, WeakWord } from './types';
+import { Quote, Settings, GameMode, TestResult, StrictRemediation, WordDrill, WordPerformance } from './types';
 import { fetchQuotes } from './services/quoteService';
 import { getCurrentLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, Skull, BookOpen, Eraser, Palette, Gamepad2, Brain, Zap, Lock, RotateCcw, ShieldAlert, User, CheckCircle2 } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, Skull, BookOpen, Eraser, Palette, Brain, Zap, Lock, RotateCcw, ShieldAlert, User } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
 
@@ -194,19 +194,19 @@ const App: React.FC = () => {
   const avgWpmVal = getAverageWPM(wpmHistory);
 
   return (
-    <div className={`min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200 ${isLocked ? 'bg-amber-50/20' : ''}`}>
-      <header className={`sticky top-0 z-40 bg-stone-50/95 backdrop-blur-md border-b border-stone-200 px-6 py-3 transition-all ${isLocked ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
+    <div className={`min-h-screen flex flex-col bg-transparent text-stone-800 font-sans selection:bg-frog-200 transition-colors duration-1000 ${isLocked ? 'bg-stone-100' : ''}`}>
+      <header className={`sticky top-0 z-40 bg-stone-50/90 backdrop-blur-md border-b border-stone-200/50 px-6 py-3 transition-all ${isLocked ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-black text-frog-green tracking-tight flex items-center gap-2">
-            <span className="text-2xl">🐸</span> Frog Type
+          <h1 className="text-xl font-black text-frog-500 tracking-tight flex items-center gap-2 select-none">
+            <span className="text-2xl drop-shadow-sm">🐸</span> Frog Type
           </h1>
           <div className="flex gap-2">
-             <button onClick={() => setGameMode('QUOTES')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-white text-frog-green shadow-sm' : 'text-stone-400 hover:bg-stone-200'}`} title="Quotes Mode"><BookOpen className="w-4 h-4" /></button>
-             <button onClick={() => setGameMode('TEN_FAST')} className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-white text-frog-green shadow-sm' : 'text-stone-400 hover:bg-stone-200'}`} title="10 Fast Sprint"><Zap className="w-4 h-4" /></button>
-             <button onClick={() => setIsMusicOpen(true)} className={`p-2 transition-all rounded-lg ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'text-frog-green bg-frog-50' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`} title="Music Player"><Music className="w-5 h-5" /></button>
-             <button onClick={() => setIsStatsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-all" title="User Stats"><User className="w-5 h-5" /></button>
-             <button onClick={() => setIsThemeOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-all" title="Themes"><Palette className="w-5 h-5" /></button>
-             <button onClick={() => setIsSettingsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-all" title="Settings"><SettingsIcon className="w-5 h-5" /></button>
+             <button onClick={() => setGameMode('QUOTES')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Quotes Mode"><BookOpen className="w-4 h-4" /></button>
+             <button onClick={() => setGameMode('TEN_FAST')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="10 Fast Sprint"><Zap className="w-4 h-4" /></button>
+             <button onClick={() => setIsMusicOpen(true)} className={`p-2 transition-all rounded-xl ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'text-frog-500 bg-frog-50 shadow-sm ring-1 ring-frog-100' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`} title="Music Player"><Music className="w-5 h-5" /></button>
+             <button onClick={() => setIsStatsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="User Stats"><User className="w-5 h-5" /></button>
+             <button onClick={() => setIsThemeOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="Themes"><Palette className="w-5 h-5" /></button>
+             <button onClick={() => setIsSettingsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="Settings"><SettingsIcon className="w-5 h-5" /></button>
           </div>
         </div>
       </header>
@@ -218,16 +218,10 @@ const App: React.FC = () => {
                     <Brain className="w-16 h-16 text-red-500 animate-pulse" />
                     <h2 className="text-4xl font-black text-red-700 tracking-tight">STRICT DISCIPLINE</h2>
                     <p className="text-red-500 font-bold">Repeat the word <span className="underline font-black text-2xl">{pendingWordDrill.word}</span> 15 times to continue.</p>
-                    
                     <div className="relative mt-8 group">
                         <div className="text-7xl font-black text-red-200/40 tracking-widest uppercase">{pendingWordDrill.word}</div>
-                        <input 
-                            autoFocus 
-                            className="absolute inset-0 bg-transparent text-center text-7xl font-black tracking-widest text-red-600 outline-none uppercase" 
-                            onChange={handleDrillInput} 
-                        />
+                        <input autoFocus className="absolute inset-0 bg-transparent text-center text-7xl font-black tracking-widest text-red-600 outline-none uppercase" onChange={handleDrillInput} />
                     </div>
-                    
                     <div className="mt-8 flex flex-col items-center">
                         <div className="text-red-400 font-black text-3xl font-mono">{pendingWordDrill.currentCount} / {pendingWordDrill.requiredCount}</div>
                         <div className="w-64 h-3 bg-red-100 rounded-full mt-2 overflow-hidden border border-red-200">
@@ -270,20 +264,20 @@ const App: React.FC = () => {
                     />
                 ) : (
                     <div className="flex flex-col items-center text-stone-400">
-                        <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-green" />
-                        <p className="font-mono text-xs italic">Seeking wisdom...</p>
+                        <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-500" />
+                        <p className="font-mono text-xs italic opacity-60">Seeking wisdom...</p>
                     </div>
                 )}
             </>
         )}
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-white/80 backdrop-blur-md border-t border-stone-200">
+      <footer className="fixed bottom-0 left-0 right-0 p-6 bg-stone-50/80 backdrop-blur-md border-t border-stone-200/50">
            <div className="max-w-[1400px] mx-auto flex items-center justify-between">
                 <ProgressBar xp={userXP} avgWpm={avgWpmVal} mistakeCount={mistakePool.length} />
                 <div className="flex gap-8 ml-8 shrink-0">
-                    <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase">Mastered</span><span className="font-bold text-frog-green">{masteredQuotes.length}</span></div>
-                    <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase">Streak</span><span className="font-bold text-orange-500">{streak}</span></div>
+                    <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Mastered</span><span className="font-bold text-frog-500">{masteredQuotes.length}</span></div>
+                    <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Streak</span><span className="font-bold text-orange-500">{streak}</span></div>
                 </div>
            </div>
       </footer>
