@@ -1,7 +1,7 @@
 
 import React, { useRef } from 'react';
 import { Settings, MechanicalSoundPreset, ReadAheadLevel, TTSMode } from '../types';
-import { X, Ghost, EyeOff, Volume2, Music, Download, Upload, Database, Keyboard, Eye, PlayCircle, AlertTriangle, CheckCircle2, Speech } from 'lucide-react';
+import { X, Ghost, EyeOff, Volume2, Music, Download, Upload, Database, Keyboard, Eye, PlayCircle, AlertTriangle, CheckCircle2, Speech, ShieldAlert } from 'lucide-react';
 import { getCurrentLevel } from '../utils/gameLogic';
 
 interface SettingsModalProps {
@@ -22,6 +22,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
   const toggleMechanical = () => setSettings({ ...settings, mechanicalSoundEnabled: !settings.mechanicalSoundEnabled });
   const setMechanicalPreset = (preset: MechanicalSoundPreset) => setSettings({ ...settings, mechanicalSoundPreset: preset });
   const toggleAutoStart = () => setSettings({ ...settings, autoStartMusic: !settings.autoStartMusic });
+  const toggleStrictDrill = () => setSettings({ ...settings, strictDrillEnabled: !settings.strictDrillEnabled });
   const setTTSMode = (mode: TTSMode) => setSettings({ ...settings, ttsMode: mode });
   
   const handleExport = () => {
@@ -211,6 +212,25 @@ Are you sure you want to restore?
             </div>
             <div className={`w-10 h-6 rounded-full relative transition-colors ${settings.autoStartMusic ? 'bg-frog-500' : 'bg-stone-300'}`}>
                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.autoStartMusic ? 'left-5' : 'left-1'}`} />
+            </div>
+          </button>
+
+          {/* Strict Word Drill Toggle (Red) */}
+          <button 
+            onClick={toggleStrictDrill}
+            className={`w-full text-left flex items-center justify-between p-3 rounded-xl cursor-pointer border transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1 ${settings.strictDrillEnabled ? 'bg-red-50 border-red-200' : 'bg-stone-50 border-transparent hover:bg-stone-100'}`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${settings.strictDrillEnabled ? 'bg-red-100 text-red-600' : 'bg-stone-200 text-stone-500'}`}>
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="font-bold text-sm text-stone-700">Strict Word Drill</div>
+                <div className="text-[10px] text-stone-400">Force 15x repetition on error</div>
+              </div>
+            </div>
+            <div className={`w-10 h-6 rounded-full relative transition-colors ${settings.strictDrillEnabled ? 'bg-red-500' : 'bg-stone-300'}`}>
+               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.strictDrillEnabled ? 'left-5' : 'left-1'}`} />
             </div>
           </button>
 

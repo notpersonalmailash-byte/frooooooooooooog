@@ -16,14 +16,6 @@ export interface Level {
   requiredWpm: number;
 }
 
-export interface StrictRemediation {
-  quoteText: string;
-  author: string;
-  source: string;
-  requiredCount: number;
-  currentCount: number;
-}
-
 export interface WordDrill {
   word: string;
   requiredCount: number;
@@ -71,6 +63,7 @@ export interface Settings {
   themeId: string; 
   autoStartMusic: boolean; 
   ttsMode: TTSMode; 
+  strictDrillEnabled: boolean;
 }
 
 export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'TEN_FAST' | 'DRILL' | 'BOOK';

@@ -9,7 +9,7 @@ import BookMode from './components/BookMode';
 import TenFastGame from './components/BlitzGame';
 import DrillMode from './components/DrillMode';
 import { MusicPlayer } from './components/MusicPlayer';
-import { Quote, Settings, GameMode, TestResult, StrictRemediation, WordDrill, WordPerformance, BookSection, WordProficiency } from './types';
+import { Quote, Settings, GameMode, TestResult, WordDrill, WordPerformance, BookSection, WordProficiency } from './types';
 import { fetchQuotes } from './services/quoteService';
 import { getCurrentLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
@@ -25,11 +25,6 @@ const App: React.FC = () => {
   const [masteredQuotes, setMasteredQuotes] = useState<string[]>(() => {
     const saved = localStorage.getItem('frogType_masteredQuotes');
     return saved ? JSON.parse(saved) : [];
-  });
-
-  const [strictRemediation, setStrictRemediation] = useState<StrictRemediation | null>(() => {
-    const saved = localStorage.getItem('frogType_strictRemediation');
-    return saved ? JSON.parse(saved) : null;
   });
 
   const [pendingWordDrill, setPendingWordDrill] = useState<WordDrill | null>(() => {
@@ -66,6 +61,7 @@ const App: React.FC = () => {
       themeId: 'CLASSIC',
       autoStartMusic: true,
       ttsMode: 'OFF',
+      strictDrillEnabled: false, // Default to OFF for a more relaxed experience
       ...parsed
     };
   });
@@ -80,7 +76,6 @@ const App: React.FC = () => {
 
   useEffect(() => { localStorage.setItem('frogXP', userXP.toString()); }, [userXP]);
   useEffect(() => { localStorage.setItem('frogType_masteredQuotes', JSON.stringify(masteredQuotes)); }, [masteredQuotes]);
-  useEffect(() => { localStorage.setItem('frogType_strictRemediation', JSON.stringify(strictRemediation)); }, [strictRemediation]);
   useEffect(() => { localStorage.setItem('frogType_pendingWordDrill', JSON.stringify(pendingWordDrill)); }, [pendingWordDrill]);
   useEffect(() => { localStorage.setItem('frogType_history', JSON.stringify(testHistory)); }, [testHistory]);
   useEffect(() => { localStorage.setItem('frogType_settings', JSON.stringify(settings)); }, [settings]);
@@ -147,33 +142,34 @@ const App: React.FC = () => {
   }, [settings]);
 
   const loadMoreQuotes = useCallback(async () => {
-    if (loading || strictRemediation || gameMode !== 'QUOTES') return;
+    if (loading || gameMode !== 'QUOTES') return;
     setLoading(true);
     try {
       const newQuotes = await fetchQuotes(5, masteredQuotes);
       setQuotesQueue(prev => [...prev, ...newQuotes]);
     } catch (e) { console.error(e); } 
     finally { setLoading(false); }
-  }, [masteredQuotes, strictRemediation, loading, gameMode]);
+  }, [masteredQuotes, loading, gameMode]);
 
   useEffect(() => {
-    if (gameMode === 'QUOTES' && !currentQuote && !strictRemediation && !pendingWordDrill && quotesQueue.length === 0) {
+    if (gameMode === 'QUOTES' && !currentQuote && !pendingWordDrill && quotesQueue.length === 0) {
         loadMoreQuotes();
     }
-  }, [currentQuote, strictRemediation, pendingWordDrill, quotesQueue.length, loadMoreQuotes, gameMode]);
+  }, [currentQuote, pendingWordDrill, quotesQueue.length, loadMoreQuotes, gameMode]);
 
   useEffect(() => {
     if (gameMode === 'QUOTES' && !currentQuote && !pendingWordDrill) {
-        if (strictRemediation) {
-            setCurrentQuote({ text: strictRemediation.quoteText, source: strictRemediation.source, author: `Repetition ${strictRemediation.currentCount + 1}/${strictRemediation.requiredCount}` });
-        } else if (quotesQueue.length > 0) {
+        if (quotesQueue.length > 0) {
             setCurrentQuote(quotesQueue[0]);
             setQuotesQueue(prev => prev.slice(1));
         }
     }
-  }, [currentQuote, quotesQueue, strictRemediation, pendingWordDrill, gameMode]);
+  }, [currentQuote, quotesQueue, pendingWordDrill, gameMode]);
 
   const handleMistake = useCallback((word?: string) => {
+    // Only trigger drill mode if explicitly enabled in settings
+    if (!settings.strictDrillEnabled) return;
+
     if (word) {
         const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
         if (cleanWord.length > 0) {
@@ -181,41 +177,24 @@ const App: React.FC = () => {
           soundEngine.playError();
         }
     }
-  }, []);
+  }, [settings.strictDrillEnabled]);
 
   const handleQuoteComplete = (xp: number, wpm: number, mistakes: string[], retryCount: number) => {
     const isPerfect = mistakes.length === 0 && retryCount === 0;
 
-    if (strictRemediation) {
-        const nextCount = strictRemediation.currentCount + 1;
-        if (nextCount >= strictRemediation.requiredCount) {
-            setStrictRemediation(null);
-            soundEngine.playLevelUp();
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-        } else {
-            setStrictRemediation({ ...strictRemediation, currentCount: nextCount });
-        }
-        setCurrentQuote(null);
+    if (isPerfect) {
+        setMasteredQuotes(prev => [...prev, currentQuote?.text || ""]);
+        setUserXP(prev => prev + xp);
+        setStreak(prev => prev + 1);
+        soundEngine.playSuccess();
     } else {
-        if (isPerfect) {
-            setMasteredQuotes(prev => [...prev, currentQuote?.text || ""]);
-            setUserXP(prev => prev + xp);
-            setStreak(prev => prev + 1);
-            soundEngine.playSuccess();
-        } else {
-            setStrictRemediation({
-                quoteText: currentQuote?.text || "",
-                author: currentQuote?.author || "",
-                source: "Strict Mastery Required",
-                requiredCount: 3,
-                currentCount: 0
-            });
-            setStreak(0);
-        }
-        setWpmHistory(prev => [...prev, wpm].slice(-10));
-        setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xp, mode: gameMode, quoteText: currentQuote?.text || "", mistakes, retryCount }]);
-        setCurrentQuote(null);
+        // Just reset streak on imperfect run, no forced remediation
+        setStreak(0);
     }
+    
+    setWpmHistory(prev => [...prev, wpm].slice(-10));
+    setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xp, mode: gameMode, quoteText: currentQuote?.text || "", mistakes, retryCount }]);
+    setCurrentQuote(null);
   };
 
   const handleDrillInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,7 +227,7 @@ const App: React.FC = () => {
     }
   };
 
-  const isLocked = !!pendingWordDrill || !!strictRemediation;
+  const isLocked = !!pendingWordDrill;
   const avgWpmVal = getAverageWPM(wpmHistory);
 
   const renderGameMode = () => {
@@ -285,17 +264,11 @@ const App: React.FC = () => {
       case 'QUOTES':
       default:
         return <>
-            {strictRemediation && (
-                <div className="mb-8 flex items-center gap-3 bg-amber-100 text-amber-800 px-6 py-3 rounded-full border border-amber-200 animate-bounce">
-                    <ShieldAlert className="w-5 h-5" />
-                    <span className="font-black tracking-tight uppercase text-sm">Strict Mastery Required: Complete 3x perfectly to unlock.</span>
-                </div>
-            )}
             {currentQuote ? (
                 <TypingArea 
                     quote={currentQuote} 
                     onComplete={handleQuoteComplete} 
-                    onFail={() => { setStreak(0); if (!strictRemediation) setStrictRemediation({ quoteText: currentQuote.text, author: currentQuote.author, source: "Mistake Penalty", requiredCount: 3, currentCount: 0 }); }}
+                    onFail={() => setStreak(0)}
                     onMistake={handleMistake} 
                     onRequestNewQuote={() => setCurrentQuote(null)}
                     streak={streak} 

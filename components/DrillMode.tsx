@@ -23,7 +23,8 @@ const DrillMode: React.FC<DrillModeProps> = ({ wordProficiency, updateWordProfic
   const inputRef = useRef<HTMLInputElement>(null);
 
   const wordsToDrill = useMemo(() => {
-    return Object.entries(wordProficiency)
+    // Explicitly cast to ensure type safety if inference fails
+    return (Object.entries(wordProficiency) as [string, WordProficiency][])
       .filter(([_, stats]) => stats.mistakes > 0 && stats.correct < 100)
       .sort(([, a], [, b]) => (b.mistakes / (b.correct + 1)) - (a.mistakes / (a.correct + 1)))
       .map(([word]) => word);
