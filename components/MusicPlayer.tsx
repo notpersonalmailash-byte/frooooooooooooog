@@ -88,12 +88,17 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
     if (musicConfig.source === 'NONE') return null;
 
     if (musicConfig.source === 'YOUTUBE') {
+      const isPlaylist = musicConfig.presetId.startsWith('PL');
+      const src = isPlaylist 
+        ? `https://www.youtube.com/embed/videoseries?list=${musicConfig.presetId}&autoplay=1`
+        : `https://www.youtube.com/embed/${musicConfig.presetId}?autoplay=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+
       return (
         <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative shadow-inner">
            <iframe 
              width="100%" 
              height="100%" 
-             src={`https://www.youtube.com/embed/${musicConfig.presetId}?autoplay=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`} 
+             src={src} 
              title="YouTube music player" 
              frameBorder="0" 
              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
