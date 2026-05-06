@@ -90,15 +90,15 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
 
     if (musicConfig.source === 'YOUTUBE') {
       return (
-        <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative group shadow-inner pointer-events-none">
+        <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative group shadow-inner">
           <ReactPlayer 
             url={`https://www.youtube.com/watch?v=${musicConfig.presetId}`}
             playing={true}
             volume={settings.masterVolume}
             width="100%"
             height="100%"
-            controls={false}
-            config={{ youtube: { playerVars: { disablekb: 1 } } }}
+            controls={true}
+            config={{ youtube: { playerVars: { disablekb: 0, autoplay: 1 } } }}
           />
         </div>
       );
