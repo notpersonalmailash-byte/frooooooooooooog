@@ -11,8 +11,8 @@ export interface RadioStation {
 export const RADIO_STATIONS: RadioStation[] = [
   // Egg Level Unlocks
   {
-    id: "n61ULEU7CO0",
-    name: "Lofi Girl - chill space",
+    id: "PLbYsdgANCo0t7yNaAGSEtAuXVQ4CFaeCd",
+    name: "YouTube Music Playlist",
     type: "YOUTUBE",
     tier: "Egg",
     minLevelName: "Egg II",

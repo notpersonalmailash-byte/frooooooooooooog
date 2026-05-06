@@ -90,8 +90,8 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
     if (musicConfig.source === 'YOUTUBE') {
       const isPlaylist = musicConfig.presetId.startsWith('PL');
       const src = isPlaylist 
-        ? `https://www.youtube.com/embed/videoseries?list=${musicConfig.presetId}&autoplay=1`
-        : `https://www.youtube.com/embed/${musicConfig.presetId}?autoplay=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
+        ? `https://www.youtube-nocookie.com/embed/videoseries?list=${musicConfig.presetId}&autoplay=1`
+        : `https://www.youtube-nocookie.com/embed/${musicConfig.presetId}?autoplay=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`;
 
       return (
         <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative shadow-inner">
