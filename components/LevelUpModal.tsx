@@ -10,14 +10,14 @@ interface LevelUpModalProps {
 }
 
 const colorMap: Record<string, { main: string, soft: string }> = {
-  stone: { main: '#78716c', soft: '#f5f5f4' },
-  lime: { main: '#84cc16', soft: '#ecfccb' },
-  emerald: { main: '#10b981', soft: '#d1fae5' },
-  cyan: { main: '#06b6d4', soft: '#cffafe' },
-  blue: { main: '#3b82f6', soft: '#dbeafe' },
-  violet: { main: '#8b5cf6', soft: '#ede9fe' },
-  orange: { main: '#f97316', soft: '#ffedd5' },
-  red: { main: '#ef4444', soft: '#fee2e2' },
+  stone: { main: '#57534e', soft: '#f5f5f4' },
+  lime: { main: '#65a30d', soft: '#ecfccb' },
+  emerald: { main: '#059669', soft: '#d1fae5' },
+  cyan: { main: '#0891b2', soft: '#cffafe' },
+  blue: { main: '#2563eb', soft: '#dbeafe' },
+  violet: { main: '#7c3aed', soft: '#ede9fe' },
+  orange: { main: '#ea580c', soft: '#ffedd5' },
+  red: { main: '#dc2626', soft: '#fee2e2' },
 };
 
 export const LevelUpModal: React.FC<LevelUpModalProps> = ({ newLevel, prevLevelName, onClose }) => {

@@ -2,8 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactPlayer from 'react-player';
 import { MusicConfig, MusicSource, Settings } from '../types';
-import { getCurrentLevel } from '../utils/gameLogic';
-import { RADIO_STATIONS } from '../data/radioStations';
+import { getCurrentLevel, LEVELS } from '../utils/gameLogic';
+import { RADIO_STATIONS, RadioStation } from '../data/radioStations';
 import { X, Music, Disc, Youtube, Radio, Sparkles, Wind, Waves, Guitar, Drum, Rocket, Volume2, Power, AudioWaveform, Lock, CloudRain, Trees } from 'lucide-react';
 
 interface MusicPlayerProps {
@@ -73,8 +73,14 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
     setSettings({ ...settings, ambientVolume: parseFloat(e.target.value) });
   };
 
-  const isStationLocked = (tier: string) => {
-    const requiredIndex = TIER_ORDER.indexOf(tier);
+  const isStationLocked = (preset: RadioStation) => {
+    if (preset.minLevelName) {
+      const requiredLevel = LEVELS.find((l) => l.name === preset.minLevelName);
+      if (requiredLevel) {
+        return userXP < requiredLevel.minXP;
+      }
+    }
+    const requiredIndex = TIER_ORDER.indexOf(preset.tier);
     return currentTierIndex < requiredIndex;
   };
 
@@ -282,7 +288,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
              ))}
 
              {activeTab === 'RADIO' && RADIO_STATIONS.map((preset) => {
-               const locked = isStationLocked(preset.tier);
+               const locked = isStationLocked(preset);
                
                return (
                  <button

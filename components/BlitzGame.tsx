@@ -111,13 +111,13 @@ const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWor
 
   if (gameState === 'GAMEOVER') {
       return (
-          <div className="w-full max-w-2xl mx-auto h-[350px] bg-stone-900 rounded-3xl flex flex-col items-center justify-center text-white p-6 shadow-2xl">
+          <div className="w-full max-w-2xl mx-auto h-[350px] bg-white rounded-3xl flex flex-col items-center justify-center p-6 shadow-2xl border-4 border-frog-200">
               <div className="text-center space-y-3 animate-in zoom-in-95">
-                  <div className="text-frog-green font-black text-6xl">{correctCount}</div>
-                  <div className="text-stone-400 uppercase tracking-widest font-bold text-xs">Words Typed Correctly</div>
+                  <div className="text-frog-600 font-black text-6xl">{correctCount}</div>
+                  <div className="text-stone-500 uppercase tracking-widest font-bold text-xs">Words Typed Correctly</div>
                   <div className="flex gap-4 justify-center mt-8">
-                      <button onClick={onExit} className="px-5 py-2.5 bg-stone-800 hover:bg-stone-700 rounded-xl font-bold flex items-center gap-2"><LogOut className="w-4 h-4" /> Exit</button>
-                      <button onClick={initGame} className="px-5 py-2.5 bg-frog-green hover:bg-green-500 text-white rounded-xl font-bold flex items-center gap-2"><RotateCcw className="w-4 h-4" /> Try Again</button>
+                      <button onClick={onExit} className="px-5 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-600 rounded-xl font-bold flex items-center gap-2"><LogOut className="w-4 h-4" /> Exit</button>
+                      <button onClick={initGame} className="px-5 py-2.5 bg-frog-500 hover:bg-green-500 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-frog-200"><RotateCcw className="w-4 h-4" /> Try Again</button>
                   </div>
               </div>
           </div>

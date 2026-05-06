@@ -589,13 +589,13 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   const getContainerStyle = () => {
     if (status === GameStatus.FAILED) {
         if (gameMode === 'HARDCORE') {
-            return 'bg-red-900/20 border-red-900/50 shadow-[0_0_40px_rgba(220,38,38,0.1)]';
+            return 'bg-red-50 border-4 border-red-900 shadow-[8px_8px_0_0_rgba(127,29,29,1)]';
         }
         return 'bg-red-50 border-red-200 shadow-inner';
     }
 
     if (gameMode === 'HARDCORE') {
-        return 'bg-stone-900 border-stone-800 text-stone-400 shadow-[0_0_40px_rgba(0,0,0,0.2)]';
+        return 'bg-white border-4 border-stone-900 text-stone-800 shadow-[8px_8px_0_0_rgba(28,25,23,1)]';
     }
     if (gameMode === 'XWORDS' || gameMode === 'XQUOTES') {
         return 'bg-red-50 border-red-100';

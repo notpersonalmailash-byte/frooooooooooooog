@@ -5,12 +5,15 @@ export interface RadioStation {
   name: string;
   type: MusicSource;
   tier: string;
+  minLevelName?: string;
 }
 
 export const RADIO_STATIONS: RadioStation[] = [
+  // Egg Level Unlocks
+  { id: 'jfKfPfyJRdk', name: 'Lofi Girl - chill space', type: 'YOUTUBE', tier: 'Egg', minLevelName: 'Egg II' },
+
   // Tadpole (Unlock Radio Feature)
   { id: '1YBtzAAChU8', name: 'Lofi Girl Christmas', type: 'YOUTUBE', tier: 'Tadpole' },
-  { id: 'jfKfPfyJRdk', name: 'Lofi Girl - chill space', type: 'YOUTUBE', tier: 'Tadpole' },
   { id: '4xDzrDKqGNo', name: 'Lofi Hip Hop', type: 'YOUTUBE', tier: 'Tadpole' },
   { id: '7NOSDKb0HlU', name: 'Chillhop Beats', type: 'YOUTUBE', tier: 'Tadpole' },
 
