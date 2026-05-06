@@ -5,7 +5,6 @@ import TypingArea from './components/TypingArea';
 import SettingsModal from './components/SettingsModal';
 import StatsModal from './components/StatsModal';
 import ThemeModal from './components/ThemeModal';
-import TenFastGame from './components/BlitzGame';
 import DrillMode from './components/DrillMode';
 import { MusicPlayer } from './components/MusicPlayer';
 import { LevelUpModal } from './components/LevelUpModal';
@@ -170,16 +169,22 @@ const App: React.FC = () => {
   }, [currentQuote, quotesQueue, pendingWordDrill, gameMode]);
 
   const handleMistake = useCallback((word?: string) => {
-    // Only trigger drill mode if explicitly enabled in settings
-    if (!settings.strictDrillEnabled) return;
-
     if (word) {
         const cleanWord = word.toLowerCase().replace(/[^a-z]/g, '');
         if (cleanWord.length > 0) {
-          setPendingWordDrill({ word: cleanWord, requiredCount: 15, currentCount: 0 });
-          soundEngine.playError();
+            setMistakePool(prev => {
+                if (!prev.includes(cleanWord)) {
+                    return [...prev, cleanWord];
+                }
+                return prev;
+            });
+            // Only trigger strict pending drill if enabled in settings
+            if (settings.strictDrillEnabled) {
+                setPendingWordDrill({ word: cleanWord, requiredCount: 15, currentCount: 0 });
+            }
         }
     }
+    soundEngine.playError();
   }, [settings.strictDrillEnabled]);
 
   const handleQuoteComplete = (xp: number, wpm: number, mistakes: string[], retryCount: number) => {
@@ -235,22 +240,10 @@ const App: React.FC = () => {
 
   const renderGameMode = () => {
     switch(gameMode) {
-      case 'TEN_FAST':
-        return <TenFastGame 
-            smartQueue={[]} 
-            onGameOver={(wpm, xp) => {
-                setUserXP(prev => prev + xp);
-                setWpmHistory(prev => [...prev, wpm].slice(-10));
-                soundEngine.playSuccess();
-            }}
-            onWordPerformance={() => {}}
-            onExit={() => setGameMode('QUOTES')}
-            onMistake={handleMistake}
-        />;
       case 'DRILL':
         return <DrillMode
-          wordProficiency={wordProficiency}
-          updateWordProficiency={updateWordProficiency}
+          mistakePool={mistakePool}
+          setMistakePool={setMistakePool}
           onExit={() => setGameMode('QUOTES')}
         />;
       case 'QUOTES':
@@ -295,9 +288,6 @@ const App: React.FC = () => {
                 <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-stone-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all flex flex-col p-1 z-50">
                   <button onClick={() => setGameMode('QUOTES')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-frog-50 text-frog-600' : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'}`}>
                     <BookOpen className="w-4 h-4" /> Quotes Mod 
-                  </button>
-                  <button onClick={() => setGameMode('TEN_FAST')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-frog-50 text-frog-600' : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'}`}>
-                    <Zap className="w-4 h-4" /> 60s Sprint
                   </button>
                   <button onClick={() => setGameMode('DRILL')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${gameMode === 'DRILL' ? 'bg-frog-50 text-frog-600' : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'}`}>
                     <Brain className="w-4 h-4" /> Drill Mistakes

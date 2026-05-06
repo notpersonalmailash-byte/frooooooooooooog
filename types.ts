@@ -67,7 +67,7 @@ export interface Settings {
   showSpeedBox: boolean;
 }
 
-export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'TEN_FAST' | 'DRILL';
+export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'DRILL';
 
 export enum GameStatus {
   IDLE = 'IDLE',
