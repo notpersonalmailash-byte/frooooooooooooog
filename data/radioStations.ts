@@ -11,6 +11,7 @@ export interface RadioStation {
 export const RADIO_STATIONS: RadioStation[] = [
   // Egg Level Unlocks
   { id: 'jfKfPfyJRdk', name: 'Lofi Girl - chill space', type: 'YOUTUBE', tier: 'Egg', minLevelName: 'Egg II' },
+  { id: '37i9dQZF1DWWQRwui0ExPn', name: 'Lofi Beats', type: 'SPOTIFY', tier: 'Egg', minLevelName: 'Egg II' },
 
   // Tadpole (Unlock Radio Feature)
   { id: '1YBtzAAChU8', name: 'Lofi Girl Christmas', type: 'YOUTUBE', tier: 'Tadpole' },
