@@ -533,7 +533,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
         return 'text-red-400';
      }
      if (gameMode === 'HARDCORE') return 'text-stone-500';
-     return 'text-stone-500';
+     return 'text-stone-700';
   };
 
   const renderText = () => {
@@ -545,20 +545,20 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
       if (index < input.length) {
         if (input[index] === char) {
-          colorClass = 'text-frog-500'; // Changed from frog-green to frog-500 for theming
+          colorClass = 'text-frog-500 opacity-80'; // Typed correctly
         } else {
           colorClass = 'text-red-500 bg-red-100'; 
         }
       } else {
           if (isHighlighted) {
-              colorClass = 'text-frog-500 font-bold'; // Changed for theming
+              colorClass = 'text-frog-600 font-bold'; // Changed for theming
               bgClass = 'bg-frog-200/20'; // Use themed highlight
           }
       }
 
       if (gameMode === 'XWORDS' || gameMode === 'XQUOTES') {
           if (index >= input.length) {
-              colorClass = 'text-stone-500';
+              colorClass = 'text-stone-700';
           }
       }
 

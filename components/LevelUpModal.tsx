@@ -9,6 +9,17 @@ interface LevelUpModalProps {
   onClose: () => void;
 }
 
+const colorMap: Record<string, { main: string, soft: string }> = {
+  stone: { main: '#78716c', soft: '#f5f5f4' },
+  lime: { main: '#84cc16', soft: '#ecfccb' },
+  emerald: { main: '#10b981', soft: '#d1fae5' },
+  cyan: { main: '#06b6d4', soft: '#cffafe' },
+  blue: { main: '#3b82f6', soft: '#dbeafe' },
+  violet: { main: '#8b5cf6', soft: '#ede9fe' },
+  orange: { main: '#f97316', soft: '#ffedd5' },
+  red: { main: '#ef4444', soft: '#fee2e2' },
+};
+
 export const LevelUpModal: React.FC<LevelUpModalProps> = ({ newLevel, prevLevelName, onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -49,19 +60,22 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({ newLevel, prevLevelN
      onClose();
   };
 
+  const levelColor = colorMap[newLevel.color]?.main || '#40D672';
+  const levelSoft = colorMap[newLevel.color]?.soft || '#dcfce7';
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-500">
-      <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col p-8 text-center relative border-4" style={{ borderColor: newLevel.color }}>
+      <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-md overflow-hidden flex flex-col p-8 text-center relative border-4" style={{ borderColor: levelColor }}>
         
         <div className="mx-auto flex items-center justify-center mb-6 relative">
-             <div className="absolute w-32 h-32 rounded-full animate-ping opacity-20" style={{ backgroundColor: newLevel.color }}></div>
-             <div className="w-32 h-32 rounded-full flex items-center justify-center border-8 shadow-xl relative z-10" style={{ backgroundColor: newLevel.shade, borderColor: newLevel.color, color: newLevel.color }}>
+             <div className="absolute w-32 h-32 rounded-full animate-ping opacity-20" style={{ backgroundColor: levelColor }}></div>
+             <div className="w-32 h-32 rounded-full flex items-center justify-center border-8 shadow-xl relative z-10" style={{ backgroundColor: levelSoft, borderColor: levelColor, color: levelColor }}>
                  <ArrowUp className="w-16 h-16" />
              </div>
         </div>
 
         <h3 className="text-sm font-black uppercase tracking-[0.3em] text-stone-400 mb-2">Rank Up!</h3>
-        <h2 className="text-4xl font-black text-stone-800 tracking-tight mb-2" style={{ color: newLevel.color }}>{newLevel.name}</h2>
+        <h2 className="text-4xl font-black tracking-tight mb-2" style={{ color: levelColor }}>{newLevel.name}</h2>
         <p className="text-stone-500 mb-8 font-medium">You have evolved to the {newLevel.tier} tier!</p>
 
         <div className="bg-stone-50 rounded-2xl p-6 text-left mb-8 border border-stone-100 shadow-inner">
@@ -86,7 +100,7 @@ export const LevelUpModal: React.FC<LevelUpModalProps> = ({ newLevel, prevLevelN
            </div>
         </div>
 
-        <button onClick={close} className="w-full flex items-center justify-center gap-2 py-4 text-white rounded-2xl font-black text-xl shadow-lg transition-transform hover:scale-[1.02]" style={{ backgroundColor: newLevel.color }}>
+        <button onClick={close} className="w-full flex items-center justify-center gap-2 py-4 text-white rounded-2xl font-black text-xl shadow-lg shadow-stone-200 transition-transform hover:scale-[1.02]" style={{ backgroundColor: levelColor }}>
            Awesome!
         </button>
       </div>

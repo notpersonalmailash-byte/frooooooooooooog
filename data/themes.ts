@@ -4,23 +4,6 @@ import { Theme } from '../types';
 export const THEMES: Theme[] = [
   // --- TIER 1: EGG (The Beginning) ---
   {
-    id: 'DARK',
-    name: 'Midnight Pond (Dark Mode)',
-    description: 'Easy on the eyes. A completely free dark mode for late night typing.',
-    minTier: 'Egg',
-    colors: {
-      background: '#121212', 
-      frog: { 
-        50: '#052e16', 100: '#14532d', 200: '#166534', 300: '#15803d', 400: '#16a34a',
-        500: '#40D672', 600: '#4ade80', 700: '#86efac', 800: '#bbf7d0', 900: '#dcfce7',
-      },
-      stone: { 
-        50: '#1c1917', 100: '#292524', 200: '#44403c', 300: '#57534e', 400: '#78716c',
-        500: '#a8a29e', 600: '#d6d3d1', 700: '#e7e5e4', 800: '#f5f5f4', 900: '#fafaf9',
-      }
-    }
-  },
-  {
     id: 'CLASSIC',
     name: 'Classic Pond',
     description: 'The signature look. Fresh, clean, and optimistic.',
@@ -131,57 +114,57 @@ export const THEMES: Theme[] = [
 
   // --- TIER 5: HOPPER ---
   {
-    id: 'DUSK',
-    name: 'Ocean Dusk',
-    description: 'Deep teal and evening orange highlights.',
+    id: 'OCEAN',
+    name: 'Ocean Breeze',
+    description: 'Fresh teal waters and bright sunlit sands.',
     minTier: 'Hopper',
     colors: {
-      background: '#081c15', 
+      background: '#f0fdfa', 
       frog: { 
-        50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399',
-        500: '#fbbf24', 600: '#f59e0b', 700: '#d97706', 800: '#b45309', 900: '#78350f',
+        50: '#ccfbf1', 100: '#99f6e4', 200: '#5eead4', 300: '#2dd4bf', 400: '#14b8a6',
+        500: '#0d9488', 600: '#0f766e', 700: '#115e59', 800: '#134e4a', 900: '#042f2e',
       },
       stone: { 
-        50: '#064e3b', 100: '#065f46', 200: '#10b981', 300: '#34d399', 400: '#6ee7b7',
-        500: '#a7f3d0', 600: '#d1fae5', 700: '#ecfdf5', 800: '#f0fdf4', 900: '#ffffff',
+        50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8',
+        500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a',
       }
     }
   },
 
   // --- TIER 6: TREE FROG ---
   {
-    id: 'CYBER',
-    name: 'Biolume',
-    description: 'High-contrast glowing neon for maximum speed.',
+    id: 'SUNSET',
+    name: 'Golden Sunset',
+    description: 'Warm evening light with fiery orange streaks.',
     minTier: 'Tree Frog',
     colors: {
-      background: '#020617', 
+      background: '#fffbeb', 
       frog: { 
-        50: '#064e3b', 100: '#065f46', 200: '#047857', 300: '#059669', 400: '#10b981',
-        500: '#22d3ee', 600: '#06b6d4', 700: '#0891b2', 800: '#0e7490', 900: '#155e75',
+        50: '#fef3c7', 100: '#fde68a', 200: '#fcd34d', 300: '#fbbf24', 400: '#f59e0b',
+        500: '#d97706', 600: '#b45309', 700: '#92400e', 800: '#78350f', 900: '#451a03',
       },
       stone: { 
-        50: '#020617', 100: '#0f172a', 200: '#1e293b', 300: '#334155', 400: '#475569',
-        500: '#64748b', 600: '#94a3b8', 700: '#cbd5e1', 800: '#e2e8f0', 900: '#f1f5f9',
+        50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 300: '#d6d3d1', 400: '#a8a29e',
+        500: '#78716c', 600: '#57534e', 700: '#44403c', 800: '#292524', 900: '#1c1917',
       }
     }
   },
 
   // --- TIER 7: BULLFROG ---
   {
-    id: 'TOXIC',
-    name: 'Toxic Glitch',
-    description: 'A dangerous green glow from the deep swamp.',
+    id: 'MINT',
+    name: 'Crisp Mint',
+    description: 'Extremely clean white backgrounds with piercing mint greens.',
     minTier: 'Bullfrog',
     colors: {
-      background: '#0a0a0a', 
+      background: '#ffffff', 
       frog: { 
-        50: '#052e16', 100: '#14532d', 200: '#166534', 300: '#15803d', 400: '#16a34a',
-        500: '#bef264', 600: '#a3e635', 700: '#84cc16', 800: '#65a30d', 900: '#4d7c0f',
+        50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7', 400: '#34d399',
+        500: '#10b981', 600: '#059669', 700: '#047857', 800: '#065f46', 900: '#064e3b',
       },
       stone: { 
-        50: '#171717', 100: '#262626', 200: '#404040', 300: '#525252', 400: '#737373',
-        500: '#a3a3a3', 600: '#d4d4d4', 700: '#e5e5e5', 800: '#f5f5f5', 900: '#ffffff',
+        50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8',
+        500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a',
       }
     }
   },
@@ -205,19 +188,19 @@ export const THEMES: Theme[] = [
     }
   },
   {
-    id: 'GALAXY',
-    name: 'Abyssal Sage',
-    description: 'Where the stars themselves spell out the wisdom of the pond.',
+    id: 'DAWN',
+    name: 'Morning Dawn',
+    description: 'A beautiful bright sunrise to start the typing journey anew.',
     minTier: 'Frog Sage',
     colors: {
-      background: '#020205', 
+      background: '#fdf4ff', 
       frog: { 
-        50: '#1e1b4b', 100: '#312e81', 200: '#3730a3', 300: '#4338ca', 400: '#4f46e5',
-        500: '#818cf8', 600: '#a5b4fc', 700: '#c7d2fe', 800: '#e0e7ff', 900: '#eef2ff',
+        50: '#fae8ff', 100: '#f5d0fe', 200: '#f0abfc', 300: '#e879f9', 400: '#d946ef',
+        500: '#c026d3', 600: '#a21caf', 700: '#86198f', 800: '#701a75', 900: '#4a044e',
       },
       stone: { 
-        50: '#000000', 100: '#0f172a', 200: '#1e293b', 300: '#334155', 400: '#475569',
-        500: '#64748b', 600: '#94a3b8', 700: '#cbd5e1', 800: '#e2e8f0', 900: '#f1f5f9',
+        50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3', 300: '#fda4af', 400: '#fb7185',
+        500: '#f43f5e', 600: '#e11d48', 700: '#be123c', 800: '#9f1239', 900: '#881337',
       }
     }
   }
