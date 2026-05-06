@@ -87,9 +87,9 @@ const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWor
   };
 
   const triggerFail = (word: string) => {
-    clearInterval(timerRef.current);
     soundEngine.playError();
-    onMistake(word); // This triggers the 15x drill in App.tsx
+    setMistakeWords(prev => prev.includes(word) ? prev : [...prev, word]);
+    onMistake(word); // This triggers the 15x drill in App.tsx if enabled
     setInput('');
   };
 
@@ -99,7 +99,7 @@ const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWor
               <div className="text-center space-y-6">
                   <div className="w-20 h-20 bg-frog-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-frog-400 shadow-lg"><Zap className="w-10 h-10 text-frog-600" /></div>
                   <h2 className="text-4xl font-black text-stone-800 tracking-tight uppercase">Common Word Sprint</h2>
-                  <p className="text-stone-500 text-lg max-w-md mx-auto">One mistake = Run ends and strictly forces a 15x repetition drill of the failed word.</p>
+                  <p className="text-stone-500 text-lg max-w-md mx-auto">Type as many words as you can in 60 seconds. Mistakes will slow you down!</p>
                   <div className="flex gap-4 justify-center">
                       <button onClick={onExit} className="px-6 py-3 text-stone-400 font-bold hover:text-stone-600">Back</button>
                       <button onClick={initGame} className="px-10 py-4 bg-frog-green hover:bg-green-500 text-white font-black text-xl rounded-full shadow-lg shadow-frog-100 transition-transform hover:scale-105">START SPRINT</button>

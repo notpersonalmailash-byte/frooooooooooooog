@@ -5,15 +5,14 @@ import TypingArea from './components/TypingArea';
 import SettingsModal from './components/SettingsModal';
 import StatsModal from './components/StatsModal';
 import ThemeModal from './components/ThemeModal';
-import BookMode from './components/BookMode';
 import TenFastGame from './components/BlitzGame';
 import DrillMode from './components/DrillMode';
 import { MusicPlayer } from './components/MusicPlayer';
-import { Quote, Settings, GameMode, TestResult, WordDrill, WordPerformance, BookSection, WordProficiency } from './types';
+import { Quote, Settings, GameMode, TestResult, WordDrill, WordPerformance, WordProficiency } from './types';
 import { fetchQuotes } from './services/quoteService';
 import { getCurrentLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, Library, BookOpen, Eraser, Palette, Brain, Zap, Lock, RotateCcw, ShieldAlert, User } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, BookOpen, Eraser, Palette, Brain, Zap, Lock, RotateCcw, ShieldAlert, User } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
 
@@ -37,11 +36,6 @@ const App: React.FC = () => {
   const [testHistory, setTestHistory] = useState<TestResult[]>(() => JSON.parse(localStorage.getItem('frogType_history') || '[]'));
   const [mistakePool, setMistakePool] = useState<string[]>(() => JSON.parse(localStorage.getItem('frogType_mistakes') || '[]'));
   const [gameMode, setGameMode] = useState<GameMode>(() => (localStorage.getItem('frogType_gameMode') as GameMode) || 'QUOTES');
-  
-  // Book Mode State
-  const [bookContent, setBookContent] = useState<string | null>(() => localStorage.getItem('frogType_bookContent'));
-  const [bookProgress, setBookProgress] = useState<number>(() => parseInt(localStorage.getItem('frogType_bookProgress') || '0', 10));
-  const [bookStructure, setBookStructure] = useState<BookSection[] | null>(() => JSON.parse(localStorage.getItem('frogType_bookStructure') || 'null'));
   
   // Word Proficiency State
   const [wordProficiency, setWordProficiency] = useState<Record<string, WordProficiency>>(() => JSON.parse(localStorage.getItem('frogType_wordProficiency') || '{}'));
@@ -83,20 +77,6 @@ const App: React.FC = () => {
   useEffect(() => { localStorage.setItem('frogType_streak', streak.toString()); }, [streak]);
   useEffect(() => { localStorage.setItem('frogType_wpmHistory', JSON.stringify(wpmHistory)); }, [wpmHistory]);
   useEffect(() => { localStorage.setItem('frogType_gameMode', gameMode); }, [gameMode]);
-  
-  useEffect(() => { 
-    if (bookContent) localStorage.setItem('frogType_bookContent', bookContent);
-    else localStorage.removeItem('frogType_bookContent');
-  }, [bookContent]);
-  
-  useEffect(() => { 
-    localStorage.setItem('frogType_bookProgress', bookProgress.toString());
-  }, [bookProgress]);
-  
-  useEffect(() => {
-    if (bookStructure) localStorage.setItem('frogType_bookStructure', JSON.stringify(bookStructure));
-    else localStorage.removeItem('frogType_bookStructure');
-  }, [bookStructure]);
   
   useEffect(() => {
     localStorage.setItem('frogType_wordProficiency', JSON.stringify(wordProficiency));
@@ -244,17 +224,6 @@ const App: React.FC = () => {
             onExit={() => setGameMode('QUOTES')}
             onMistake={handleMistake}
         />;
-      case 'BOOK':
-        return <BookMode
-          bookContent={bookContent}
-          setBookContent={setBookContent}
-          bookProgress={bookProgress}
-          setBookProgress={setBookProgress}
-          bookStructure={bookStructure}
-          setBookStructure={setBookStructure}
-          onXpEarned={(xp) => setUserXP(prev => prev + xp)}
-          updateWordProficiency={updateWordProficiency}
-        />;
       case 'DRILL':
         return <DrillMode
           wordProficiency={wordProficiency}
@@ -297,7 +266,6 @@ const App: React.FC = () => {
           <div className="flex gap-2">
              <button onClick={() => setGameMode('QUOTES')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Quotes Mode"><BookOpen className="w-4 h-4" /></button>
              <button onClick={() => setGameMode('TEN_FAST')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="10 Fast Sprint"><Zap className="w-4 h-4" /></button>
-             <button onClick={() => setGameMode('BOOK')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'BOOK' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Book Mode"><Library className="w-4 h-4" /></button>
              <button onClick={() => setGameMode('DRILL')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'DRILL' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Drill Mistakes"><Brain className="w-4 h-4" /></button>
              <button onClick={() => setIsMusicOpen(true)} className={`p-2 transition-all rounded-xl ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'text-frog-500 bg-frog-50 shadow-sm ring-1 ring-frog-100' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`} title="Music Player"><Music className="w-5 h-5" /></button>
              <button onClick={() => setIsStatsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="User Stats"><User className="w-5 h-5" /></button>

@@ -66,7 +66,7 @@ export interface Settings {
   strictDrillEnabled: boolean;
 }
 
-export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'TEN_FAST' | 'DRILL' | 'BOOK';
+export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'TEN_FAST' | 'DRILL';
 
 export enum GameStatus {
   IDLE = 'IDLE',
@@ -133,13 +133,6 @@ export interface WordPerformance {
   word: string;
   wpm: number;
   isCorrect: boolean;
-}
-
-export interface BookSection {
-  id: number;
-  title: string;
-  content: string;
-  included: boolean;
 }
 
 export interface WordProficiency {
