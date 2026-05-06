@@ -104,30 +104,30 @@ const DrillMode: React.FC<DrillModeProps> = ({ wordProficiency, updateWordProfic
   }
 
   return (
-    <div className="w-full max-w-2xl bg-white p-12 rounded-[3rem] border-4 border-red-100 shadow-2xl text-center animate-in zoom-in-95 duration-300">
-      <div className="flex flex-col items-center gap-6">
-        <Brain className="w-16 h-16 text-red-500" />
-        <h2 className="text-4xl font-black text-red-700 tracking-tight">MISTAKE DRILL</h2>
-        <p className="text-red-500 font-bold">Type the word <span className="font-black">5 times</span> correctly to master it.</p>
+    <div className="w-full max-w-[500px] bg-white p-8 rounded-3xl border-4 border-red-100 shadow-2xl text-center animate-in zoom-in-95 duration-300">
+      <div className="flex flex-col items-center gap-4">
+        <Brain className="w-12 h-12 text-red-500" />
+        <h2 className="text-3xl font-black text-red-700 tracking-tight">MISTAKE DRILL</h2>
+        <p className="text-red-500 font-bold text-sm">Type the word <span className="font-black">5 times</span> correctly to master it.</p>
         
-        <div className="text-7xl font-mono font-black text-stone-800 tracking-wider my-8">{currentWord}</div>
+        <div className="text-5xl font-mono font-black text-stone-800 tracking-wider my-6">{currentWord}</div>
 
         <input
           ref={inputRef}
           autoFocus
           value={input}
           onChange={handleInputChange}
-          className="w-full max-w-sm text-center text-4xl font-mono font-bold bg-stone-50 border-2 rounded-2xl py-4 focus:outline-none focus:border-red-500 transition-all"
+          className="w-full max-w-xs text-center text-3xl font-mono font-bold bg-stone-50 border-2 rounded-xl py-3 focus:outline-none focus:border-red-500 transition-all"
           placeholder="Type here..."
         />
         
-        <div className="mt-8 flex flex-col items-center">
-            <div className="flex gap-2 mb-2">
+        <div className="mt-6 flex flex-col items-center">
+            <div className="flex gap-1.5 mb-2">
                 {Array.from({ length: REPS_REQUIRED }).map((_, i) => (
-                    <div key={i} className={`w-8 h-2 rounded-full ${i < reps ? 'bg-red-500' : 'bg-red-100'}`}></div>
+                    <div key={i} className={`w-6 h-2 rounded-full ${i < reps ? 'bg-red-500' : 'bg-red-100'}`}></div>
                 ))}
             </div>
-          <div className="text-red-400 font-black text-sm font-mono">
+          <div className="text-red-400 font-black text-xs font-mono">
             Word {currentWordIndex + 1} of {drillQueue.length}
           </div>
         </div>

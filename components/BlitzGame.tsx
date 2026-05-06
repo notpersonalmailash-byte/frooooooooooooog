@@ -95,14 +95,14 @@ const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWor
 
   if (gameState === 'START') {
       return (
-          <div className="w-full max-w-4xl mx-auto h-[450px] bg-white rounded-3xl border-4 border-frog-green/20 flex flex-col items-center justify-center shadow-xl p-8">
-              <div className="text-center space-y-6">
-                  <div className="w-20 h-20 bg-frog-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-frog-400 shadow-lg"><Zap className="w-10 h-10 text-frog-600" /></div>
-                  <h2 className="text-4xl font-black text-stone-800 tracking-tight uppercase">Common Word Sprint</h2>
-                  <p className="text-stone-500 text-lg max-w-md mx-auto">Type as many words as you can in 60 seconds. Mistakes will slow you down!</p>
-                  <div className="flex gap-4 justify-center">
-                      <button onClick={onExit} className="px-6 py-3 text-stone-400 font-bold hover:text-stone-600">Back</button>
-                      <button onClick={initGame} className="px-10 py-4 bg-frog-green hover:bg-green-500 text-white font-black text-xl rounded-full shadow-lg shadow-frog-100 transition-transform hover:scale-105">START SPRINT</button>
+          <div className="w-full max-w-2xl mx-auto h-[350px] bg-white rounded-3xl border-4 border-frog-green/20 flex flex-col items-center justify-center shadow-xl p-6">
+              <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-frog-100 rounded-full flex items-center justify-center mx-auto mb-2 border-2 border-frog-400 shadow-lg"><Zap className="w-8 h-8 text-frog-600" /></div>
+                  <h2 className="text-3xl font-black text-stone-800 tracking-tight uppercase">Common Word Sprint</h2>
+                  <p className="text-stone-500 max-w-sm mx-auto">Type as many words as you can in 60 seconds. Mistakes will slow you down!</p>
+                  <div className="flex gap-3 justify-center mt-4">
+                      <button onClick={onExit} className="px-5 py-2.5 text-stone-400 font-bold hover:text-stone-600">Back</button>
+                      <button onClick={initGame} className="px-8 py-3 bg-frog-green hover:bg-green-500 text-white font-black text-lg rounded-full shadow-lg shadow-frog-100 transition-transform hover:scale-105">START SPRINT</button>
                   </div>
               </div>
           </div>
@@ -111,13 +111,13 @@ const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWor
 
   if (gameState === 'GAMEOVER') {
       return (
-          <div className="w-full max-w-4xl mx-auto h-[450px] bg-stone-900 rounded-3xl flex flex-col items-center justify-center text-white p-8 shadow-2xl">
-              <div className="text-center space-y-4 animate-in zoom-in-95">
-                  <div className="text-frog-green font-black text-7xl">{correctCount}</div>
-                  <div className="text-stone-400 uppercase tracking-widest font-bold text-sm">Words Typed Correctly</div>
-                  <div className="flex gap-4 justify-center mt-12">
-                      <button onClick={onExit} className="px-6 py-3 bg-stone-800 hover:bg-stone-700 rounded-xl font-bold flex items-center gap-2"><LogOut className="w-4 h-4" /> Exit</button>
-                      <button onClick={initGame} className="px-6 py-3 bg-frog-green hover:bg-green-500 text-white rounded-xl font-bold flex items-center gap-2"><RotateCcw className="w-4 h-4" /> Try Again</button>
+          <div className="w-full max-w-2xl mx-auto h-[350px] bg-stone-900 rounded-3xl flex flex-col items-center justify-center text-white p-6 shadow-2xl">
+              <div className="text-center space-y-3 animate-in zoom-in-95">
+                  <div className="text-frog-green font-black text-6xl">{correctCount}</div>
+                  <div className="text-stone-400 uppercase tracking-widest font-bold text-xs">Words Typed Correctly</div>
+                  <div className="flex gap-4 justify-center mt-8">
+                      <button onClick={onExit} className="px-5 py-2.5 bg-stone-800 hover:bg-stone-700 rounded-xl font-bold flex items-center gap-2"><LogOut className="w-4 h-4" /> Exit</button>
+                      <button onClick={initGame} className="px-5 py-2.5 bg-frog-green hover:bg-green-500 text-white rounded-xl font-bold flex items-center gap-2"><RotateCcw className="w-4 h-4" /> Try Again</button>
                   </div>
               </div>
           </div>
@@ -125,28 +125,28 @@ const TenFastGame: React.FC<TenFastGameProps> = ({ smartQueue, onGameOver, onWor
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto h-[450px] bg-white rounded-[3rem] border border-stone-200 shadow-xl flex flex-col relative overflow-hidden">
-        <div className="flex justify-between items-center p-8 border-b border-stone-100">
-            <div className="bg-stone-50 px-6 py-3 rounded-2xl flex items-center gap-3 border border-stone-100">
+    <div className="w-full max-w-2xl mx-auto h-[350px] bg-white rounded-3xl border border-stone-200 shadow-xl flex flex-col relative overflow-hidden">
+        <div className="flex justify-between items-center p-6 border-b border-stone-100">
+            <div className="bg-stone-50 px-5 py-2 rounded-2xl flex items-center gap-3 border border-stone-100">
                 <Timer className={`w-5 h-5 ${timeLeft < 10 ? 'text-red-500' : 'text-stone-400'}`} />
-                <span className={`text-4xl font-black font-mono leading-none ${timeLeft < 10 ? 'text-red-500 animate-pulse' : 'text-stone-700'}`}>{timeLeft}</span>
+                <span className={`text-3xl font-black font-mono leading-none ${timeLeft < 10 ? 'text-red-500 animate-pulse' : 'text-stone-700'}`}>{timeLeft}</span>
             </div>
-            <button onClick={onExit} className="p-2 hover:bg-stone-100 rounded-full text-stone-300 transition-colors"><X className="w-6 h-6" /></button>
+            <button onClick={onExit} className="p-2 hover:bg-stone-100 rounded-full text-stone-300 transition-colors"><X className="w-5 h-5" /></button>
         </div>
-        <div className="flex-1 p-10 flex flex-col items-center justify-center relative">
-            <div className="w-full flex flex-wrap gap-x-6 gap-y-4 justify-center items-center text-3xl font-mono font-medium max-h-[160px] overflow-hidden opacity-90">
+        <div className="flex-1 p-8 flex flex-col items-center justify-center relative">
+            <div className="w-full flex flex-wrap gap-x-5 gap-y-3 justify-center items-center text-2xl font-mono font-medium max-h-[140px] overflow-hidden opacity-90">
                 {words.slice(currentIdx, currentIdx + 12).map((w, i) => {
                     const isActive = i === 0;
                     return (
                         <span key={i} className={`relative px-2 transition-all duration-200 ${isActive ? 'text-stone-900 font-black scale-110' : 'text-stone-200'}`}>
-                            {isActive && <div className="absolute -bottom-2 left-0 right-0 h-1 bg-frog-green rounded-full shadow-[0_0_10px_rgba(64,214,114,0.5)]"></div>}
+                            {isActive && <div className="absolute -bottom-2 left-0 right-0 h-1 bg-frog-green rounded-full shadow-[0_0_8px_rgba(64,214,114,0.5)]"></div>}
                             {w}
                         </span>
                     );
                 })}
             </div>
-            <div className="mt-12 relative w-full max-w-sm">
-                <input ref={inputRef} autoFocus value={input} onChange={handleInputChange} className="w-full text-center text-4xl font-mono font-bold bg-stone-50 border-2 rounded-2xl py-4 focus:outline-none focus:border-frog-green transition-all" placeholder="Type..." />
+            <div className="mt-8 relative w-full max-w-xs">
+                <input ref={inputRef} autoFocus value={input} onChange={handleInputChange} className="w-full text-center text-3xl font-mono font-bold bg-stone-50 border-2 rounded-2xl py-3 focus:outline-none focus:border-frog-green transition-all" placeholder="Type..." />
             </div>
         </div>
         <div className="h-2 bg-stone-100 w-full"><div className={`h-full transition-all duration-1000 ease-linear ${timeLeft < 10 ? 'bg-red-500' : 'bg-frog-green'}`} style={{ width: `${(timeLeft / 60) * 100}%` }}></div></div>

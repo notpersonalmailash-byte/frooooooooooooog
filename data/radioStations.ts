@@ -10,17 +10,17 @@ export interface RadioStation {
 export const RADIO_STATIONS: RadioStation[] = [
   // Tadpole (Unlock Radio Feature)
   { id: '1YBtzAAChU8', name: 'Lofi Girl Christmas', type: 'YOUTUBE', tier: 'Tadpole' },
-  { id: '5RHibMrSYH9WRdDd4hbh6N', name: 'Cozy Beats', type: 'SPOTIFY', tier: 'Tadpole' },
-  { id: '37i9dQZF1DZ06evO0TOYhj', name: 'Boy w Uki', type: 'SPOTIFY', tier: 'Tadpole' },
-  { id: '37i9dQZF1DZ06evO3Ec90s', name: 'Pofu', type: 'SPOTIFY', tier: 'Tadpole' },
+  { id: 'jfKfPfyJRdk', name: 'Lofi Girl - chill space', type: 'YOUTUBE', tier: 'Tadpole' },
+  { id: '4xDzrDKqGNo', name: 'Lofi Hip Hop', type: 'YOUTUBE', tier: 'Tadpole' },
+  { id: '7NOSDKb0HlU', name: 'Chillhop Beats', type: 'YOUTUBE', tier: 'Tadpole' },
 
   // Polliwog
   { id: 'oZD8dYSGVrc', name: 'Spanish Cafe', type: 'YOUTUBE', tier: 'Polliwog' },
   { id: 'TURbeWK2wwg', name: 'Synthwave Boy', type: 'YOUTUBE', tier: 'Polliwog' },
 
   // Froglet
-  { id: '1FWfsqbg3lTr2pBPcf4i3o', name: 'Parasyte (Spotify)', type: 'SPOTIFY', tier: 'Froglet' },
-  { id: '4kUUWyk2EQEFopzAvpqImg', name: 'Hits', type: 'SPOTIFY', tier: 'Froglet' },
+  { id: 'kgx4WGK0oNU', name: 'Jazz Relax', type: 'YOUTUBE', tier: 'Froglet' },
+  { id: '5yx6BWlEVcU', name: 'Chillstep', type: 'YOUTUBE', tier: 'Froglet' },
 
   // Hopper
   { id: 'PLeoxRnwmVqfQZCWYczEfAc0XCI4rknrmi', name: 'Drake Vibes', type: 'YOUTUBE', tier: 'Hopper' },

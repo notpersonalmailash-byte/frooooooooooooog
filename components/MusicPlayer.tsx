@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import ReactPlayer from 'react-player';
 import { MusicConfig, MusicSource, Settings } from '../types';
 import { getCurrentLevel } from '../utils/gameLogic';
 import { RADIO_STATIONS } from '../data/radioStations';
@@ -83,17 +84,16 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
 
     if (musicConfig.source === 'YOUTUBE') {
       return (
-        <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative group shadow-inner">
-           <iframe 
-             width="100%" 
-             height="100%" 
-             src={`https://utube.realityripple.com/#${musicConfig.presetId}`} 
-             title="YouTube music player" 
-             frameBorder="0" 
-             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-             allowFullScreen
-             className="opacity-90 hover:opacity-100 transition-opacity"
-           ></iframe>
+        <div className="w-full aspect-video bg-black rounded-lg overflow-hidden relative group shadow-inner pointer-events-none">
+          <ReactPlayer 
+            url={`https://www.youtube.com/watch?v=${musicConfig.presetId}`}
+            playing={true}
+            volume={settings.masterVolume}
+            width="100%"
+            height="100%"
+            controls={false}
+            config={{ youtube: { playerVars: { disablekb: 1 } } }}
+          />
         </div>
       );
     }

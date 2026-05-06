@@ -11,7 +11,7 @@ import { MusicPlayer } from './components/MusicPlayer';
 import { LevelUpModal } from './components/LevelUpModal';
 import { WelcomeModal } from './components/WelcomeModal';
 import { Quote, Settings, GameMode, TestResult, WordDrill, WordPerformance, WordProficiency, Level } from './types';
-import { fetchQuotes } from './services/quoteService';
+import { fetchQuotes, getTotalQuotes } from './services/quoteService';
 import { getCurrentLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
 import { Loader2, Settings as SettingsIcon, Music, BookOpen, Eraser, Palette, Brain, Zap, Lock, RotateCcw, ShieldAlert, User } from 'lucide-react';
@@ -58,7 +58,7 @@ const App: React.FC = () => {
       autoStartMusic: true,
       ttsMode: 'OFF',
       strictDrillEnabled: false, // Default to OFF for a more relaxed experience
-      showSpeedBox: true,
+      showSpeedBox: false, // Default to OFF as requested
       ...parsed
     };
   });
@@ -333,17 +333,17 @@ const App: React.FC = () => {
 
       <main className="flex-grow flex flex-col items-center justify-center p-6 relative">
         {pendingWordDrill ? (
-            <div className="w-full max-w-2xl bg-red-50 p-12 rounded-[3rem] border-4 border-red-100 shadow-2xl text-center animate-in zoom-in-95 duration-300">
-                <div className="flex flex-col items-center gap-6">
-                    <Brain className="w-16 h-16 text-red-500 animate-pulse" />
-                    <h2 className="text-4xl font-black text-red-700 tracking-tight">STRICT DISCIPLINE</h2>
-                    <p className="text-red-500 font-bold">Repeat the word <span className="underline font-black text-2xl">{pendingWordDrill.word}</span> 15 times to continue.</p>
-                    <div className="relative mt-8 group">
-                        <div className="text-7xl font-black text-red-200/40 tracking-widest uppercase">{pendingWordDrill.word}</div>
-                        <input autoFocus className="absolute inset-0 bg-transparent text-center text-7xl font-black tracking-widest text-red-600 outline-none uppercase" onChange={handleDrillInput} />
+            <div className="w-full max-w-xl bg-red-50 p-8 rounded-[2rem] border-4 border-red-100 shadow-2xl text-center animate-in zoom-in-95 duration-300">
+                <div className="flex flex-col items-center gap-4">
+                    <Brain className="w-12 h-12 text-red-500 animate-pulse" />
+                    <h2 className="text-3xl font-black text-red-700 tracking-tight">STRICT DISCIPLINE</h2>
+                    <p className="text-red-500 font-bold">Repeat the word <span className="underline font-black text-xl">{pendingWordDrill.word}</span> 15 times to continue.</p>
+                    <div className="relative mt-6 group">
+                        <div className="text-5xl font-black text-red-200/40 tracking-widest uppercase">{pendingWordDrill.word}</div>
+                        <input autoFocus className="absolute inset-0 bg-transparent text-center text-5xl font-black tracking-widest text-red-600 outline-none uppercase" onChange={handleDrillInput} />
                     </div>
-                    <div className="mt-8 flex flex-col items-center">
-                        <div className="text-red-400 font-black text-3xl font-mono">{pendingWordDrill.currentCount} / {pendingWordDrill.requiredCount}</div>
+                    <div className="mt-6 flex flex-col items-center">
+                        <div className="text-red-400 font-black text-2xl font-mono">{pendingWordDrill.currentCount} / {pendingWordDrill.requiredCount}</div>
                         <div className="w-64 h-3 bg-red-100 rounded-full mt-2 overflow-hidden border border-red-200">
                             <div className="h-full bg-red-500 transition-all" style={{ width: `${(pendingWordDrill.currentCount/15)*100}%` }}></div>
                         </div>
@@ -357,7 +357,7 @@ const App: React.FC = () => {
            <div className="max-w-[1400px] mx-auto flex items-center justify-between">
                 <ProgressBar xp={userXP} avgWpm={avgWpmVal} mistakeCount={mistakePool.length} />
                 <div className="flex gap-8 ml-8 shrink-0">
-                    <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Mastered</span><span className="font-bold text-frog-500">{masteredQuotes.length}</span></div>
+                    <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Mastered</span><span className="font-bold text-frog-500">{masteredQuotes.length} / {getTotalQuotes()}</span></div>
                     <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Streak</span><span className="font-bold text-orange-500">{streak}</span></div>
                 </div>
            </div>

@@ -24,6 +24,8 @@ const SORTED_QUOTES = [...QUOTES].map(q => ({
     normalizedText: normalizeText(q.quoteText)
 }));
 
+export const getTotalQuotes = () => QUOTES.length;
+
 export const fetchTenFastWords = (count: number = 100, smartQueue: PracticeWord[] = []): string[] => {
     const top200 = COMMON_WORDS.slice(0, 200);
     const masteryWords = smartQueue

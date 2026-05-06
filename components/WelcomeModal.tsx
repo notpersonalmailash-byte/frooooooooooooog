@@ -25,7 +25,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
                <div className="bg-frog-200 text-frog-600 p-2 rounded-xl mt-1"><Star className="w-5 h-5" /></div>
                <div>
                   <h3 className="font-bold text-lg text-stone-800">1. Type to Grow</h3>
-                  <p className="text-sm text-stone-600">Every quote you type gives you XP. Earn enough XP to evolve your frog rank from a tiny <b>Egg</b> all the way to a wise <b>Frog Sage</b>.</p>
+                  <p className="text-sm text-stone-600">You gain XP based on words typed and correctness. Evolve from an <b>Egg</b> into a <b>Tadpole</b>, then to a <b>Froglet</b>, all the way to a wise <b>Frog Sage</b>!</p>
                </div>
            </div>
 
