@@ -93,7 +93,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
            <iframe 
              width="100%" 
              height="100%" 
-             src={`https://www.youtube.com/embed/${musicConfig.presetId}?autoplay=1`} 
+             src={`https://www.youtube.com/embed/${musicConfig.presetId}?autoplay=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`} 
              title="YouTube music player" 
              frameBorder="0" 
              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
