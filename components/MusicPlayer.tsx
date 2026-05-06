@@ -210,23 +210,29 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
              </button>
           </div>
 
-          {/* Source Tabs */}
-          <div className="flex p-1 bg-stone-200/50 rounded-lg mb-4 gap-0.5">
+          {/* Main Source Selection */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
             <button 
               onClick={() => setActiveTab('BACKGROUND')}
-              className={`flex-1 flex items-center justify-center gap-1 py-2 text-[10px] font-bold rounded-md transition-all ${activeTab === 'BACKGROUND' ? 'bg-white text-frog-green shadow-sm' : 'text-stone-500 hover:text-stone-700'}`}
-              title="Generated Sounds"
+              className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl transition-all border-2 ${activeTab === 'BACKGROUND' ? 'border-frog-500 bg-frog-50 text-frog-700 shadow-sm shadow-frog-100' : 'border-stone-100 bg-white text-stone-500 hover:border-stone-200 hover:bg-stone-50'}`}
             >
-              <Sparkles className="w-3 h-3" /> Background
+              <div className={`p-2 rounded-full ${activeTab === 'BACKGROUND' ? 'bg-frog-200/50 text-frog-600' : 'bg-stone-100 text-stone-400'}`}>
+                 <Sparkles className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest">Ambient</span>
             </button>
             <button 
               onClick={() => setActiveTab('RADIO')}
-              className={`flex-1 flex items-center justify-center gap-1 py-2 text-[10px] font-bold rounded-md transition-all 
-                ${activeTab === 'RADIO' ? 'bg-white text-frog-green shadow-sm' : 'text-stone-500 hover:text-stone-700'}
-              `}
-              title="Streaming Radio"
+              className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl transition-all border-2 ${activeTab === 'RADIO' ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-sm shadow-purple-100' : 'border-stone-100 bg-white text-stone-500 hover:border-stone-200 hover:bg-stone-50'}`}
             >
-              <Radio className="w-3 h-3" /> Radio
+              <div className={`p-2 rounded-full relative ${activeTab === 'RADIO' ? 'bg-purple-200/50 text-purple-600' : 'bg-stone-100 text-stone-400'}`}>
+                 <div className="absolute -top-1 -right-1 flex h-3 w-3">
+                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                   <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+                 </div>
+                 <Radio className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest">Music Radio</span>
             </button>
           </div>
 

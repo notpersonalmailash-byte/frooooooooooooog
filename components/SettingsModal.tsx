@@ -23,6 +23,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
   const setMechanicalPreset = (preset: MechanicalSoundPreset) => setSettings({ ...settings, mechanicalSoundPreset: preset });
   const toggleAutoStart = () => setSettings({ ...settings, autoStartMusic: !settings.autoStartMusic });
   const toggleStrictDrill = () => setSettings({ ...settings, strictDrillEnabled: !settings.strictDrillEnabled });
+  const toggleSpeedBox = () => setSettings({ ...settings, showSpeedBox: !settings.showSpeedBox });
   const setTTSMode = (mode: TTSMode) => setSettings({ ...settings, ttsMode: mode });
   
   const handleExport = () => {
@@ -212,6 +213,25 @@ Are you sure you want to restore?
             </div>
             <div className={`w-10 h-6 rounded-full relative transition-colors ${settings.autoStartMusic ? 'bg-frog-500' : 'bg-stone-300'}`}>
                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.autoStartMusic ? 'left-5' : 'left-1'}`} />
+            </div>
+          </button>
+
+          {/* Speed Box Toggle (Blue) */}
+          <button 
+            onClick={toggleSpeedBox}
+            className={`w-full text-left flex items-center justify-between p-3 rounded-xl cursor-pointer border transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${settings.showSpeedBox !== false ? 'bg-blue-50 border-blue-200' : 'bg-stone-50 border-transparent hover:bg-stone-100'}`}
+          >
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${settings.showSpeedBox !== false ? 'bg-blue-100 text-blue-600' : 'bg-stone-200 text-stone-500'}`}>
+                <Eye className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="font-bold text-sm text-stone-700">Live Speed Box</div>
+                <div className="text-[10px] text-stone-400">Show WPM counter while typing</div>
+              </div>
+            </div>
+            <div className={`w-10 h-6 rounded-full relative transition-colors ${settings.showSpeedBox !== false ? 'bg-blue-500' : 'bg-stone-300'}`}>
+               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.showSpeedBox !== false ? 'left-5' : 'left-1'}`} />
             </div>
           </button>
 

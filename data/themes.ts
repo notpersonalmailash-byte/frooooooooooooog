@@ -4,6 +4,23 @@ import { Theme } from '../types';
 export const THEMES: Theme[] = [
   // --- TIER 1: EGG (The Beginning) ---
   {
+    id: 'DARK',
+    name: 'Midnight Pond (Dark Mode)',
+    description: 'Easy on the eyes. A completely free dark mode for late night typing.',
+    minTier: 'Egg',
+    colors: {
+      background: '#121212', 
+      frog: { 
+        50: '#052e16', 100: '#14532d', 200: '#166534', 300: '#15803d', 400: '#16a34a',
+        500: '#40D672', 600: '#4ade80', 700: '#86efac', 800: '#bbf7d0', 900: '#dcfce7',
+      },
+      stone: { 
+        50: '#1c1917', 100: '#292524', 200: '#44403c', 300: '#57534e', 400: '#78716c',
+        500: '#a8a29e', 600: '#d6d3d1', 700: '#e7e5e4', 800: '#f5f5f4', 900: '#fafaf9',
+      }
+    }
+  },
+  {
     id: 'CLASSIC',
     name: 'Classic Pond',
     description: 'The signature look. Fresh, clean, and optimistic.',

@@ -64,6 +64,7 @@ export interface Settings {
   autoStartMusic: boolean; 
   ttsMode: TTSMode; 
   strictDrillEnabled: boolean;
+  showSpeedBox: boolean;
 }
 
 export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'TEN_FAST' | 'DRILL';

@@ -8,7 +8,9 @@ import ThemeModal from './components/ThemeModal';
 import TenFastGame from './components/BlitzGame';
 import DrillMode from './components/DrillMode';
 import { MusicPlayer } from './components/MusicPlayer';
-import { Quote, Settings, GameMode, TestResult, WordDrill, WordPerformance, WordProficiency } from './types';
+import { LevelUpModal } from './components/LevelUpModal';
+import { WelcomeModal } from './components/WelcomeModal';
+import { Quote, Settings, GameMode, TestResult, WordDrill, WordPerformance, WordProficiency, Level } from './types';
 import { fetchQuotes } from './services/quoteService';
 import { getCurrentLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
@@ -56,6 +58,7 @@ const App: React.FC = () => {
       autoStartMusic: true,
       ttsMode: 'OFF',
       strictDrillEnabled: false, // Default to OFF for a more relaxed experience
+      showSpeedBox: true,
       ...parsed
     };
   });
@@ -67,6 +70,26 @@ const App: React.FC = () => {
   const [isMusicOpen, setIsMusicOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+  
+  const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => !localStorage.getItem('frogType_hasSeenWelcome'));
+  const prevLevelNameRef = React.useRef<string | null>(null);
+  const [levelUpModalData, setLevelUpModalData] = useState<{ newLevel: Level; prev: string } | null>(null);
+
+  useEffect(() => {
+     const currentLevel = getCurrentLevel(userXP);
+     if (prevLevelNameRef.current === null) {
+         prevLevelNameRef.current = currentLevel.name;
+     } else if (prevLevelNameRef.current !== currentLevel.name) {
+         // Level up!
+         setLevelUpModalData({ newLevel: currentLevel, prev: prevLevelNameRef.current });
+         prevLevelNameRef.current = currentLevel.name;
+     }
+  }, [userXP]);
+
+  const handleCloseWelcome = () => {
+      setIsWelcomeOpen(false);
+      localStorage.setItem('frogType_hasSeenWelcome', 'true');
+  };
 
   useEffect(() => { localStorage.setItem('frogXP', userXP.toString()); }, [userXP]);
   useEffect(() => { localStorage.setItem('frogType_masteredQuotes', JSON.stringify(masteredQuotes)); }, [masteredQuotes]);
@@ -263,14 +286,47 @@ const App: React.FC = () => {
           <h1 className="text-xl font-black text-frog-500 tracking-tight flex items-center gap-2 select-none">
             <span className="text-2xl drop-shadow-sm">🐸</span> Frog Type
           </h1>
-          <div className="flex gap-2">
-             <button onClick={() => setGameMode('QUOTES')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Quotes Mode"><BookOpen className="w-4 h-4" /></button>
-             <button onClick={() => setGameMode('TEN_FAST')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="10 Fast Sprint"><Zap className="w-4 h-4" /></button>
-             <button onClick={() => setGameMode('DRILL')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${gameMode === 'DRILL' ? 'bg-stone-200 text-frog-500 shadow-inner ring-1 ring-stone-300' : 'text-stone-400 hover:bg-stone-200 hover:text-stone-600'}`} title="Drill Mistakes"><Brain className="w-4 h-4" /></button>
-             <button onClick={() => setIsMusicOpen(true)} className={`p-2 transition-all rounded-xl ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'text-frog-500 bg-frog-50 shadow-sm ring-1 ring-frog-100' : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'}`} title="Music Player"><Music className="w-5 h-5" /></button>
-             <button onClick={() => setIsStatsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="User Stats"><User className="w-5 h-5" /></button>
-             <button onClick={() => setIsThemeOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="Themes"><Palette className="w-5 h-5" /></button>
-             <button onClick={() => setIsSettingsOpen(true)} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" title="Settings"><SettingsIcon className="w-5 h-5" /></button>
+          <div className="flex gap-4">
+             {/* Play Dropdown */}
+             <div className="relative group">
+                <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-stone-600 hover:bg-stone-100 transition-all font-sans">
+                  <BookOpen className="w-4 h-4" /> Play
+                </button>
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-stone-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all flex flex-col p-1 z-50">
+                  <button onClick={() => setGameMode('QUOTES')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${gameMode === 'QUOTES' ? 'bg-frog-50 text-frog-600' : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'}`}>
+                    <BookOpen className="w-4 h-4" /> Quotes Mod 
+                  </button>
+                  <button onClick={() => setGameMode('TEN_FAST')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${gameMode === 'TEN_FAST' ? 'bg-frog-50 text-frog-600' : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'}`}>
+                    <Zap className="w-4 h-4" /> 60s Sprint
+                  </button>
+                  <button onClick={() => setGameMode('DRILL')} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold transition-all ${gameMode === 'DRILL' ? 'bg-frog-50 text-frog-600' : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'}`}>
+                    <Brain className="w-4 h-4" /> Drill Mistakes
+                  </button>
+                </div>
+             </div>
+
+             <button onClick={() => setIsMusicOpen(true)} className={`flex items-center gap-1.5 px-4 py-2 transition-all rounded-xl text-sm font-bold ${isMusicOpen || settings.musicConfig.source !== 'NONE' ? 'text-frog-600 bg-frog-50 shadow-sm ring-1 ring-frog-100' : 'text-stone-600 hover:bg-stone-100 font-sans'}`} title="Music Player">
+                  <Music className="w-4 h-4" /> Music
+             </button>
+
+             {/* Profile & Tools Dropdown */}
+             <div className="relative group">
+                <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-stone-600 hover:bg-stone-100 transition-all font-sans">
+                  <User className="w-4 h-4" /> Profile
+                </button>
+                <div className="absolute top-full right-0 mt-1 w-48 bg-white border border-stone-200 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all flex flex-col p-1 z-50">
+                  <button onClick={() => setIsStatsOpen(true)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-all">
+                    <User className="w-4 h-4" /> User Stats
+                  </button>
+                  <button onClick={() => setIsThemeOpen(true)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-all">
+                    <Palette className="w-4 h-4" /> Themes
+                  </button>
+                  <div className="h-px bg-stone-100 w-full my-1"></div>
+                  <button onClick={() => setIsSettingsOpen(true)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-all">
+                    <SettingsIcon className="w-4 h-4" /> Settings
+                  </button>
+                </div>
+             </div>
           </div>
         </div>
       </header>
@@ -311,6 +367,14 @@ const App: React.FC = () => {
       <ThemeModal isOpen={isThemeOpen} onClose={() => setIsThemeOpen(false)} currentThemeId={settings.themeId} setThemeId={(id) => setSettings({ ...settings, themeId: id })} currentLevel={getCurrentLevel(userXP)} allLevels={LEVELS} />
       <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} avgWpm={avgWpmVal} history={testHistory} onPractice={() => {}} totalTime={0} joinDate={joinDate} streak={streak} userName={userName} setUserName={setUserName} completedTestsCount={testHistory.length} userXP={userXP} />
       <MusicPlayer isOpen={isMusicOpen} onClose={() => setIsMusicOpen(false)} settings={settings} setSettings={setSettings} userXP={userXP} />
+      <WelcomeModal isOpen={isWelcomeOpen} onClose={handleCloseWelcome} />
+      {levelUpModalData && (
+          <LevelUpModal 
+             newLevel={levelUpModalData.newLevel} 
+             prevLevelName={levelUpModalData.prev} 
+             onClose={() => setLevelUpModalData(null)} 
+          />
+      )}
     </div>
   );
 };
