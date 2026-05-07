@@ -71,23 +71,14 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, currentLevel }) 
                   
                   <div className="space-y-4">
                      {Object.entries(tiers).map(([tierName, levels]) => {
-                         const baseLevel = levels[levels.length - 1]; // The lowest level of the tier
-                         const capLevel = levels[0]; // The highest level of the tier
+                         const baseLevel = levels[0]; // The lowest level of the tier
+                         const capLevel = levels[levels.length - 1]; // The highest level of the tier
                          return (
                              <div key={tierName} className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex items-center gap-6">
-                                <div className="text-4xl w-12 text-center" style={{ filter: `drop-shadow(0 0 10px var(--${baseLevel.color}-300))` }}>
-                                   {tierName === 'Egg' ? '🥚' : 
-                                    tierName === 'Tadpole' ? '🦠' : 
-                                    tierName === 'Polliwog' ? '🐟' : 
-                                    tierName === 'Froglet' ? '🐲' : 
-                                    tierName === 'Hopper' ? '🐸' : 
-                                    tierName === 'Tree Frog' ? '🦎' : 
-                                    tierName === 'Bullfrog' ? '🐢' : '🐉'}
-                                </div>
                                 <div className="flex-1">
                                     <h4 className="font-black text-lg" style={{ color: `var(--${baseLevel.color}-600)` }}>{tierName}</h4>
                                     <div className="flex flex-wrap gap-2 mt-2">
-                                        {levels.reverse().map(l => (
+                                        {levels.map(l => (
                                             <div key={l.name} className={`px-2 py-1 rounded bg-stone-100 text-stone-600 text-xs font-bold border border-stone-200 flex items-center gap-1 ${currentLevel.name === l.name ? 'ring-2 ring-frog-green bg-green-50' : ''}`}>
                                                 {l.name} <ArrowRight className="w-3 h-3 text-stone-300" /> <span className="font-mono text-[10px] bg-stone-200 px-1 rounded">{l.minXP} XP</span>
                                             </div>
