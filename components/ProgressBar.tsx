@@ -8,9 +8,10 @@ interface ProgressBarProps {
   avgWpm: number;
   mistakeCount: number;
   remediationCount?: number;
+  onDrillClick?: () => void;
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ xp, avgWpm, mistakeCount, remediationCount = 0 }) => {
+const ProgressBar: React.FC<ProgressBarProps> = ({ xp, avgWpm, mistakeCount, remediationCount = 0, onDrillClick }) => {
   const { currentLevel, nextLevel } = checkLevelProgress(xp, avgWpm, mistakeCount, remediationCount);
   const currentLevelIndex = LEVELS.indexOf(currentLevel);
   const totalLevels = LEVELS.length;
@@ -44,9 +45,9 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ xp, avgWpm, mistakeCount, rem
                <span className="text-[9px] text-stone-300 font-bold uppercase tracking-wider">Next:</span>
                <span className="text-[10px] font-black text-stone-500 uppercase">{nextLevel.name}</span>
                {mistakeCount > 0 && xp >= nextLevel.minXP - 15 ? (
-                 <span className="text-[9px] text-red-500 font-bold animate-pulse ml-2 flex items-center gap-1 border border-red-200 bg-red-50 px-1 py-0.5 rounded">
+                 <button onClick={onDrillClick} className="text-[9px] text-red-500 font-bold animate-pulse ml-2 flex items-center gap-1 border border-red-200 bg-red-50 px-2 py-1 rounded cursor-pointer hover:bg-red-100 transition-colors shadow-sm tracking-widest text-center">
                    CLEAR MISTAKES TO EVOLVE
-                 </span>
+                 </button>
                ) : (
                  <span className="flex items-center gap-0.5 text-[9px] text-stone-300 ml-1 font-mono" title={`Target Speed: ${nextLevel.requiredWpm} WPM`}>
                     <Gauge className="w-2.5 h-2.5" /> {nextLevel.requiredWpm}

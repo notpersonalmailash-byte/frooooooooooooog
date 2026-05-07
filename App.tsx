@@ -359,7 +359,7 @@ const App: React.FC = () => {
 
       <footer className="fixed bottom-0 left-0 right-0 p-6 bg-stone-50/80 backdrop-blur-md border-t border-stone-200/50">
            <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-                <ProgressBar xp={userXP} avgWpm={avgWpmVal} mistakeCount={mistakePool.length} />
+                <ProgressBar xp={userXP} avgWpm={avgWpmVal} mistakeCount={mistakePool.length} onDrillClick={() => setGameMode('DRILL')} />
                 <div className="flex gap-8 ml-8 shrink-0">
                     <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Mastered</span><span className="font-bold text-frog-500">{masteredQuotes.length} / {getTotalQuotes()}</span></div>
                     <div className="flex flex-col"><span className="text-[10px] font-black text-stone-300 uppercase tracking-widest">Streak</span><span className="font-bold text-orange-500">{streak}</span></div>
