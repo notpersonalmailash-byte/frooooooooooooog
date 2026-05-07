@@ -120,38 +120,12 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, currentLevel, co
                           <GraduationCap className="w-4 h-4 text-frog-green" /> Smart Training
                       </h3>
                       <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-3">
-                          
-                          {/* Words Mode Block */}
-                          <div className={`flex gap-3 items-start relative ${isPracticeLocked ? 'opacity-50 grayscale' : ''}`}>
-                              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0"><FileText className="w-4 h-4" /></div>
-                              <div>
-                                  <div className="flex items-center gap-2">
-                                      <h4 className="font-bold text-stone-700 text-sm">Words Mode</h4>
-                                      {isPracticeLocked && <span className="text-[9px] font-bold bg-stone-200 px-1.5 py-0.5 rounded text-stone-600 flex items-center gap-1"><Lock className="w-2 h-2"/> Unlocks after 20 tests</span>}
-                                  </div>
-                                  <p className="text-xs text-stone-500 mt-0.5">
-                                      Infinite flow of words. Complexity scales dynamically with your user Tier—starting from simple words to complex sentences with punctuation.
-                                      <br/>
-                                      <span className="font-bold text-blue-500">Bonus: Only 5% XP penalty for mistakes.</span>
-                                  </p>
-                              </div>
-                          </div>
-
                           <div className="flex gap-3 items-start">
                               <div className="p-2 bg-purple-50 text-purple-600 rounded-lg shrink-0"><Ghost className="w-4 h-4" /></div>
                               <div>
                                   <h4 className="font-bold text-stone-700 text-sm">Ghost Replay</h4>
                                   <p className="text-xs text-stone-500 mt-0.5">
-                                      Race against a visual ghost representing your average WPM. Perfect for pacing.
-                                  </p>
-                              </div>
-                          </div>
-                          <div className="flex gap-3 items-start">
-                              <div className="p-2 bg-frog-50 text-frog-600 rounded-lg shrink-0"><EyeOff className="w-4 h-4" /></div>
-                              <div>
-                                  <h4 className="font-bold text-stone-700 text-sm">Read Ahead Mode</h4>
-                                  <p className="text-xs text-stone-500 mt-0.5">
-                                      Hides the text you are currently typing to force you to look ahead. Grants up to <strong>+30% XP Bonus</strong>.
+                                      Race against a visual ghost representing your average WPM. Perfect for pacing. It is enabled by default to push you a little further.
                                   </p>
                               </div>
                           </div>
@@ -177,95 +151,26 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, currentLevel, co
                                   <span className="text-[10px] bg-stone-100 text-stone-500 px-2 py-0.5 rounded font-bold">Ranked</span>
                               </div>
                               <p className="text-xs text-stone-500">
-                                  Balanced risk/reward. The default way to play.
+                                  Balanced risk/reward. The default way to play. You are given beautiful and profound quotes to type. Typing these without mistakes guarantees consistency.
                               </p>
                           </div>
-
-                          {/* 10 Fast Mode */}
+                          
+                          {/* Drill Mistakes */}
                           <div className="group relative bg-white p-4 rounded-xl border border-stone-200 shadow-sm hover:border-frog-green/30 transition-colors">
                               <div className="flex justify-between items-center mb-1">
-                                  <span className="font-bold text-stone-800 text-sm flex items-center gap-2"><Zap className="w-3.5 h-3.5 text-frog-green"/> 10 Fast</span>
-                                  <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded font-bold">Sprint</span>
-                              </div>
-                              <p className="text-xs text-stone-500">
-                                  High-pressure common word sprint. One mistake resets the run and forces repetition.
-                              </p>
-                          </div>
-                          
-                          {/* Hardcore Mode */}
-                          <div className={`group relative p-4 rounded-xl border shadow-sm transition-colors ${isHardcoreLocked ? 'bg-stone-50 border-stone-200 opacity-60' : 'bg-white border-stone-200 hover:border-stone-800'}`}>
-                              <div className="flex justify-between items-center mb-1">
-                                  <span className={`font-bold text-sm flex items-center gap-2 ${isHardcoreLocked ? 'text-stone-500' : 'text-stone-800'}`}>
-                                      <Skull className={`w-3.5 h-3.5 ${isHardcoreLocked ? 'text-stone-400' : 'text-stone-800'}`}/> Hardcore
-                                  </span>
-                                  {isHardcoreLocked ? (
-                                      <span className="text-[10px] bg-stone-200 text-stone-500 px-2 py-0.5 rounded font-bold flex items-center gap-1"><Lock className="w-2 h-2"/> Unlocks at Polliwog</span>
-                                  ) : (
-                                      <span className="text-[10px] bg-stone-800 text-white px-2 py-0.5 rounded font-bold">5x XP</span>
-                                  )}
-                              </div>
-                              <p className="text-xs text-stone-500">
-                                  Mistakes deduct <span className="font-bold">50% XP</span>. Only for the brave. 
-                              </p>
-                          </div>
-
-                          {/* Remediation Modes */}
-                          <div className="group relative bg-white p-4 rounded-xl border border-stone-200 shadow-sm">
-                              <div className="flex justify-between items-center mb-1">
-                                  <span className="font-bold text-stone-800 text-sm flex items-center gap-2"><Eraser className="w-3.5 h-3.5 text-red-500"/> XWords & XQuotes</span>
-                                  <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">Recovery</span>
+                                  <span className="font-bold text-stone-800 text-sm flex items-center gap-2"><Eraser className="w-3.5 h-3.5 text-red-500"/> Drill Mistakes</span>
+                                  <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded font-bold">Training</span>
                               </div>
                               <p className="text-xs text-stone-500 mt-1">
-                                  <span className="font-bold text-stone-700">XWords:</span> Generates sentences from your misspelled words. (Requires 3x repetition).
+                                  When you make a mistake on a word in Quotes mode, it is automatically saved to your mistake pool. 
                                   <br/>
-                                  <span className="font-bold text-stone-700">XQuotes:</span> Forces you to retry failed quotes 3 times.
-                                  <br/>
-                                  <span className="text-[10px] text-stone-400 italic block mt-1">* Both must be cleared to advance Tiers. Low XP penalty (5%).</span>
+                                  Use the <strong>Drill Mistakes</strong> mode to target and practice those specific weak points. You'll need to successfully type a missed word multiple times back-to-back to master it and clear it from your pool.
                               </p>
                           </div>
                       </div>
                   </section>
 
-                  {/* 5. Arcade Center */}
-                  <section>
-                      <h3 className="flex items-center gap-2 text-sm font-black text-stone-800 uppercase tracking-widest mb-4 border-b border-stone-200 pb-2">
-                          <Gamepad2 className="w-4 h-4 text-purple-500" /> Arcade Center
-                      </h3>
-                      <div className={`p-5 rounded-2xl border shadow-lg space-y-4 ${isArcadeLocked ? 'bg-stone-100 border-stone-200 opacity-70 grayscale' : 'bg-stone-900 border-stone-800 text-stone-300'}`}>
-                          {isArcadeLocked && (
-                              <div className="flex justify-center mb-2">
-                                  <span className="bg-stone-200 text-stone-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
-                                      <Lock className="w-3 h-3" /> Unlocks at Froglet Tier
-                                  </span>
-                              </div>
-                          )}
-                          
-                          <div className="space-y-3">
-                              <div className="flex gap-3">
-                                  <div className="mt-1"><Skull className={`w-4 h-4 ${isArcadeLocked ? 'text-stone-400' : 'text-red-500'}`} /></div>
-                                  <div>
-                                      <h4 className={`font-bold text-sm ${isArcadeLocked ? 'text-stone-600' : 'text-white'}`}>Survival (Swamp & Outbreak Z)</h4>
-                                      <p className="text-xs opacity-70 mt-0.5">
-                                          Defend against waves of enemies. 
-                                          <br/>
-                                          <span className={`font-mono ${isArcadeLocked ? 'text-stone-500' : 'text-red-400'}`}>1 Mistake = 1 Life Lost.</span>
-                                      </p>
-                                  </div>
-                              </div>
-                              <div className="flex gap-3">
-                                  <div className="mt-1"><ArrowUpRight className={`w-4 h-4 ${isArcadeLocked ? 'text-stone-400' : 'text-cyan-400'}`} /></div>
-                                  <div>
-                                      <h4 className={`font-bold text-sm ${isArcadeLocked ? 'text-stone-600' : 'text-white'}`}>Cosmic Defense</h4>
-                                      <p className="text-xs opacity-70 mt-0.5">
-                                          Vertical scroller. Type words to launch missiles. Defeat bosses.
-                                      </p>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </section>
-
-                  {/* 6. System Features */}
+                  {/* 5. System Features */}
                   <section>
                       <h3 className="flex items-center gap-2 text-sm font-black text-stone-800 uppercase tracking-widest mb-4 border-b border-stone-200 pb-2">
                           <Database className="w-4 h-4 text-frog-green" /> System Features
@@ -274,7 +179,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose, currentLevel, co
                           <div className="bg-white p-3 rounded-xl border border-stone-200 shadow-sm">
                               <div className="font-bold text-stone-700 text-xs mb-1 flex items-center gap-1"><Music className="w-3 h-3"/> Audio Engine</div>
                               <p className="text-[10px] text-stone-500">
-                                  Procedural music generation (Satie, Jazz, Lofi) and mechanical keyboard sounds.
+                                  Procedural music generation and ambient background noises (Rain, Cafe).
                               </p>
                           </div>
                           <div className="bg-white p-3 rounded-xl border border-stone-200 shadow-sm">

@@ -131,8 +131,6 @@ const App: React.FC = () => {
   useEffect(() => {
     soundEngine.setMasterVolume(settings.masterVolume);
     soundEngine.setEnabled(settings.sfxEnabled);
-    soundEngine.setMechanicalEnabled(settings.mechanicalSoundEnabled);
-    soundEngine.setMechanicalPreset(settings.mechanicalSoundPreset);
     soundEngine.setAmbientVolume(settings.ambientVolume);
     
     if (settings.musicConfig.source === 'GENERATED') {
