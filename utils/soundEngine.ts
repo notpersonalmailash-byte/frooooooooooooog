@@ -545,6 +545,10 @@ class SoundEngine {
   
 
 
+  public playKeypress() {
+    // Intentionally empty as mechanical typing sounds are removed
+  }
+
   public playError() {
     if (!this.enabled || !this.ctx) return;
     this.ensureContext();
