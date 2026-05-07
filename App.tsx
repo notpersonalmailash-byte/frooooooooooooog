@@ -9,11 +9,12 @@ import DrillMode from './components/DrillMode';
 import { MusicPlayer } from './components/MusicPlayer';
 import { LevelUpModal } from './components/LevelUpModal';
 import { WelcomeModal } from './components/WelcomeModal';
+import HelpModal from './components/HelpModal';
 import { Quote, Settings, GameMode, TestResult, WordDrill, WordPerformance, WordProficiency, Level } from './types';
 import { fetchQuotes, getTotalQuotes } from './services/quoteService';
 import { getCurrentLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
-import { Loader2, Settings as SettingsIcon, Music, BookOpen, Eraser, Palette, Brain, Zap, Lock, RotateCcw, ShieldAlert, User } from 'lucide-react';
+import { Loader2, Settings as SettingsIcon, Music, BookOpen, Eraser, Palette, Brain, Zap, Lock, RotateCcw, ShieldAlert, User, HelpCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { THEMES } from './data/themes';
 
@@ -69,6 +70,7 @@ const App: React.FC = () => {
   const [isMusicOpen, setIsMusicOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isThemeOpen, setIsThemeOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   
   const [isWelcomeOpen, setIsWelcomeOpen] = useState(() => !localStorage.getItem('frogType_hasSeenWelcome'));
   const prevLevelNameRef = React.useRef<string | null>(null);
@@ -299,6 +301,11 @@ const App: React.FC = () => {
                   <Music className="w-4 h-4" /> Music
              </button>
 
+             {/* Help Button */}
+             <button onClick={() => setIsHelpOpen(true)} className="flex items-center gap-1.5 px-4 py-2 transition-all rounded-xl text-sm font-bold text-stone-600 hover:bg-stone-100 font-sans" title="How to play">
+                  <HelpCircle className="w-4 h-4" /> Help
+             </button>
+
              {/* Profile & Tools Dropdown */}
              <div className="relative group">
                 <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold text-stone-600 hover:bg-stone-100 transition-all font-sans">
@@ -356,6 +363,7 @@ const App: React.FC = () => {
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} settings={settings} setSettings={setSettings} />
       <ThemeModal isOpen={isThemeOpen} onClose={() => setIsThemeOpen(false)} currentThemeId={settings.themeId} setThemeId={(id) => setSettings({ ...settings, themeId: id })} currentLevel={getCurrentLevel(userXP)} allLevels={LEVELS} />
       <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} avgWpm={avgWpmVal} history={testHistory} onPractice={() => {}} totalTime={0} joinDate={joinDate} streak={streak} userName={userName} setUserName={setUserName} completedTestsCount={testHistory.length} userXP={userXP} />
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} currentLevel={getCurrentLevel(userXP)} completedTestsCount={testHistory.length} />
       <MusicPlayer isOpen={isMusicOpen} onClose={() => setIsMusicOpen(false)} settings={settings} setSettings={setSettings} userXP={userXP} />
       <WelcomeModal isOpen={isWelcomeOpen} onClose={handleCloseWelcome} />
       {levelUpModalData && (

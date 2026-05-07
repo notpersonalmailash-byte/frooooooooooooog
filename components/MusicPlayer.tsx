@@ -143,13 +143,13 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
        // Visualizer for Generated Audio
        const info = BACKGROUND_PRESETS.find(p => p.id === musicConfig.presetId);
        return (
-         <div className="w-full h-32 bg-stone-900 rounded-xl flex flex-col items-center justify-center relative overflow-hidden shadow-inner ring-1 ring-stone-800">
+         <div className="w-full h-20 bg-stone-900 rounded-xl flex flex-col items-center justify-center relative overflow-hidden shadow-inner ring-1 ring-stone-800">
             {/* Simple CSS animation for visualizer */}
-            <div className="absolute inset-0 opacity-20 flex items-end justify-center gap-1 pb-2">
+            <div className="absolute inset-0 opacity-20 flex items-end justify-center gap-0.5 pb-1">
                 {[...Array(20)].map((_, i) => (
                     <div 
                       key={i} 
-                      className="w-1.5 bg-frog-green rounded-t-sm animate-pulse" 
+                      className="w-1 bg-frog-green rounded-t-sm animate-pulse" 
                       style={{ 
                           height: `${20 + Math.random() * 60}%`,
                           animationDuration: `${0.3 + Math.random() * 0.7}s`
@@ -157,14 +157,14 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
                     />
                 ))}
             </div>
-            <div className="z-10 text-white font-bold flex flex-col items-center gap-2">
-                <div className="p-2 bg-stone-800 rounded-full shadow-xl border border-stone-700">
-                    {info?.icon || <Sparkles className="w-5 h-5 text-yellow-400" />}
+            <div className="z-10 text-white font-bold flex flex-col items-center gap-1">
+                <div className="p-1.5 bg-stone-800 rounded-full shadow-xl border border-stone-700">
+                    {info?.icon || <Sparkles className="w-4 h-4 text-yellow-400" />}
                 </div>
-                <span className="text-xs tracking-wide font-mono">{info?.name}</span>
+                <span className="text-[10px] tracking-wide font-mono">{info?.name}</span>
             </div>
-            <div className="absolute top-2 right-2 text-[8px] text-frog-green font-black uppercase tracking-widest bg-stone-800 px-1.5 py-0.5 rounded border border-stone-700/50">
-               Live Engine
+            <div className="absolute top-1.5 right-1.5 text-[8px] text-frog-green font-black uppercase tracking-widest bg-stone-800 px-1 py-0.5 rounded border border-stone-700/50">
+               Live
             </div>
          </div>
        );
@@ -176,10 +176,10 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
 
   return (
     <div className={`fixed bottom-24 right-6 z-50 transition-all duration-300 ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
-      <div ref={containerRef} className="bg-white rounded-2xl shadow-2xl shadow-stone-300/50 w-96 max-w-[calc(100vw-3rem)] border border-stone-100 overflow-hidden flex flex-col">
+      <div ref={containerRef} className="bg-white rounded-2xl shadow-2xl shadow-stone-300/50 w-80 max-w-[calc(100vw-3rem)] border border-stone-100 overflow-hidden flex flex-col">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-4 bg-white border-b border-stone-100">
+        <div className="flex items-center justify-between p-3 bg-white border-b border-stone-100">
            <div className="flex items-center gap-2 text-stone-700 font-bold">
              <Radio className="w-4 h-4 text-frog-green" />
              <span className="text-sm">Background Audio</span>
@@ -190,10 +190,10 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
         </div>
 
         {/* Content */}
-        <div className="p-4 bg-stone-50/50">
+        <div className="p-3 bg-stone-50/50">
           
           {/* Master Volume */}
-          <div className="mb-4 px-3 py-3 bg-white rounded-xl border border-stone-100 shadow-sm">
+          <div className="mb-3 px-3 py-2 bg-white rounded-xl border border-stone-100 shadow-sm">
              <div className="flex justify-between text-[10px] text-stone-400 font-bold mb-2 uppercase tracking-wide">
                 <span className="flex items-center gap-1.5 text-stone-500"><Volume2 className="w-3.5 h-3.5"/> Master Volume</span>
                 <span>{Math.round(settings.masterVolume * 100)}%</span>
@@ -210,46 +210,46 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
           </div>
 
           {/* Active Player Area */}
-          <div className={`transition-all duration-300 ${musicConfig.source === 'NONE' ? 'h-0 overflow-hidden opacity-0' : 'h-auto min-h-[100px] mb-4 opacity-100'}`}>
+          <div className={`transition-all duration-300 ${musicConfig.source === 'NONE' ? 'h-0 overflow-hidden opacity-0' : 'h-auto min-h-[60px] mb-3 opacity-100'}`}>
              {renderEmbed()}
              
              <button 
                onClick={handleStop} 
-               className="mt-3 w-full flex items-center justify-center gap-2 py-2 text-xs text-red-500 font-bold bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+               className="mt-2 w-full flex items-center justify-center gap-1 py-1.5 text-xs text-red-500 font-bold bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
              >
                <Power className="w-3.5 h-3.5" /> Disable Music
              </button>
           </div>
 
           {/* Main Source Selection */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="grid grid-cols-2 gap-2 mb-3">
             <button 
               onClick={() => setActiveTab('BACKGROUND')}
-              className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl transition-all border-2 ${activeTab === 'BACKGROUND' ? 'border-frog-500 bg-frog-50 text-frog-700 shadow-sm shadow-frog-100' : 'border-stone-100 bg-white text-stone-500 hover:border-stone-200 hover:bg-stone-50'}`}
+              className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl transition-all border-2 ${activeTab === 'BACKGROUND' ? 'border-frog-500 bg-frog-50 text-frog-700 shadow-sm shadow-frog-100' : 'border-stone-100 bg-white text-stone-500 hover:border-stone-200 hover:bg-stone-50'}`}
             >
-              <div className={`p-2 rounded-full ${activeTab === 'BACKGROUND' ? 'bg-frog-200/50 text-frog-600' : 'bg-stone-100 text-stone-400'}`}>
-                 <Sparkles className="w-6 h-6" />
+              <div className={`p-1.5 rounded-full ${activeTab === 'BACKGROUND' ? 'bg-frog-200/50 text-frog-600' : 'bg-stone-100 text-stone-400'}`}>
+                 <Sparkles className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest">Ambient</span>
+              <span className="text-[9px] font-black uppercase tracking-widest">Ambient</span>
             </button>
             <button 
               onClick={() => setActiveTab('RADIO')}
-              className={`flex flex-col items-center justify-center gap-2 p-4 rounded-xl transition-all border-2 ${activeTab === 'RADIO' ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-sm shadow-purple-100' : 'border-stone-100 bg-white text-stone-500 hover:border-stone-200 hover:bg-stone-50'}`}
+              className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl transition-all border-2 ${activeTab === 'RADIO' ? 'border-purple-500 bg-purple-50 text-purple-700 shadow-sm shadow-purple-100' : 'border-stone-100 bg-white text-stone-500 hover:border-stone-200 hover:bg-stone-50'}`}
             >
-              <div className={`p-2 rounded-full relative ${activeTab === 'RADIO' ? 'bg-purple-200/50 text-purple-600' : 'bg-stone-100 text-stone-400'}`}>
-                 <div className="absolute -top-1 -right-1 flex h-3 w-3">
+              <div className={`p-1.5 rounded-full relative ${activeTab === 'RADIO' ? 'bg-purple-200/50 text-purple-600' : 'bg-stone-100 text-stone-400'}`}>
+                 <div className="absolute -top-1 -right-1 flex h-2 w-2">
                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                   <span className="relative inline-flex rounded-full h-3 w-3 bg-purple-500"></span>
+                   <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
                  </div>
-                 <Radio className="w-6 h-6" />
+                 <Radio className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest">Music Radio</span>
+              <span className="text-[9px] font-black uppercase tracking-widest">Music Radio</span>
             </button>
           </div>
 
           {/* Volume Control - Visible when in Background tab */}
           {activeTab === 'BACKGROUND' && (
-            <div className="mb-4 px-3 py-3 bg-white rounded-xl border border-stone-100 shadow-sm animate-in slide-in-from-top-2 fade-in duration-300">
+            <div className="mb-3 px-3 py-2 bg-white rounded-xl border border-stone-100 shadow-sm animate-in slide-in-from-top-2 fade-in duration-300">
                <div className="flex justify-between text-[10px] text-stone-400 font-bold mb-2 uppercase tracking-wide">
                   <span className="flex items-center gap-1.5 text-stone-500"><Music className="w-3.5 h-3.5"/> Ambient Volume</span>
                   <span>{Math.round(settings.ambientVolume * 100)}%</span>
@@ -267,7 +267,7 @@ export const MusicPlayer: React.FC<MusicPlayerProps> = ({ isOpen, onClose, setti
           )}
 
           {/* Preset List */}
-          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+          <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1 custom-scrollbar">
              {activeTab === 'BACKGROUND' && BACKGROUND_PRESETS.map((preset) => (
                <button
                  key={preset.id}
