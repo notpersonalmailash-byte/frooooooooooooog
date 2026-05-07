@@ -19,11 +19,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, settings
   const toggleGhost = () => setSettings({ ...settings, ghostEnabled: !settings.ghostEnabled });
   const setReadAheadLevel = (level: ReadAheadLevel) => setSettings({ ...settings, readAheadLevel: level });
   const toggleSfx = () => setSettings({ ...settings, sfxEnabled: !settings.sfxEnabled });
-  const toggleMechanical = () => setSettings({ ...settings, mechanicalSoundEnabled: !settings.mechanicalSoundEnabled });
-  const setMechanicalPreset = (preset: MechanicalSoundPreset) => setSettings({ ...settings, mechanicalSoundPreset: preset });
   const toggleAutoStart = () => setSettings({ ...settings, autoStartMusic: !settings.autoStartMusic });
   const toggleStrictDrill = () => setSettings({ ...settings, strictDrillEnabled: !settings.strictDrillEnabled });
-  const toggleSpeedBox = () => setSettings({ ...settings, showSpeedBox: !settings.showSpeedBox });
   const setTTSMode = (mode: TTSMode) => setSettings({ ...settings, ttsMode: mode });
   
   const handleExport = () => {
@@ -216,25 +213,6 @@ Are you sure you want to restore?
             </div>
           </button>
 
-          {/* Speed Box Toggle (Blue) */}
-          <button 
-            onClick={toggleSpeedBox}
-            className={`w-full text-left flex items-center justify-between p-3 rounded-xl cursor-pointer border transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${settings.showSpeedBox !== false ? 'bg-blue-50 border-blue-200' : 'bg-stone-50 border-transparent hover:bg-stone-100'}`}
-          >
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${settings.showSpeedBox !== false ? 'bg-blue-100 text-blue-600' : 'bg-stone-200 text-stone-500'}`}>
-                <Eye className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="font-bold text-sm text-stone-700">Live Speed Box</div>
-                <div className="text-[10px] text-stone-400">Show WPM counter while typing</div>
-              </div>
-            </div>
-            <div className={`w-10 h-6 rounded-full relative transition-colors ${settings.showSpeedBox !== false ? 'bg-blue-500' : 'bg-stone-300'}`}>
-               <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.showSpeedBox !== false ? 'left-5' : 'left-1'}`} />
-            </div>
-          </button>
-
           {/* Strict Word Drill Toggle (Red) */}
           <button 
             onClick={toggleStrictDrill}
@@ -299,49 +277,6 @@ Are you sure you want to restore?
                     })}
                 </div>
               </div>
-          </div>
-
-          {/* Mechanical Sounds Toggle (Amber) */}
-          <div className={`rounded-xl border transition-all overflow-hidden ${settings.mechanicalSoundEnabled ? 'bg-amber-50 border-amber-200' : 'bg-stone-50 border-transparent hover:bg-stone-100'}`}>
-              <button 
-                onClick={toggleMechanical}
-                className="w-full text-left flex items-center justify-between p-3 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-inset"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${settings.mechanicalSoundEnabled ? 'bg-amber-100 text-amber-600' : 'bg-stone-200 text-stone-500'}`}>
-                    <Keyboard className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-sm text-stone-700">Mechanical Keys</div>
-                    <div className="text-[10px] text-stone-400">Typewriter click sounds</div>
-                  </div>
-                </div>
-                <div className={`w-10 h-6 rounded-full relative transition-colors ${settings.mechanicalSoundEnabled ? 'bg-amber-500' : 'bg-stone-300'}`}>
-                   <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.mechanicalSoundEnabled ? 'left-5' : 'left-1'}`} />
-                </div>
-              </button>
-              
-              {/* Preset Selector */}
-              {settings.mechanicalSoundEnabled && (
-                  <div className="px-3 pb-3 pt-0 animate-in slide-in-from-top-2">
-                      <div className="grid grid-cols-4 gap-1 p-1 bg-amber-100/50 rounded-lg">
-                          {(['THOCK', 'CLICKY', 'BUBBLE', 'TYPEWRITER'] as MechanicalSoundPreset[]).map(preset => (
-                              <button
-                                key={preset}
-                                onClick={(e) => { e.stopPropagation(); setMechanicalPreset(preset); }}
-                                className={`
-                                    text-[10px] font-bold py-1.5 px-1 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1
-                                    ${settings.mechanicalSoundPreset === preset 
-                                        ? 'bg-white text-amber-600 shadow-sm' 
-                                        : 'text-amber-700/60 hover:bg-amber-100/50'}
-                                `}
-                              >
-                                  {preset === 'TYPEWRITER' ? 'TYPE' : preset}
-                              </button>
-                          ))}
-                      </div>
-                  </div>
-              )}
           </div>
 
           {/* Ghost Mode Toggle */}

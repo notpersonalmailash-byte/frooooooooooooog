@@ -46,11 +46,9 @@ const App: React.FC = () => {
     const saved = localStorage.getItem('frogType_settings');
     const parsed = saved ? JSON.parse(saved) : {};
     return {
-      ghostEnabled: false, 
+      ghostEnabled: true, 
       readAheadLevel: 'NONE', 
       sfxEnabled: true,
-      mechanicalSoundEnabled: false,
-      mechanicalSoundPreset: 'THOCK',
       masterVolume: 1.0,
       ambientVolume: 0.02, 
       musicConfig: { source: 'NONE', presetId: '' },
@@ -58,7 +56,6 @@ const App: React.FC = () => {
       autoStartMusic: true,
       ttsMode: 'OFF',
       strictDrillEnabled: false, // Default to OFF for a more relaxed experience
-      showSpeedBox: false, // Default to OFF as requested
       ...parsed
     };
   });

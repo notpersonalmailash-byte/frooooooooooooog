@@ -45,8 +45,6 @@ export interface MusicConfig {
   presetId: string;
 }
 
-export type MechanicalSoundPreset = 'THOCK' | 'CLICKY' | 'BUBBLE' | 'TYPEWRITER';
-
 export type ReadAheadLevel = 'NONE' | 'FOCUS' | 'ULTRA' | 'BLIND';
 
 export type TTSMode = 'OFF' | 'QUOTE' | 'WORD' | 'FLOW' | 'NEXT' | 'SCOUT';
@@ -55,8 +53,6 @@ export interface Settings {
   ghostEnabled: boolean;
   readAheadLevel: ReadAheadLevel; 
   sfxEnabled: boolean;
-  mechanicalSoundEnabled: boolean; 
-  mechanicalSoundPreset: MechanicalSoundPreset; 
   masterVolume: number;
   ambientVolume: number; 
   musicConfig: MusicConfig;
@@ -64,7 +60,6 @@ export interface Settings {
   autoStartMusic: boolean; 
   ttsMode: TTSMode; 
   strictDrillEnabled: boolean;
-  showSpeedBox: boolean;
 }
 
 export type GameMode = 'QUOTES' | 'HARDCORE' | 'XWORDS' | 'XQUOTES' | 'PRACTICE' | 'MINIGAMES' | 'DRILL';

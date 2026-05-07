@@ -762,24 +762,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
           className="absolute opacity-0 top-0 left-0 h-full w-full cursor-default resize-none" autoFocus={isFocused} disabled={status === GameStatus.COMPLETED || status === GameStatus.FAILED}
         />
 
-        {settings.showSpeedBox !== false && (
-          <div className="absolute bottom-10 left-0 right-0 px-10 md:px-20 flex justify-between items-end select-none z-10">
-             <div className="flex items-center gap-10 text-stone-400 font-mono text-sm">
-               <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-bold text-stone-300 mb-0.5 tracking-wider">Speed</span>
-                  <span className="font-bold text-xl opacity-80 font-sans">{wpm} <span className="text-[10px] font-normal opacity-50">WPM</span></span>
-               </div>
-               {streak > 0 && (
-                  <div className={`flex flex-col ${streak > 4 ? 'text-orange-500' : 'text-stone-400'}`}>
-                      <span className="text-[10px] uppercase font-bold text-stone-300 mb-0.5 tracking-wider">Streak</span>
-                      <span className="font-bold text-xl flex items-center gap-1.5 font-sans">
-                          <Flame className={`w-4 h-4 ${streak > 4 ? 'fill-orange-500' : ''}`} /> {streak}
-                      </span>
-                  </div>
-               )}
-             </div>
-          </div>
-        )}
+
       </div>
       
       <div className="text-center mt-8 h-4 text-stone-400 text-xs font-medium tracking-wide transition-opacity duration-500 font-sans">

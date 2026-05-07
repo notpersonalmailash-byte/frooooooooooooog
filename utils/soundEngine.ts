@@ -1,13 +1,9 @@
 
-import { MechanicalSoundPreset } from '../types';
-
 class SoundEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private warmthFilter: BiquadFilterNode | null = null;
   private enabled: boolean = true;
-  private mechanicalEnabled: boolean = false;
-  private mechanicalPreset: MechanicalSoundPreset = 'THOCK';
   private masterVolume: number = 1.0;
   
   // Ambient/Generated Music components
@@ -83,14 +79,6 @@ class SoundEngine {
 
   public setEnabled(enabled: boolean) {
     this.enabled = enabled;
-  }
-
-  public setMechanicalEnabled(enabled: boolean) {
-    this.mechanicalEnabled = enabled;
-  }
-
-  public setMechanicalPreset(preset: MechanicalSoundPreset) {
-    this.mechanicalPreset = preset;
   }
 
   public setAmbientVolume(volume: number) {
@@ -555,98 +543,7 @@ class SoundEngine {
     playNextNote();
   }
   
-  public playKeypress() {
-     if (!this.enabled || !this.mechanicalEnabled || !this.ctx) return;
-     this.ensureContext();
-     
-     // Subtle pitch randomization for organic feel
-     const pitchFactor = 0.95 + Math.random() * 0.1;
 
-     switch(this.mechanicalPreset) {
-         case 'CLICKY': this.playClicky(pitchFactor); break;
-         case 'BUBBLE': this.playBubble(pitchFactor); break;
-         case 'TYPEWRITER': this.playTypewriter(pitchFactor); break;
-         case 'THOCK':
-         default: this.playThock(pitchFactor); break;
-     }
-  }
-
-  private playThock(pf: number) {
-     const t = this.ctx!.currentTime;
-     const osc = this.ctx!.createOscillator();
-     osc.type = 'triangle';
-     osc.frequency.setValueAtTime((300 + Math.random()*50) * pf, t);
-     osc.frequency.exponentialRampToValueAtTime(50, t + 0.08);
-     const g = this.ctx!.createGain();
-     g.gain.setValueAtTime(0.3, t);
-     g.gain.exponentialRampToValueAtTime(0.01, t + 0.08);
-     osc.connect(g);
-     g.connect(this.masterGain!);
-     osc.start(t);
-     osc.stop(t + 0.1);
-     this.playFilteredNoise(t, 2000 * pf, 0.15, 0.05);
-  }
-
-  private playClicky(pf: number) {
-      const t = this.ctx!.currentTime;
-      const osc = this.ctx!.createOscillator();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(1500 * pf, t);
-      osc.frequency.exponentialRampToValueAtTime(500, t + 0.03);
-      const g = this.ctx!.createGain();
-      g.gain.setValueAtTime(0.06, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
-      osc.connect(g);
-      g.connect(this.masterGain!);
-      osc.start(t);
-      osc.stop(t + 0.04);
-      this.playFilteredNoise(t, 4000 * pf, 0.1, 0.04, 'highpass');
-  }
-
-  private playBubble(pf: number) {
-      const t = this.ctx!.currentTime;
-      const osc = this.ctx!.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime((600 + Math.random()*100) * pf, t);
-      osc.frequency.exponentialRampToValueAtTime(100, t + 0.1);
-      const g = this.ctx!.createGain();
-      g.gain.setValueAtTime(0.25, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-      osc.connect(g);
-      g.connect(this.masterGain!);
-      osc.start(t);
-      osc.stop(t + 0.15);
-  }
-
-  private playTypewriter(pf: number) {
-      const t = this.ctx!.currentTime;
-      const osc = this.ctx!.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(2000 * pf, t);
-      const g = this.ctx!.createGain();
-      g.gain.setValueAtTime(0.04, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-      osc.connect(g);
-      g.connect(this.masterGain!);
-      osc.start(t);
-      osc.stop(t + 0.06);
-      this.playFilteredNoise(t, 1200 * pf, 0.3, 0.05, 'lowpass');
-  }
-
-  private playFilteredNoise(t: number, freq: number, vol: number, dur: number, type: BiquadFilterType = 'lowpass') {
-      const noise = this.ctx!.createBufferSource();
-      noise.buffer = this.noiseBuffers['white'];
-      const f = this.ctx!.createBiquadFilter();
-      f.type = type;
-      f.frequency.setValueAtTime(freq, t);
-      const g = this.ctx!.createGain();
-      g.gain.setValueAtTime(vol, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      noise.connect(f); f.connect(g);
-      g.connect(this.masterGain!);
-      noise.start(t);
-      noise.stop(t + dur);
-  }
 
   public playError() {
     if (!this.enabled || !this.ctx) return;
