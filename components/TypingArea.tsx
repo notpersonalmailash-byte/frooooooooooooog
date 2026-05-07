@@ -18,6 +18,7 @@ interface TypingAreaProps {
   gameMode: GameMode;
   onInteract?: () => void;
   autoFocus?: boolean;
+  isDisabled?: boolean;
   updateWordProficiency: (word: string, isCorrect: boolean) => void;
 }
 
@@ -34,6 +35,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
   gameMode,
   onInteract,
   autoFocus = false,
+  isDisabled = false,
   updateWordProficiency
 }) => {
   const [input, setInput] = useState('');
@@ -200,6 +202,8 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (isDisabled) return;
+      
       if (status === GameStatus.COMPLETED) {
         if (e.key === 'Enter' || e.key === 'Tab') {
           e.preventDefault();
@@ -759,7 +763,7 @@ const TypingArea: React.FC<TypingAreaProps> = ({
 
         <textarea ref={inputRef} value={input} onChange={handleChange} onBlur={handleBlur} onFocus={() => { setIsFocused(true); onInteract?.(); if (status === GameStatus.IDLE && input.length === 0) triggerTTS(0); }}
           onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} onPaste={(e) => e.preventDefault()} onCopy={(e) => e.preventDefault()} onDrop={(e) => e.preventDefault()}
-          className="absolute opacity-0 top-0 left-0 h-full w-full cursor-default resize-none" autoFocus={isFocused} disabled={status === GameStatus.COMPLETED || status === GameStatus.FAILED}
+          className="absolute opacity-0 top-0 left-0 h-full w-full cursor-default resize-none" autoFocus={isFocused} disabled={isDisabled || status === GameStatus.COMPLETED || status === GameStatus.FAILED}
         />
 
 

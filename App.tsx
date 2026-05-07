@@ -246,6 +246,10 @@ const App: React.FC = () => {
 
   const isLocked = !!pendingWordDrill;
   const avgWpmVal = getAverageWPM(wpmHistory);
+  
+  const currentLvl = getCurrentLevel(userXP);
+  const nextLvl = getNextLevel(currentLvl);
+  const isEvolutionRestricted = nextLvl !== null && mistakePool.length > 0 && userXP >= nextLvl.minXP - 1;
 
   const renderGameMode = () => {
     switch(gameMode) {
@@ -258,25 +262,49 @@ const App: React.FC = () => {
       case 'QUOTES':
       default:
         return <>
-            {currentQuote ? (
-                <TypingArea 
-                    quote={currentQuote} 
-                    onComplete={handleQuoteComplete} 
-                    onFail={() => setStreak(0)}
-                    onMistake={handleMistake} 
-                    onRequestNewQuote={() => setCurrentQuote(null)}
-                    streak={streak} 
-                    ghostWpm={avgWpmVal} 
-                    settings={settings} 
-                    gameMode={gameMode} 
-                    updateWordProficiency={updateWordProficiency}
-                />
-            ) : (
-                <div className="flex flex-col items-center text-stone-400">
-                    <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-500" />
-                    <p className="font-mono text-xs italic opacity-60">Seeking wisdom...</p>
+            {isEvolutionRestricted && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-stone-900/60 backdrop-blur-sm">
+                    <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-lg w-full text-center space-y-6 border border-stone-200">
+                        <div className="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto">
+                            <ShieldAlert className="w-10 h-10 animate-pulse" />
+                        </div>
+                        <div>
+                            <h2 className="text-3xl font-black text-stone-800 mb-2">Evolution Blocked!</h2>
+                            <p className="text-stone-500 text-sm">
+                                You have reached the max XP for <strong style={{color: `var(--${currentLvl.color}-600)`}}>{currentLvl.name}</strong>. Before you can evolve to <strong style={{color: `var(--${nextLvl?.color}-600)`}}>{nextLvl?.name}</strong>, you MUST clear your mistake pool!
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setGameMode('DRILL')}
+                            className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-black text-lg rounded-xl shadow-lg shadow-red-500/20 transform active:scale-95 transition-all flex items-center justify-center gap-2"
+                        >
+                            <Eraser className="w-5 h-5" /> CLEAR MISTAKES NOW
+                        </button>
+                    </div>
                 </div>
             )}
+            <div className={isEvolutionRestricted ? 'opacity-30 pointer-events-none filter blur-sm transition-all duration-500' : 'transition-all duration-500'}>
+              {currentQuote ? (
+                  <TypingArea 
+                      quote={currentQuote} 
+                      onComplete={handleQuoteComplete} 
+                      onFail={() => setStreak(0)}
+                      onMistake={handleMistake} 
+                      onRequestNewQuote={() => setCurrentQuote(null)}
+                      streak={streak} 
+                      ghostWpm={avgWpmVal} 
+                      settings={settings} 
+                      gameMode={gameMode} 
+                      isDisabled={isEvolutionRestricted}
+                      updateWordProficiency={updateWordProficiency}
+                  />
+              ) : (
+                  <div className="flex flex-col items-center text-stone-400">
+                      <Loader2 className="w-10 h-10 animate-spin mb-4 text-frog-500" />
+                      <p className="font-mono text-xs italic opacity-60">Seeking wisdom...</p>
+                  </div>
+              )}
+            </div>
         </>;
     }
   };
