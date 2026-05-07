@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Check, Trophy } from 'lucide-react';
 import { soundEngine } from '../utils/soundEngine';
 
-const REPS_REQUIRED = 3;
+const REPS_REQUIRED = 5;
 
 interface DrillModeProps {
   mistakePool: string[];

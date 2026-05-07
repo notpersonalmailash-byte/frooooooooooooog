@@ -12,7 +12,7 @@ import { WelcomeModal } from './components/WelcomeModal';
 import HelpModal from './components/HelpModal';
 import { Quote, Settings, GameMode, TestResult, WordDrill, WordPerformance, WordProficiency, Level } from './types';
 import { fetchQuotes, getTotalQuotes } from './services/quoteService';
-import { getCurrentLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
+import { getCurrentLevel, getNextLevel, getAverageWPM, LEVELS } from './utils/gameLogic';
 import { soundEngine } from './utils/soundEngine';
 import { Loader2, Settings as SettingsIcon, Music, BookOpen, Eraser, Palette, Brain, Zap, Lock, RotateCcw, ShieldAlert, User, HelpCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -189,14 +189,26 @@ const App: React.FC = () => {
 
     if (isPerfect) {
         setMasteredQuotes(prev => [...prev, currentQuote?.text || ""]);
-        setUserXP(prev => prev + xp);
         setStreak(prev => prev + 1);
         soundEngine.playSuccess();
     } else {
         // Just reset streak on imperfect run, no forced remediation
         setStreak(0);
+        soundEngine.playSuccess(); // Still play a soft success for completion
     }
     
+    setUserXP(prev => {
+        const currentLvl = getCurrentLevel(prev);
+        const nextLvl = getNextLevel(currentLvl);
+        if (nextLvl && mistakePool.length > 0) {
+           const maxXP = nextLvl.minXP - 1;
+           if (prev + xp > maxXP) {
+               return maxXP;
+           }
+        }
+        return prev + xp;
+    });
+
     setWpmHistory(prev => [...prev, wpm].slice(-10));
     setTestHistory(prev => [...prev, { id: Date.now(), date: new Date().toISOString(), wpm, xpEarned: xp, mode: gameMode, quoteText: currentQuote?.text || "", mistakes, retryCount }]);
     setCurrentQuote(null);
